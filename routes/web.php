@@ -7,8 +7,9 @@ use App\Http\Controllers\PortalController;
 use App\Http\Controllers\KlaimBpjsController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\PelayananPasienController;
+use App\Http\Controllers\SdmController;
 
-// ── Root redirect ──────────────────────────────────────────────────────────
+// Root redirect
 Route::get('/', function () {
     return auth()->check()
         ? redirect()->route('dashboard')
@@ -41,7 +42,7 @@ Route::get('/cek-tanggal', function () {
     ]);
 });
 
-// ── Auth ───────────────────────────────────────────────────────────────────
+// Auth
 Route::middleware('guest')->group(function () {
     Route::get('/login',    [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login',   [AuthController::class, 'login'])->name('login.post');
@@ -53,7 +54,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-// ── Protected (auth required) ──────────────────────────────────────────────
+// Protected (auth required)
 Route::middleware('auth')->group(function () {
 
 
@@ -71,24 +72,21 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/portal/verify-token', [PortalController::class, 'verifyToken'])->name('portal.verify');
 
-    // ── Dashboard Pelayanan Pasien ─────────────────────────
-    // Route::get('/pelayanan', [PelayananController::class, 'index'])->name('pelayanan.index');
-
-    // ── Portal Pelayanan Pasien (baru) ─────────────────────
+    // Portal Pelayanan Pasien
     Route::get('/portal/pelayananpasien', [PelayananPasienController::class, 'index'])
         ->name('portal.pelayananpasien');
 
     Route::get('/portal/pelayananpasien/ranap', [PelayananPasienController::class, 'detailRanap'])
         ->name('portal.pelayananpasien.ranap');
 
-    // ── Dashboard SDM (nanti) ──────────────────────────────
-    // Route::get('/sdm', [SdmController::class, 'index'])->name('sdm.index');
-
+    // Dashboard SDM
+    Route::prefix('sdm')->name('sdm.')->middleware(['auth'])->group(function () {
+        Route::get('/portal/sdm', [SdmController::class, 'index'])->name('portal.sdm');
+    });
     // ── Dashboard Indikator Mutu (nanti) ──────────────────
     // Route::get('/mutu', [MutuController::class, 'index'])->name('mutu.index');
 
-    // ── Dashboard Klaim BPJS ───────────────────────────────
-
+    // Dashboard Klaim BPJS
     Route::prefix('bpjs')->group(function () {
         Route::get('meta',    [KlaimBpjsController::class, 'meta']);   // ← tambah ini
         Route::get('summary', [KlaimBpjsController::class, 'summary']);
@@ -106,7 +104,7 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-// ── API verify token (untuk web eksternal) ────────────────────────────────
+// API verify token (untuk web eksternal)
 Route::post('/api/portal/verify', [PortalController::class, 'apiVerify'])
     ->name('api.portal.verify')
     ->middleware('throttle:60,1');

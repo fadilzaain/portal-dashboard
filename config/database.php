@@ -128,6 +128,20 @@ return [
             'strict'    => false,
         ],
 
+        //Db SDM
+        'pegawai' => [
+            'driver'   => 'mysql',
+            'host'     => env('DB_PEGAWAI_HOST', '192.168.10.28'),
+            'port'     => env('DB_PEGAWAI_PORT', '3306'),
+            'database' => env('DB_PEGAWAI_DATABASE', 'pegawai'),
+            'username' => env('DB_PEGAWAI_USERNAME', 'rsudjombang911'),
+            'password' => env('DB_PEGAWAI_PASSWORD', 'Simrs$1038jombang'),
+            'charset'  => 'utf8mb4',
+            'collation'=> 'utf8mb4_unicode_ci',
+            'prefix'   => '',
+            'strict'   => false,
+        ],
+
         
 
         'mariadb' => [

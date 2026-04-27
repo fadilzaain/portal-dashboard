@@ -14,7 +14,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        /* == Css Variable == */
+        
         :root {
             --sidebar-w: 260px;
             --sidebar-bg: #0a0f1e;
@@ -38,7 +38,7 @@
         html, body { height: 100%; }
         body { font-family: var(--font); background: var(--page-bg); color: #1e293b; }
 
-        /* == SIDEBAR === */
+        /* Sidebar */
         #sidebar {
             position: fixed;
             top: 0; left: 0; bottom: 0;
@@ -92,7 +92,7 @@
             text-transform: uppercase;
         }
 
-        /* ── Nav Section Label ── */
+        /* Nav Section Label */
         .nav-label {
             font-size: .6rem;
             font-weight: 700;
@@ -102,7 +102,7 @@
             padding: 1.25rem 1.25rem .4rem;
         }
 
-        /* ── Nav Item ── */
+        /* Nav Item */
         .nav-item {
             display: flex;
             align-items: center;
@@ -154,7 +154,7 @@
             border-radius: 999px;
         }
 
-        /* ── Sidebar Footer ── */
+        /* Sidebar Footer */
         .sidebar-footer {
             margin-top: auto;
             padding: 1rem 1.25rem;
@@ -194,7 +194,7 @@
         }
         .logout-btn:hover { color: #f87171; }
 
-        /* ══ MAIN CONTENT ════════════════════════ */
+        /* Main Content */
         #main-wrap {
             margin-left: var(--sidebar-w);
             min-height: 100vh;
@@ -202,7 +202,7 @@
             flex-direction: column;
         }
 
-        /* ── Top Bar ── */
+        /* Top Bar */
         #topbar {
             background: white;
             border-bottom: 1px solid #e8edf4;
@@ -251,13 +251,13 @@
         }
         .topbar-notif:hover { background: #e8edf4; }
 
-        /* ── Page Content ── */
+        /* Page Content */
         #page-content {
             padding: 2rem;
             flex: 1;
         }
 
-        /* ══ MOBILE TOGGLE ════════════════════════ */
+        /* Mobile Toggle */
         #sidebar-toggle {
             display: none;
             position: fixed;
@@ -273,7 +273,7 @@
             align-items: center; justify-content: center;
         }
 
-        /* ══ RESPONSIVE ══════════════════════════ */
+        /* Responsive */
         @media (max-width: 1024px) {
             #sidebar { transform: translateX(-100%); }
             #sidebar.open { transform: translateX(0); }
@@ -282,7 +282,7 @@
             #page-content { padding: 1.25rem; }
         }
 
-        /* ══ PAGE TRANSITIONS ════════════════════ */
+        /* Page Transition */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(16px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -295,7 +295,7 @@
 </head>
 <body>
 
-{{-- ═══════════════ SIDEBAR ═══════════════ --}}
+{{-- ═══════════════ Sidebar ═══════════════ --}}
 <aside id="sidebar">
 
     {{-- Brand --}}
@@ -344,7 +344,7 @@
             <span class="nav-badge">↗</span>
         </a>
 
-        <a href="#" class="nav-item {{ request()->routeIs('sdm.*') ? 'active' : '' }}">
+        <a href="{{ route('sdm.portal.sdm') }}" class="nav-item {{ request()->routeIs('sdm.*') ? 'active' : '' }}">
             <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
@@ -394,7 +394,7 @@
     </div>
 </aside>
 
-{{-- ═══════════════ MAIN ═══════════════ --}}
+{{-- ═══════════════ Main ═══════════════ --}}
 <div id="main-wrap">
 
     {{-- Top Bar --}}

@@ -8,44 +8,30 @@ use Illuminate\Support\Facades\Cache;
 
 class PortalController extends Controller
 {
-    /**
-     * Redirect user ke web tujuan.
-     *
-     * Kalau auth_type = 'token':
-     *   - Generate token sementara (simpan di cache 5 menit)
-     *   - Kirim token sebagai query param ke URL tujuan
-     *
-     * Kalau auth_type = 'redirect':
-     *   - Langsung redirect ke URL tujuan
-     */
     public function redirect(string $appId)
     {
-        // Cari konfigurasi app berdasarkan ID
+        //konfigurasi app berdasarkan ID
         $app = $this->findApp($appId);
 
         if (! $app) {
             abort(404, 'Aplikasi tidak ditemukan.');
         }
 
-        // Kalau cukup redirect biasa (tanpa token)
         if ($app['auth_type'] === 'redirect') {
             return redirect($app['url']);
         }
 
-        // Generate token sementara untuk SSO sederhana
+        //Generate token sementara untuk SSO sederhana
         $token = $this->generateToken($app, auth()->user());
 
-        // Buat URL tujuan dengan token sebagai query param
+        //Buat URL tujuan dengan token sebagai query param
         $separator = str_contains($app['url'], '?') ? '&' : '?';
         $targetUrl  = $app['url'] . $separator . $app['token_param'] . '=' . $token;
 
         return redirect($targetUrl);
     }
 
-    /**
-     * Halaman verifikasi token (bisa dipanggil via browser redirect dari web eksternal).
-     * Web eksternal redirect user ke sini dengan ?token=xxx, lalu kita konfirmasi.
-     */
+   
     public function verifyToken(Request $request)
     {
         $token   = $request->query('token');
@@ -66,10 +52,7 @@ class PortalController extends Controller
         ]);
     }
 
-    /**
-     * API endpoint: web eksternal POST token ke sini untuk validasi.
-     * Contoh request: POST /api/portal/verify  { "token": "xxx", "secret": "yyy" }
-     */
+    
     public function apiVerify(Request $request)
     {
         $request->validate([
@@ -83,7 +66,7 @@ class PortalController extends Controller
             return response()->json(['valid' => false, 'message' => 'App tidak dikenal.'], 400);
         }
 
-        // Opsional: validasi secret kalau dikonfigurasi
+        //Opsional: validasi secret kalau dikonfigurasi
         if (! empty($app['api_secret'])) {
             $providedSecret = $request->header('X-Portal-Secret') ?? $request->input('secret');
             if ($providedSecret !== $app['api_secret']) {
@@ -97,7 +80,7 @@ class PortalController extends Controller
             return response()->json(['valid' => false, 'message' => 'Token tidak valid atau sudah kadaluarsa.'], 401);
         }
 
-        // Hapus token setelah dipakai (one-time use)
+        //Hapus token setelah dipakai
         Cache::forget('portal_token_' . $request->token);
 
         return response()->json([
@@ -110,11 +93,8 @@ class PortalController extends Controller
         ]);
     }
 
-    // ── PRIVATE HELPERS ───────────────────────────────────────────────────
+    //PRIVATE HELPERS
 
-    /**
-     * Cari app config berdasarkan ID.
-     */
     private function findApp(string $appId): ?array
     {
         $apps = config('portal.apps', []);
@@ -142,9 +122,7 @@ class PortalController extends Controller
         return $token;
     }
 
-    /**
-     * Ambil payload dari cache berdasarkan token.
-     */
+    // Ambil payload dari cache berdasarkan token.
     private function getTokenPayload(string $token): ?array
     {
         return Cache::get('portal_token_' . $token);

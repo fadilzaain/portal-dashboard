@@ -5,7 +5,7 @@
 
 @push('styles')
 <style>
-  /* ===== DESIGN TOKENS ===== */
+  /* Design Token */
   :root {
     --pp-bg:          #0d1117;
     --pp-surface:     #161b22;
@@ -27,7 +27,7 @@
 
   .pp-wrap { font-family: var(--pp-font); color: var(--pp-text); }
 
-  /* ===== HEADER ===== */
+  /* Header */
   .pp-header {
     display: flex;
     align-items: center;
@@ -71,7 +71,7 @@
     50% { opacity:0.3; }
   }
 
-  /* ===== FILTER BAR ===== */
+  /* Filter Bar */
   .pp-filter-bar {
     display: flex;
     align-items: center;
@@ -120,7 +120,7 @@
   }
   .pp-btn-ghost:hover { background: var(--pp-surface2); }
 
-  /* ===== INDIKATOR MUTU CARDS ===== */
+  /* Indikator Mutu Cards */
   .pp-indikator-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -201,7 +201,7 @@
   .status-waspada { background: rgba(245,158,11,0.12); color: var(--pp-yellow); }
   .status-buruk   { background: rgba(239,68,68,0.12);  color: var(--pp-red); }
 
-  /* ===== UNIT CARDS (RANAP / RAJAL / IGD) ===== */
+  /* Unit Cards (ranap-rajal-IGD) */
   .pp-unit-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -266,7 +266,7 @@
     margin-top: 2px;
   }
 
-  /* ===== CHART SECTION ===== */
+  /* Chart Session */
   .pp-chart-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -284,10 +284,10 @@
   @media (max-width: 1100px) { .pp-chart-grid-3 { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 700px)  { .pp-chart-grid-3 { grid-template-columns: 1fr; } }
 
-  /* ===== CHART CANVAS HEIGHT FIX ===== */
+  /* Card Canvas */
   .pp-chart-card .chart-container {
     position: relative;
-    height: 240px;   /* fixed height, chart tidak akan expand melebihi ini */
+    height: 240px;   
     width: 100%;
   }
     .pp-chart-card .chart-container-sm {
@@ -317,7 +317,7 @@
     color: var(--pp-text-muted);
     margin-top: 2px;
   }
-  /* ===== CHART CANVAS WRAPPER ===== */
+  /* Wrapper */
   .chart-canvas-wrap {
     position: relative;
     height: 240px;
@@ -332,7 +332,7 @@
     max-height: 100% !important;
   }
 
-  /* ===== TABEL POLI ===== */
+  /* Tabel Poli */
   .pp-table-wrap { overflow-x: auto; }
   .pp-table {
     width: 100%;
@@ -373,7 +373,7 @@
     transition: width 1s ease;
   }
 
-  /* ===== SECTION TITLE ===== */
+  /* Section tittle */
   .pp-section-title {
     font-size: 12px;
     font-weight: 600;
@@ -392,7 +392,7 @@
     background: var(--pp-border);
   }
 
-  /* ===== LOADING SKELETON ===== */
+  /* Load Skeleton */
   .pp-skeleton {
     background: linear-gradient(90deg, var(--pp-surface) 25%, var(--pp-surface2) 50%, var(--pp-surface) 75%);
     background-size: 200% 100%;
@@ -744,7 +744,7 @@
 @push('scripts')
 <script>
 // ======================================================
-// DATA dari PHP (JSON encoded)
+// DATA dari PHP 
 // ======================================================
 const trendData  = {!! $chartTrend  !!};
 const borData    = {!! $chartBOR    !!};

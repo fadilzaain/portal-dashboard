@@ -37,37 +37,37 @@ class KlaimBpjs extends Model
     ];
 
 
-    // Filter status terbayar
+    //Filter status terbayar
     public function scopeTerbayar($query)
     {
         return $query->where('status', 'terbayar');
     }
 
-    // Filter status pending
+    //Filter status pending
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    // Filter status tidak_layak
+    //Filter status tidak_layak
     public function scopeTidakLayak($query)
     {
         return $query->where('status', 'tidak_layak');
     }
 
-    // Filter status diproses
+    //Filter status diproses
     public function scopeDiproses($query)
     {
         return $query->where('status', 'diproses');
     }
 
-    // Filter berdasarkan rentang tanggal pengajuan
+    //Filter berdasarkan rentang tanggal pengajuan
     public function scopeDateRange($query, Carbon $from, Carbon $to)
     {
         return $query->whereBetween('tgl_pengajuan', [$from, $to]);
     }
 
-    // Label status yang ramah dibaca
+    //label status
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
