@@ -242,7 +242,6 @@
     .badge.tidak_layak { background: rgba(239,68,68,.1);   color: #dc2626; }
     .badge.diproses    { background: rgba(99,102,241,.1);  color: #4f46e5; }
 
-    /* jenis badge */
     .jenis-badge {
         font-size: .62rem; font-weight: 600; padding: .15rem .4rem;
         border-radius: 5px; font-family: 'DM Mono', monospace;
@@ -304,9 +303,9 @@
     </div>
 
     <div class="period-bar">
-        <button class="period-btn active" onclick="setPeriod(this,'weekly')">Mingguan</button>
-        <button class="period-btn"        onclick="setPeriod(this,'monthly')">Bulanan</button>
-        <button class="period-btn"        onclick="setPeriod(this,'yearly')">Tahunan</button>
+        <button class="period-btn active" data-label="per Minggu"  onclick="setPeriod(this,'weekly')">Mingguan</button>
+        <button class="period-btn"        data-label="per Bulan"   onclick="setPeriod(this,'monthly')">Bulanan</button>
+        <button class="period-btn"        data-label="per Tahun"   onclick="setPeriod(this,'yearly')">Tahunan</button>
         <div class="period-divider"></div>
         <input type="date" id="date-from" class="date-input">
         <span style="color:#94a3b8;font-size:.75rem;">—</span>
@@ -315,10 +314,9 @@
     </div>
 </div>
 
-{{-- STAT CARDS (5 cards) --}}
+{{-- STAT CARDS --}}
 <div class="stat-grid" style="margin-bottom:1.25rem;">
 
-    {{-- Total Pengajuan --}}
     <div class="stat-card teal fade-up fade-up-1">
         <div class="stat-header">
             <span class="stat-label">Total Pengajuan</span>
@@ -336,7 +334,6 @@
         <div class="stat-rupiah" id="rp-pengajuan">Rp –</div>
     </div>
 
-    {{-- Terbayar --}}
     <div class="stat-card green fade-up fade-up-2">
         <div class="stat-header">
             <span class="stat-label">Terbayar</span>
@@ -354,7 +351,6 @@
         <div class="stat-rupiah" id="rp-terbayar">Rp –</div>
     </div>
 
-    {{-- Pending --}}
     <div class="stat-card amber fade-up fade-up-3">
         <div class="stat-header">
             <span class="stat-label">Pending</span>
@@ -372,7 +368,6 @@
         <div class="stat-rupiah" id="rp-pending">Rp –</div>
     </div>
 
-    {{-- Tidak Layak --}}
     <div class="stat-card red fade-up fade-up-4">
         <div class="stat-header">
             <span class="stat-label">Tidak Layak</span>
@@ -390,7 +385,6 @@
         <div class="stat-rupiah" id="rp-tidaklayak">Rp –</div>
     </div>
 
-    {{-- Diproses --}}
     <div class="stat-card indigo fade-up fade-up-5">
         <div class="stat-header">
             <span class="stat-label">Diproses</span>
@@ -413,7 +407,6 @@
 {{-- CHARTS ROW --}}
 <div class="charts-grid fade-up fade-up-5" style="margin-bottom:1.25rem;">
 
-    {{-- Bar Chart --}}
     <div class="chart-card">
         <div class="chart-card-title">
             Tren Klaim
@@ -424,7 +417,6 @@
         </div>
     </div>
 
-    {{-- Donut --}}
     <div class="chart-card">
         <div class="chart-card-title">Komposisi Status</div>
         <div class="donut-wrap">
@@ -519,118 +511,114 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const API_BASE = '/bpjs';
+const API_BASE  = '/bpjs';
+const PER_PAGE  = 10;
+const CARD_KEYS = ['pengajuan', 'terbayar', 'pending', 'tidaklayak', 'diproses'];
+const API_MAP   = { pengajuan: 'pengajuan', terbayar: 'terbayar', pending: 'pending', tidaklayak: 'tidak_layak', diproses: 'diproses' };
+const STATUS_MAP = {
+    terbayar:    ['Terbayar',    '#22c55e'],
+    pending:     ['Pending',     '#f59e0b'],
+    tidak_layak: ['Tidak Layak', '#ef4444'],
+    diproses:    ['Diproses',    '#6366f1'],
+};
 
 let currentPeriod = 'weekly';
 let dateFrom = null, dateTo = null;
 let allRows = [], filteredRows = [];
 let currentPage = 1;
-const PER_PAGE = 10;
 let barChartInst = null, donutChartInst = null;
 
-function fmtRp(num) {
-    if (num === null || num === undefined || isNaN(num)) return 'Rp –';
-    return 'Rp ' + Number(num).toLocaleString('id-ID');
-}
-function fmtNum(num) {
-    if (num === null || num === undefined || isNaN(num)) return '–';
-    return Number(num).toLocaleString('id-ID');
+//Helpers
+const fmtRp  = n => (n == null || isNaN(n)) ? 'Rp –' : 'Rp ' + Number(n).toLocaleString('id-ID');
+const fmtNum = n => (n == null || isNaN(n)) ? '–'    : Number(n).toLocaleString('id-ID');
+const $      = id => document.getElementById(id);
+
+function emptyState(msg) {
+    return `<tr><td colspan="8"><div class="empty-state">
+        <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg><p>${msg}</p></div></td></tr>`;
 }
 
+function skeletonRows(n) {
+    const cells = Array(8).fill('<td><span class="skeleton" style="width:80px;height:14px;display:block;border-radius:4px;"></span></td>').join('');
+    return Array(n).fill(`<tr>${cells}</tr>`).join('');
+}
+
+async function apiFetch(endpoint, params) {
+    const res = await fetch(`${API_BASE}/${endpoint}?${params}`, {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    if (!res.ok) throw new Error(res.status);
+    return res.json();
+}
+
+//Filter Periode
 function setPeriod(btn, period) {
     document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentPeriod = period;
-    dateFrom = null; dateTo = null;
-    const labels = { weekly: 'per Minggu', monthly: 'per Bulan', yearly: 'per Tahun' };
-    document.getElementById('chart-period-label').textContent = labels[period];
+    dateFrom = dateTo = null;
+    $('chart-period-label').textContent = btn.dataset.label;
     loadAll();
 }
 
 function applyCustomRange() {
-    dateFrom = document.getElementById('date-from').value;
-    dateTo   = document.getElementById('date-to').value;
+    dateFrom = $('date-from').value;
+    dateTo   = $('date-to').value;
     if (!dateFrom || !dateTo) { alert('Pilih tanggal awal dan akhir'); return; }
     document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
     currentPeriod = 'custom';
-    document.getElementById('chart-period-label').textContent = `${dateFrom} → ${dateTo}`;
+    $('chart-period-label').textContent = `${dateFrom} → ${dateTo}`;
     loadAll();
 }
 
 function buildParams() {
     const p = new URLSearchParams();
-    if (currentPeriod !== 'custom') {
-        p.set('period', currentPeriod);
-    } else {
-        p.set('from', dateFrom);
-        p.set('to', dateTo);
-    }
+    currentPeriod !== 'custom' ? p.set('period', currentPeriod) : (p.set('from', dateFrom), p.set('to', dateTo));
     return p.toString();
 }
 
 async function loadAll() {
     const params = buildParams();
-    await Promise.all([
-        loadSummary(params),
-        loadChart(params),
-        loadTable(params),
-    ]);
+    await Promise.all([loadSummary(params), loadChart(params), loadTable(params)]);
 }
 
-/* ── Summary Cards ── */
+//Summary Cards
 async function loadSummary(params) {
     try {
-        const res = await fetch(`${API_BASE}/summary?${params}`, {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        if (!res.ok) throw new Error(res.status);
-        const d = await res.json();
-
-        setCard('pengajuan',  d.pengajuan);
-        setCard('terbayar',   d.terbayar);
-        setCard('pending',    d.pending);
-        setCard('tidaklayak', d.tidak_layak);
-        setCard('diproses',   d.diproses);
-
+        const d = await apiFetch('summary', params);
+        CARD_KEYS.forEach(k => setCard(k, d[API_MAP[k]]));
     } catch (e) {
         console.error('Summary error:', e);
-        ['pengajuan','terbayar','pending','tidaklayak','diproses'].forEach(k => {
-            document.getElementById('val-'+k).textContent = '–';
-        });
+        CARD_KEYS.forEach(k => { $('val-' + k).textContent = '–'; });
     }
 }
 
 function setCard(key, obj) {
     if (!obj) return;
-    document.getElementById('val-'+key).textContent = fmtNum(obj.count);
-    document.getElementById('sub-'+key).textContent = fmtNum(obj.count) + ' kasus';
-    document.getElementById('rp-'+key).textContent  = fmtRp(obj.nominal);
-
+    $('val-'   + key).textContent = fmtNum(obj.count);
+    $('sub-'   + key).textContent = fmtNum(obj.count) + ' kasus';
+    $('rp-'    + key).textContent = fmtRp(obj.nominal);
     const d = parseFloat(obj.delta);
     if (!isNaN(d)) {
-        const el = document.getElementById('delta-'+key);
+        const el = $('delta-' + key);
         el.textContent = (d >= 0 ? '+' : '') + d.toFixed(1) + '%';
         el.className   = 'stat-delta ' + (d >= 0 ? 'up' : 'down');
     }
 }
 
-/* ── Charts ── */
+//Charts
 async function loadChart(params) {
     try {
-        const res = await fetch(`${API_BASE}/chart?${params}`, {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        if (!res.ok) throw new Error(res.status);
-        const d = await res.json();
+        const d = await apiFetch('chart', params);
         renderBarChart(d);
         renderDonut(d.summary);
-    } catch (e) {
-        console.error('Chart error:', e);
-    }
+    } catch (e) { console.error('Chart error:', e); }
 }
 
 function renderBarChart(d) {
-    const ctx = document.getElementById('barChart').getContext('2d');
+    const ctx = $('barChart').getContext('2d');
     if (barChartInst) barChartInst.destroy();
     barChartInst = new Chart(ctx, {
         type: 'bar',
@@ -644,19 +632,10 @@ function renderBarChart(d) {
             ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            responsive: true, maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    position: 'top',
-                    labels: { font: { family: 'Sora', size: 11 }, boxWidth: 10, boxHeight: 10, borderRadius: 4, useBorderRadius: true, padding: 16 }
-                },
-                tooltip: {
-                    backgroundColor: '#0f172a',
-                    titleFont: { family: 'Sora', size: 12, weight: '700' },
-                    bodyFont:  { family: 'DM Mono', size: 11 },
-                    padding: 10, cornerRadius: 8,
-                }
+                legend: { position: 'top', labels: { font: { family: 'Sora', size: 11 }, boxWidth: 10, boxHeight: 10, borderRadius: 4, useBorderRadius: true, padding: 16 } },
+                tooltip: { backgroundColor: '#0f172a', titleFont: { family: 'Sora', size: 12, weight: '700' }, bodyFont: { family: 'DM Mono', size: 11 }, padding: 10, cornerRadius: 8 }
             },
             scales: {
                 x: { stacked: false, grid: { display: false }, ticks: { font: { family: 'DM Mono', size: 10 }, color: '#94a3b8' } },
@@ -669,13 +648,13 @@ function renderBarChart(d) {
 function renderDonut(s) {
     if (!s) return;
     const total = (s.terbayar||0) + (s.pending||0) + (s.tidak_layak||0) + (s.diproses||0);
-    document.getElementById('donut-total').textContent    = fmtNum(total);
-    document.getElementById('leg-terbayar').textContent   = fmtNum(s.terbayar);
-    document.getElementById('leg-pending').textContent    = fmtNum(s.pending);
-    document.getElementById('leg-tidaklayak').textContent = fmtNum(s.tidak_layak);
-    document.getElementById('leg-diproses').textContent   = fmtNum(s.diproses);
+    $('donut-total').textContent    = fmtNum(total);
+    $('leg-terbayar').textContent   = fmtNum(s.terbayar);
+    $('leg-pending').textContent    = fmtNum(s.pending);
+    $('leg-tidaklayak').textContent = fmtNum(s.tidak_layak);
+    $('leg-diproses').textContent   = fmtNum(s.diproses);
 
-    const ctx = document.getElementById('donutChart').getContext('2d');
+    const ctx = $('donutChart').getContext('2d');
     if (donutChartInst) donutChartInst.destroy();
     donutChartInst = new Chart(ctx, {
         type: 'doughnut',
@@ -697,45 +676,30 @@ function renderDonut(s) {
     });
 }
 
-/* ── Table ── */
+//Table
 async function loadTable(params) {
-    document.getElementById('table-body').innerHTML = skeletonRows(6);
+    $('table-body').innerHTML = skeletonRows(6);
     try {
-        const res = await fetch(`${API_BASE}/list?${params}`, {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        if (!res.ok) throw new Error(res.status);
-        const d = await res.json();
+        const d = await apiFetch('list', params);
         allRows = Array.isArray(d) ? d : (d.data || []);
         currentPage = 1;
         filterTable();
     } catch (e) {
         console.error('Table error:', e);
-        document.getElementById('table-body').innerHTML = `
-            <tr><td colspan="8">
-                <div class="empty-state">
-                    <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <p>Gagal memuat data</p>
-                </div>
-            </td></tr>`;
+        $('table-body').innerHTML = emptyState('Gagal memuat data');
     }
 }
 
 function filterTable() {
-    const q      = document.getElementById('search-input').value.toLowerCase();
-    const status = document.getElementById('status-filter').value;
-    const jenis  = document.getElementById('jenis-filter').value;
+    const q      = $('search-input').value.toLowerCase();
+    const status = $('status-filter').value;
+    const jenis  = $('jenis-filter').value;
 
-    filteredRows = allRows.filter(r => {
-        const matchQ = !q
-            || (r.no_sep      || '').toLowerCase().includes(q)
-            || (r.nama_pasien || '').toLowerCase().includes(q);
-        const matchS = !status || (r.status || '') === status;
-        const matchJ = !jenis  || (r.jenis  || '') === jenis;
-        return matchQ && matchS && matchJ;
-    });
+    filteredRows = allRows.filter(r =>
+        (!q      || (r.no_sep||'').toLowerCase().includes(q) || (r.nama_pasien||'').toLowerCase().includes(q)) &&
+        (!status || r.status === status) &&
+        (!jenis  || r.jenis  === jenis)
+    );
     currentPage = 1;
     renderTable();
 }
@@ -746,26 +710,18 @@ function renderTable() {
     const total    = filteredRows.length;
     const pages    = Math.ceil(total / PER_PAGE);
 
-    if (pageRows.length === 0) {
-        document.getElementById('table-body').innerHTML = `
-            <tr><td colspan="8">
-                <div class="empty-state">
-                    <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <p>Tidak ada data ditemukan</p>
-                </div>
-            </td></tr>`;
-        document.getElementById('pag-info').textContent = '0 data';
-        document.getElementById('pag-btns').innerHTML = '';
+    if (!pageRows.length) {
+        $('table-body').innerHTML = emptyState('Tidak ada data ditemukan');
+        $('pag-info').textContent = '0 data';
+        $('pag-btns').innerHTML   = '';
         return;
     }
 
-    document.getElementById('table-body').innerHTML = pageRows.map(r => `
+    $('table-body').innerHTML = pageRows.map(r => `
         <tr>
             <td class="td-sep">${r.no_sep || '–'}</td>
             <td class="td-name">${r.nama_pasien || '–'}</td>
-            <td style="font-size:.76rem;color:#475569;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.diagnosa || ''}">${r.diagnosa || '–'}</td>
+            <td style="font-size:.76rem;color:#475569;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.diagnosa||''}">${r.diagnosa || '–'}</td>
             <td class="td-date">${formatDate(r.tgl_pengajuan)}</td>
             <td><span class="jenis-badge ${r.jenis}">${r.jenis === 'rinap' ? 'Rawat Inap' : 'Rawat Jalan'}</span></td>
             <td>${statusBadge(r.status)}</td>
@@ -776,20 +732,18 @@ function renderTable() {
         </tr>
     `).join('');
 
-    document.getElementById('pag-info').textContent =
-        `Menampilkan ${start+1}–${Math.min(start+PER_PAGE, total)} dari ${total} data`;
+    $('pag-info').textContent = `Menampilkan ${start+1}–${Math.min(start+PER_PAGE, total)} dari ${total} data`;
 
-    let btns = '';
-    btns += `<button class="pag-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+    let btns = `<button class="pag-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
     for (let i = 1; i <= pages; i++) {
-        if (pages > 7 && (i > 2 && i < pages-1 && Math.abs(i-currentPage) > 1)) {
+        if (pages > 7 && i > 2 && i < pages-1 && Math.abs(i-currentPage) > 1) {
             if (i === 3 || i === pages-2) btns += `<button class="pag-btn" disabled>…</button>`;
             continue;
         }
         btns += `<button class="pag-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
     }
     btns += `<button class="pag-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>›</button>`;
-    document.getElementById('pag-btns').innerHTML = btns;
+    $('pag-btns').innerHTML = btns;
 }
 
 function goPage(p) {
@@ -801,63 +755,36 @@ function goPage(p) {
 }
 
 function statusBadge(s) {
-    const map = {
-        terbayar:    ['Terbayar',    '#22c55e'],
-        pending:     ['Pending',     '#f59e0b'],
-        tidak_layak: ['Tidak Layak', '#ef4444'],
-        diproses:    ['Diproses',    '#6366f1'],
-    };
-    const [label, color] = map[s] || ['–', '#94a3b8'];
+    const [label, color] = STATUS_MAP[s] ?? ['–', '#94a3b8'];
     return `<span class="badge ${s||''}"><span class="badge-dot" style="background:${color}"></span>${label}</span>`;
 }
 
 function formatDate(str) {
     if (!str) return '–';
-    try {
-        return new Date(str).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
-    } catch { return str; }
+    try { return new Date(str).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }); }
+    catch { return str; }
 }
 
-function skeletonRows(n) {
-    return Array(n).fill(0).map(() => `
-        <tr>${Array(8).fill(0).map(() =>
-            `<td><span class="skeleton" style="width:${60+Math.random()*60}px;height:14px;display:block;border-radius:4px;"></span></td>`
-        ).join('')}</tr>
-    `).join('');
-}
-
+//Init
 document.addEventListener('DOMContentLoaded', async () => {
-    // Ambil default range dari server (bulan terakhir yang ada data)
     try {
-        const meta = await fetch(`${API_BASE}/meta`, {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        }).then(r => r.json());
-
+        const meta = await apiFetch('meta', '');
         dateFrom = meta.default_from;
         dateTo   = meta.default_to;
-
-        document.getElementById('date-from').value = dateFrom;
-        document.getElementById('date-to').value   = dateTo;
-
+        $('date-from').value = dateFrom;
+        $('date-to').value   = dateTo;
         document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
         currentPeriod = 'custom';
-        document.getElementById('chart-period-label').textContent = `${dateFrom} → ${dateTo}`;
-
-    } catch (e) {
-        // Fallback hardcode kalau meta gagal
+        $('chart-period-label').textContent = `${dateFrom} → ${dateTo}`;
+    } catch {
         dateFrom = '2026-02-01';
         dateTo   = '2026-02-28';
-        document.getElementById('date-from').value = dateFrom;
-        document.getElementById('date-to').value   = dateTo;
+        $('date-from').value = dateFrom;
+        $('date-to').value   = dateTo;
         currentPeriod = 'custom';
     }
-
     loadAll();
-
-        // Refresh data setiap 5 menit otomatis
-    setInterval(() => {
-        loadAll();
-    }, 5 * 60 * 1000);
+    setInterval(loadAll, 5 * 60 * 1000);
 });
 </script>
 @endpush

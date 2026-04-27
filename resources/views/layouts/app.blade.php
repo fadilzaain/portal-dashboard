@@ -300,11 +300,9 @@
 
     {{-- Brand --}}
     <div class="sidebar-brand">
-        <div class="sidebar-brand-icon">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-            </svg>
-        </div>
+        <img src="{{ asset('images/logo-rsud-jombang.png') }}" 
+            alt="Logo RSUD" 
+            style="width:36px; height:36px; border-radius:10px; object-fit:contain; flex-shrink:0;">
         <div>
             <div class="sidebar-brand-name">Portal RSUD</div>
             <div class="sidebar-brand-sub">Sistem Informasi RS</div>
