@@ -10,7 +10,7 @@ class KeuanganController extends Controller
 {
     private $bulanLabel = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
-    /* View */
+   //API View
     public function index()
     {
         $tahun     = request('tahun', now()->year);
@@ -18,7 +18,7 @@ class KeuanganController extends Controller
         return view('portal.keuangan', compact('tahun', 'tahunList'));
     }
 
-    /* API Trend */
+    //API Trend
     public function apiTrend(Request $request)
     {
         $tahun    = $request->tahun ?? now()->year;
@@ -26,7 +26,7 @@ class KeuanganController extends Controller
         $bulanLalu = $bulanIni === 1 ? 12 : $bulanIni - 1;
         $tahunLalu = $bulanIni === 1 ? $tahun - 1 : $tahun;
 
-        // Belanja dari mysql2 (Cheque)
+        //Belanja dari mysql2 (Cheque)
         $targetPerBulan = DB::connection('mysql2')->table('transaksi')
             ->selectRaw('MONTH(tanggal) as bulan, SUM(jumlah) as total')
             ->whereYear('tanggal', $tahun)->where('status', 9)
@@ -41,7 +41,7 @@ class KeuanganController extends Controller
             ->pluck('total', 'bulan')
             ->map(fn($v) => (float)$v);
 
-        // Pendapatan dari mysql3 (Belanja)
+        //Pendapatan dari mysql3 (Belanja)
         $pendapatanPerBulan = DB::connection('mysql3')->table('tr_mutasirekbank')
             ->selectRaw('MONTH(effective_date) as bulan, SUM(credit) as total')
             ->whereYear('effective_date', $tahun)
@@ -75,7 +75,7 @@ class KeuanganController extends Controller
         return response()->json(compact('pendapatan', 'belanja', 'mom'));
     }
 
-    /* Api Harian */
+    //API Harian
     public function apiHarian(Request $request)
     {
         $tahun = $request->tahun ?? now()->year;
@@ -111,7 +111,7 @@ class KeuanganController extends Controller
         ]);
     }
 
-    /* API Unit */
+    //API Unit
     public function apiUnit(Request $request)
     {
         $tahun = $request->tahun ?? now()->year;

@@ -5,13 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Model PelayananPasien
- *
- * Koneksi  : erm_rs
- * Tabel    : sensus_harian  (data rekap harian rawat inap)
- * ──────────────────────────────────────────────────────────────────
- */
 class PelayananPasien extends Model
 {
     protected $connection = 'erm_rs';
@@ -22,9 +15,7 @@ class PelayananPasien extends Model
     // HELPER PRIVATE
     // ══════════════════════════════════════════════════════════════
 
-    /**
-     * Base query sensus_harian dengan filter tanggal
-     */
+    // Base query sensus_harian dengan filter tanggal
     private static function baseQuery(string $dari, string $sampai)
     {
         return DB::connection('erm_rs')
@@ -36,10 +27,9 @@ class PelayananPasien extends Model
     // INDIKATOR MUTU
     // ══════════════════════════════════════════════════════════════
 
-    /**
-     * BOR (Bed Occupancy Rate) — rata-rata dari kolom bor harian
-     * Rumus: AVG(bor) selama periode
-     */
+    // BOR (Bed Occupancy Rate) — rata-rata dari kolom bor harian
+    // Rumus: AVG(bor) selama periode
+  
     public static function hitungBOR(string $dari, string $sampai): float
     {
         $result = self::baseQuery($dari, $sampai)
@@ -49,22 +39,21 @@ class PelayananPasien extends Model
         return round($result->nilai ?? 0, 2);
     }
 
-    /**
-     * LOS (Length of Stay / AVLOS) — rata-rata dari kolom avlos harian
-     * Bisa pakai kolom avlos atau avlos_rumus sesuai kebutuhan
-     */
+    
+    //  LOS (Length of Stay / AVLOS) — rata-rata dari kolom avlos harian
+    //  Bisa pakai kolom avlos atau avlos_rumus sesuai kebutuhan
+
     public static function hitungLOS(string $dari, string $sampai): float
     {
         $result = self::baseQuery($dari, $sampai)
-            ->selectRaw('AVG(avlos) as nilai') // ganti avlos_rumus jika mau pakai rumus
+            ->selectRaw('AVG(avlos) as nilai') // ganti avlos_rumus jika akan pakai rumus
             ->first();
 
         return round($result->nilai ?? 0, 2);
     }
 
-    /**
-     * TOI (Turn Over Interval) — rata-rata dari kolom toi harian
-     */
+    
+    // TOI (Turn Over Interval) — rata-rata dari kolom toi harian
     public static function hitungTOI(string $dari, string $sampai): float
     {
         $result = self::baseQuery($dari, $sampai)
@@ -74,10 +63,9 @@ class PelayananPasien extends Model
         return round($result->nilai ?? 0, 2);
     }
 
-    /**
-     * BTO (Bed Turn Over) — SUM(total_pasien_keluar) / AVG(jumlah_tt)
-     * Dari data: BTO per hari = pasien keluar / TT, lalu diakumulasi
-     */
+    
+    // BTO (Bed Turn Over) — SUM(total_pasien_keluar) / AVG(jumlah_tt)
+    // Dari data: BTO per hari = pasien keluar / TT, lalu diakumulasi
     public static function hitungBTO(string $dari, string $sampai): float
     {
         $result = self::baseQuery($dari, $sampai)
@@ -94,10 +82,6 @@ class PelayananPasien extends Model
     // RINGKASAN UNIT
     // ══════════════════════════════════════════════════════════════
 
-    /**
-     * Ringkasan Rawat Inap
-     * Return: array
-     */
     public static function getRingkasanRanap(string $dari, string $sampai): array
     {
         $result = self::baseQuery($dari, $sampai)
@@ -116,17 +100,14 @@ class PelayananPasien extends Model
             'masih_dirawat'   => (int) round($result->masih_dirawat ?? 0),
         ];
     }
-
-    /**
-     * Ringkasan Rawat Jalan per Poli
-     *     Sesuaikan nama tabel dan kolom di bawah ini
-     * Return: Collection of objects
-     */
+    
+    //  Ringkasan Rawat Jalan per Poli
+    //  Sesuaikan nama tabel dan kolom di bawah ini
+    //  Return: Collection of objects
     public static function getRingkasanRajal(string $dari, string $sampai)
     {
-        // ⚠️  Sesuaikan: nama tabel & kolom rajal di DB erm_rs
         return DB::connection('erm_rs')
-            ->table('kunjungan_rajal')          // ← sesuaikan nama tabel
+            ->table('kunjungan_rajal')          
             ->whereBetween('tanggal', [$dari, $sampai])
             ->selectRaw('
                 nama_poli,
@@ -141,16 +122,11 @@ class PelayananPasien extends Model
             ->get();
     }
 
-    /**
-     * Ringkasan IGD
-     *     Sesuaikan nama tabel dan kolom di bawah ini
-     * Return: array
-     */
+    
     public static function getRingkasanIGD(string $dari, string $sampai): array
     {
-        // ⚠️  Sesuaikan: nama tabel & kolom IGD di DB erm_rs
         $result = DB::connection('erm_rs')
-            ->table('kunjungan_igd')            // ← sesuaikan nama tabel
+            ->table('kunjungan_igd')           
             ->whereBetween('tanggal', [$dari, $sampai])
             ->selectRaw('
                 COUNT(*)                as total,
@@ -174,15 +150,12 @@ class PelayananPasien extends Model
     // DATA CHART
     // ══════════════════════════════════════════════════════════════
 
-    /**
-     * Trend Kunjungan Harian (Ranap, Rajal, IGD)
-     * Untuk Ranap: ambil dari sensus_harian (sisa_pasien = pasien yang dirawat hari itu)
-     * Untuk Rajal & IGD: join atau subquery ke tabel masing-masing
-     * Return: Collection, field: tanggal, ranap, rajal, igd
-     */
+    // Trend Kunjungan Harian (Ranap, Rajal, IGD)
+    // Untuk Ranap: ambil dari sensus_harian (sisa_pasien = pasien yang dirawat hari itu)
+    // Untuk Rajal & IGD: join atau subquery ke tabel masing-masing
+    // Return: Collection, field: tanggal, ranap, rajal, igd
     public static function getTrendHarian(string $dari, string $sampai)
     {
-        // Ranap dari sensus_harian
         $ranap = self::baseQuery($dari, $sampai)
             ->selectRaw("
                 DATE_FORMAT(tanggal, '%d/%m') as tgl,
@@ -193,9 +166,8 @@ class PelayananPasien extends Model
             ->get()
             ->keyBy('tgl');
 
-        // Rajal & IGD dari tabel masing-masing — sesuaikan nama tabel
         $rajal = DB::connection('erm_rs')
-            ->table('kunjungan_rajal')          // ← sesuaikan
+            ->table('kunjungan_rajal')      
             ->whereBetween('tanggal', [$dari, $sampai])
             ->selectRaw("DATE_FORMAT(tanggal, '%d/%m') as tgl, SUM(total_kunjungan) as jumlah")
             ->groupBy('tanggal')
@@ -203,14 +175,13 @@ class PelayananPasien extends Model
             ->keyBy('tgl');
 
         $igd = DB::connection('erm_rs')
-            ->table('kunjungan_igd')            // ← sesuaikan
+            ->table('kunjungan_igd')          
             ->whereBetween('tanggal', [$dari, $sampai])
             ->selectRaw("DATE_FORMAT(tanggal, '%d/%m') as tgl, COUNT(*) as jumlah")
             ->groupBy('tanggal')
             ->get()
             ->keyBy('tgl');
 
-        // Gabungkan berdasarkan tanggal ranap sebagai anchor
         return $ranap->map(function ($row) use ($rajal, $igd) {
             return (object) [
                 'tanggal' => $row->tgl,
@@ -221,11 +192,6 @@ class PelayananPasien extends Model
         })->values();
     }
 
-    /**
-     * Trend BOR Bulanan per tahun
-     * Ambil rata-rata BOR per bulan dari kolom bor di sensus_harian
-     * Return: Collection, field: bulan, bor
-     */
     public static function getTrendBORBulanan(int $tahun)
     {
         $bulanLabel = [
@@ -243,7 +209,6 @@ class PelayananPasien extends Model
             ->get()
             ->keyBy('bulan_angka');
 
-        // Pastikan 12 bulan selalu ada (bulan yang belum ada = 0)
         return collect(range(1, 12))->map(function ($m) use ($data, $bulanLabel) {
             return (object) [
                 'bulan' => $bulanLabel[$m],
@@ -252,31 +217,24 @@ class PelayananPasien extends Model
         });
     }
 
-    /**
-     * Distribusi IGD per Triage
-     * Sesuaikan nama tabel & kolom triage di DB erm_rs
-     * Return: Collection, field: kategori_triage, jumlah
-     */
+    // Distribusi IGD per Triage
+    // Sesuaikan nama tabel & kolom triage di DB erm_rs
+    // Return: Collection, field: kategori_triage, jumlah
     public static function getIGDPerTriage(string $dari, string $sampai)
     {
-        // ⚠️  Sesuaikan nama tabel & kolom
         return DB::connection('erm_rs')
-            ->table('kunjungan_igd')            // ← sesuaikan nama tabel
+            ->table('kunjungan_igd')           
             ->whereBetween('tanggal', [$dari, $sampai])
-            ->selectRaw('kategori_triage, COUNT(*) as jumlah') // ← sesuaikan nama kolom triage
+            ->selectRaw('kategori_triage, COUNT(*) as jumlah') 
             ->groupBy('kategori_triage')
             ->orderByDesc('jumlah')
             ->get();
     }
 
     // ══════════════════════════════════════════════════════════════
-    // DETAIL RANAP (untuk halaman detail)
+    // DETAIL RANAP 
     // ══════════════════════════════════════════════════════════════
 
-    /**
-     * Data detail rawat inap per hari (untuk tabel)
-     * Return: Collection
-     */
     public static function getDataRanap(string $dari, string $sampai)
     {
         return self::baseQuery($dari, $sampai)

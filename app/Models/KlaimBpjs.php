@@ -36,41 +36,38 @@ class KlaimBpjs extends Model
         'terbayar'       => 'float',
     ];
 
-    /* ── Scopes ── */
 
-    /** Filter status terbayar */
+    // Filter status terbayar
     public function scopeTerbayar($query)
     {
         return $query->where('status', 'terbayar');
     }
 
-    /** Filter status pending */
+    // Filter status pending
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    /** Filter status tidak_layak */
+    // Filter status tidak_layak
     public function scopeTidakLayak($query)
     {
         return $query->where('status', 'tidak_layak');
     }
 
-    /** Filter status diproses */
+    // Filter status diproses
     public function scopeDiproses($query)
     {
         return $query->where('status', 'diproses');
     }
 
-    /** Filter berdasarkan rentang tanggal pengajuan */
+    // Filter berdasarkan rentang tanggal pengajuan
     public function scopeDateRange($query, Carbon $from, Carbon $to)
     {
         return $query->whereBetween('tgl_pengajuan', [$from, $to]);
     }
 
-    /* ── Accessors ── */
-
-    /** Label status yang ramah dibaca */
+    // Label status yang ramah dibaca
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
@@ -82,13 +79,11 @@ class KlaimBpjs extends Model
         };
     }
 
-    /** Format nominal ke Rupiah */
     public function getNominalRupiahAttribute(): string
     {
         return 'Rp ' . number_format($this->nominal ?? 0, 0, ',', '.');
     }
 
-    /** Format terbayar ke Rupiah */
     public function getTerbayarRupiahAttribute(): string
     {
         return 'Rp ' . number_format($this->terbayar ?? 0, 0, ',', '.');

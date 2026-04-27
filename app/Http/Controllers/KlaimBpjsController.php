@@ -15,9 +15,7 @@ class KlaimBpjsController extends Controller
         return DB::connection('klaim_bpjs');
     }
 
-    /**
-     * Resolve date range dari request
-     */
+    // Resolve date range dari request
     private function resolveDateRange(Request $request): array
     {
         $now = Carbon::now();
@@ -34,9 +32,7 @@ class KlaimBpjsController extends Controller
         };
     }
 
-    /**
-     * Resolve previous date range (untuk delta %)
-     */
+    // Resolve previous date range (untuk delta %)
     private function resolvePrevDateRange(Request $request): array
     {
         $now = Carbon::now();
@@ -57,14 +53,14 @@ class KlaimBpjsController extends Controller
     }
 
 
-    //  Hitung delta persen
+    //Hitung delta persen
     private function calcDelta(int|float $current, int|float $prev): float
     {
         if ($prev == 0) return $current > 0 ? 100.0 : 0.0;
         return round((($current - $prev) / $prev) * 100, 1);
     }
 
-    // Merge 2 stdClass objects dengan menjumlahkan field numerik
+    //Merge 2 stdClass objects dengan menjumlahkan field numerik
     private function merge(?object $a, ?object $b): object
     {
         $result = [];
@@ -81,8 +77,7 @@ class KlaimBpjsController extends Controller
         return (object) $result;
     }
 
-    //  Merge chart rows dari 2 tabel berdasarkan period_key
-   
+    // Merge chart rows dari 2 tabel berdasarkan period_key
     private function mergeChartRows($rinap, $rjalan): \Illuminate\Support\Collection
     {
         $map = [];
@@ -117,8 +112,7 @@ class KlaimBpjsController extends Controller
         return collect(array_values($map))->map(fn($r) => (object) $r);
     }
 
-    // Fill gap periode tanpa data = 0
-     
+    //Fill gap periode tanpa data = 0
     private function fillGaps($rows, Carbon $from, Carbon $to, string $period, string $groupFormat): \Illuminate\Support\Collection
     {
         $map     = $rows->keyBy('period_key');
@@ -228,7 +222,7 @@ class KlaimBpjsController extends Controller
         ]);
     }
 
-    /* ═════════ BPJS Chart ════════════════ */
+    // BPJS CHART
     public function chart(Request $request): JsonResponse
     {
         [$from, $to] = $this->resolveDateRange($request);
@@ -316,7 +310,7 @@ class KlaimBpjsController extends Controller
         ]);
     }
 
-    /* ═══════════════ BPJS List ═══════════════════════ */
+    // BPJS List
     public function list(Request $request): JsonResponse
     {
         [$from, $to] = $this->resolveDateRange($request);
@@ -353,7 +347,7 @@ class KlaimBpjsController extends Controller
 
         $rows = collect($this->db()->select($listSql, [$from, $to, $from, $to]));
 
-        // Map status
+        //Map status
         $statusLabel = function ($s) {
             $s = (string) $s;
             if (str_starts_with($s, '3')) return 'terbayar';
@@ -363,7 +357,7 @@ class KlaimBpjsController extends Controller
             return 'unknown';
         };
 
-        // Filter opsional
+        //Filter opsional
         if ($request->filled('status')) {
             $filterStatus = $request->status; // terbayar | pending | tidak_layak | diproses
             $rows = $rows->filter(fn($r) => $statusLabel($r->status) === $filterStatus);
