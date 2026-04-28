@@ -10,13 +10,17 @@ use App\Http\Controllers\PelayananPasienController;
 use App\Http\Controllers\SdmController;
 
 // Root redirect
-Route::get('/', function () {
-    if (auth()->check()) {
-        return redirect()->route('dashboard');
-    }
+// Route::get('/', function () {
+//     if (auth()->check()) {
+//         return redirect()->route('dashboard');
+//     }
 
-    return redirect()->route('login');
-})->name('home');
+//     return redirect()->route('login');
+// })->name('home');
+
+Route::get('/' , function(){
+    return redirect()->route('dashboard');
+});
 
 Route::get('/cek-db', function () {
     $status = DB::connection('klaim_bpjs')->select("
