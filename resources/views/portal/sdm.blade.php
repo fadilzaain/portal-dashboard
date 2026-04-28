@@ -327,13 +327,18 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
-//Doughnut Pns v Honorer
+// Doughnut Pns v Honorer
+const totalPns = {{ $totalPns }};
+const totalHonorer = {{ $totalHonorer }};
+const unitLabels = {!! json_encode($unitLabels) !!};
+const unitData = {!! json_encode($unitData) !!};
+
 new Chart(document.getElementById('statusDoughnut'), {
     type: 'doughnut',
     data: {
         labels: ['PNS', 'Honorer'],
         datasets: [{
-            data: [{{ $totalPns }}, {{ $totalHonorer }}],
+            data: [totalPns, totalHonorer],
             backgroundColor: ['#3b82f6', '#f59e0b'],
             borderColor: '#ffffff',
             borderWidth: 3,
@@ -361,10 +366,10 @@ new Chart(document.getElementById('statusDoughnut'), {
 new Chart(document.getElementById('unitBarChart'), {
     type: 'bar',
     data: {
-        labels: {!! json_encode($unitLabels) !!},
+        labels: unitLabels,
         datasets: [{
             label: 'Jumlah Pegawai Aktif',
-            data: {!! json_encode($unitData) !!},
+            data: unitData,
             backgroundColor: [
                 '#3b82f6','#14b8a6','#8b5cf6','#f59e0b','#f43f5e',
                 '#06b6d4','#f97316','#10b981','#a855f7','#ec4899',

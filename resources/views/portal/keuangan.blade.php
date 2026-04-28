@@ -960,6 +960,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const totalPTarget = pRows.reduce((a,r) => a + Number(r.target||0), 0);
                 const totalBTarget = bRows.reduce((a,r) => a + Number(r.target||0), 0);
                 const pPct = pct(totalPReal, totalPTarget), bPct = pct(totalBReal, totalBTarget), avg = (pPct + bPct) / 2;
+                
                 setText('kpiPendapatan', idrShort(totalPReal));
                 setText('kpiBelanja',    idrShort(totalBReal));
                 setText('kpiSurplus',    idrShort(totalPReal - totalBReal));
