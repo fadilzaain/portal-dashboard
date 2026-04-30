@@ -14,7 +14,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        
         :root {
             --sidebar-w: 260px;
             --sidebar-bg: #0a0f1e;
@@ -38,7 +37,29 @@
         html, body { height: 100%; }
         body { font-family: var(--font); background: var(--page-bg); color: #1e293b; }
 
-        /* Sidebar */
+        /* ── Hover Zone (trigger area di tepi kiri) ── */
+        #sidebar-hover-zone {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 16px;
+            z-index: 51;
+        }
+
+        /* ── Peek indicator (garis teal tipis di tepi kiri) ── */
+        #sidebar-peek {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 4px;
+            background: var(--accent);
+            opacity: .45;
+            border-radius: 0 3px 3px 0;
+            z-index: 52;
+            pointer-events: none;
+            transition: opacity .2s ease;
+        }
+        /* Peek hilang saat sidebar open */
+
+        /* ── Sidebar ── */
         #sidebar {
             position: fixed;
             top: 0; left: 0; bottom: 0;
@@ -47,8 +68,12 @@
             display: flex;
             flex-direction: column;
             z-index: 50;
-            transition: transform .3s cubic-bezier(.4,0,.2,1);
             border-right: 1px solid var(--sidebar-border);
+
+            /* Tersembunyi by default */
+            transform: translateX(calc(-1 * var(--sidebar-w)));
+            transition: transform .28s cubic-bezier(.4,0,.2,1),
+                        box-shadow .28s ease;
         }
 
         /* Subtle noise texture overlay */
@@ -61,7 +86,19 @@
             opacity: .4;
         }
 
-        /*  Brand dan  Logo  */
+        /* Sidebar terbuka via JS class pada body */
+        body.sidebar-open #sidebar {
+            transform: translateX(0);
+            box-shadow: 8px 0 40px rgba(0,0,0,.3);
+        }
+        body.sidebar-open #main-wrap {
+            margin-left: var(--sidebar-w);
+        }
+        body.sidebar-open #sidebar-peek {
+            opacity: 0;
+        }
+
+        /* Brand dan Logo */
         .sidebar-brand {
             padding: 1.5rem 1.25rem 1.25rem;
             border-bottom: 1px solid var(--sidebar-border);
@@ -117,6 +154,7 @@
             position: relative;
             transition: all .18s ease;
             border: 1px solid transparent;
+            white-space: nowrap;
         }
         .nav-item:hover {
             background: var(--sidebar-hover);
@@ -194,12 +232,18 @@
         }
         .logout-btn:hover { color: #f87171; }
 
-        /* Main Content */
+        /* ── Main Content — push saat sidebar hover ── */
         #main-wrap {
-            margin-left: var(--sidebar-w);
+            margin-left: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: margin-left .28s cubic-bezier(.4,0,.2,1);
+        }
+
+        /* Saat hover zone aktif, dorong main-wrap ke kanan */
+        #sidebar-hover-zone:hover ~ #main-wrap {
+            margin-left: var(--sidebar-w);
         }
 
         /* Top Bar */
@@ -257,31 +301,6 @@
             flex: 1;
         }
 
-        /* Mobile Toggle */
-        #sidebar-toggle {
-            display: none;
-            position: fixed;
-            bottom: 1.5rem; right: 1.5rem;
-            width: 48px; height: 48px;
-            background: var(--accent);
-            border-radius: 14px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            z-index: 100;
-            box-shadow: 0 4px 20px var(--accent-glow);
-            align-items: center; justify-content: center;
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            #sidebar { transform: translateX(-100%); }
-            #sidebar.open { transform: translateX(0); }
-            #main-wrap { margin-left: 0; }
-            #sidebar-toggle { display: flex; }
-            #page-content { padding: 1.25rem; }
-        }
-
         /* Page Transition */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(16px); }
@@ -295,102 +314,107 @@
 </head>
 <body>
 
-{{-- ═══════════════ Sidebar ═══════════════ --}}
-<aside id="sidebar">
+{{-- ═══════════════ Hover Zone + Sidebar ═══════════════ --}}
+<div id="sidebar-hover-zone">
+    <aside id="sidebar">
 
-    {{-- Brand --}}
-    <div class="sidebar-brand">
-        <img src="{{ asset('images/logo-rsud-jombang.png') }}" 
-            alt="Logo RSUD" 
-            style="width:36px; height:36px; border-radius:10px; object-fit:contain; flex-shrink:0;">
-        <div>
-            <div class="sidebar-brand-name">Portal RSUD</div>
-            <div class="sidebar-brand-sub">Sistem Informasi RS</div>
-        </div>
-    </div>
-
-    {{-- Nav --}}
-    <nav style="flex:1;overflow-y:auto;padding:.75rem 0;">
-
-        <div class="nav-label">Menu Utama</div>
-
-        <a href="{{ route('dashboard') }}"
-           class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-            </svg>
-            Beranda Portal
-        </a>
-
-        <div class="nav-label" style="margin-top:.5rem">Dashboard</div>
-
-        <a href="{{ route('portal.pelayananpasien') }}"
-           class="nav-item {{ request()->routeIs('portal.pelayananpasien') ? 'active' : '' }}">
-            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-            </svg>
-            Pelayanan Pasien
-            <span class="nav-badge">↗</span>
-        </a>
-
-        <a href="{{ route('portal.keuangan') }}"
-            class="nav-item {{ request()->routeIs('portal.keuangan') ? 'active' : '' }}">
-            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Keuangan
-            <span class="nav-badge">↗</span>
-        </a>
-
-        <a href="{{ route('sdm.portal.sdm') }}" class="nav-item {{ request()->routeIs('sdm.*') ? 'active' : '' }}">
-            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            SDM
-            <span class="nav-badge">↗</span>
-        </a>
-
-        <a href="#" class="nav-item {{ request()->routeIs('mutu.*') ? 'active' : '' }}">
-            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-            </svg>
-            Indikator Mutu
-            <span class="nav-badge">↗</span>
-        </a>
-
-        <a href="{{ route('portal.klaimbpjs') }}" class="nav-item {{ request()->routeIs('portal.klaimbpjs') ? 'active' : '' }}">
-            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-            Klaim BPJS
-            <span class="nav-badge">↗</span>
-        </a>
-
-    </nav>
-
-    {{-- Footer user --}}
-    <div class="sidebar-footer">
-        <div class="user-card">
-            <div class="user-avatar">
-                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
+        {{-- Brand --}}
+        <div class="sidebar-brand">
+            <img src="{{ asset('images/logo-rsud-jombang.png') }}"
+                alt="Logo RSUD"
+                style="width:36px; height:36px; border-radius:10px; object-fit:contain; flex-shrink:0;">
+            <div>
+                <div class="sidebar-brand-name">DASH - i</div>
+                <div class="sidebar-brand-sub">Dashboard Integrasi RSUD Jombang</div>
             </div>
-            <div style="flex:1;min-width:0">
-                <div class="user-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                    {{ auth()->user()->name ?? 'User' }}
+        </div>
+
+        {{-- Nav --}}
+        <nav style="flex:1;overflow-y:auto;padding:.75rem 0;">
+
+            <div class="nav-label">Menu Utama</div>
+
+            <a href="{{ route('dashboard') }}"
+               class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Beranda Portal
+            </a>
+
+            <div class="nav-label" style="margin-top:.5rem">Dashboard</div>
+
+            <a href="{{ route('portal.pelayananpasien') }}"
+               class="nav-item {{ request()->routeIs('portal.pelayananpasien') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                Pelayanan Pasien
+                <span class="nav-badge">↗</span>
+            </a>
+
+            <a href="{{ route('portal.keuangan') }}"
+                class="nav-item {{ request()->routeIs('portal.keuangan') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Keuangan
+                <span class="nav-badge">↗</span>
+            </a>
+
+            <a href="{{ route('sdm.portal.sdm') }}" class="nav-item {{ request()->routeIs('sdm.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                SDM
+                <span class="nav-badge">↗</span>
+            </a>
+
+            <a href="{{ route('portal.indikatormutu') }}" class="nav-item {{ request()->routeIs('sdm.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                Indikator Mutu
+                <span class="nav-badge">↗</span>
+            </a>
+
+            <a href="{{ route('portal.klaimbpjs') }}" class="nav-item {{ request()->routeIs('portal.klaimbpjs') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                Klaim BPJS
+                <span class="nav-badge">↗</span>
+            </a>
+
+        </nav>
+
+        {{-- Footer user --}}
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">
+                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
                 </div>
-                <div class="user-role">{{ auth()->user()->email ?? '' }}</div>
+                <div style="flex:1;min-width:0">
+                    <div class="user-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                        {{ auth()->user()->name ?? 'User' }}
+                    </div>
+                    <div class="user-role">{{ auth()->user()->email ?? '' }}</div>
+                </div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="logout-btn" title="Logout">
+                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                    </button>
+                </form>
             </div>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="logout-btn" title="Logout">
-                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                    </svg>
-                </button>
-            </form>
         </div>
-    </div>
-</aside>
+    </aside>
+</div>
+
+{{-- Garis peek teal di tepi kiri --}}
+<div id="sidebar-peek"></div>
 
 {{-- ═══════════════ Main ═══════════════ --}}
 <div id="main-wrap">
@@ -420,36 +444,36 @@
 
 </div>
 
-{{-- Mobile toggle --}}
-<button id="sidebar-toggle" onclick="toggleSidebar()">
-    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-    </svg>
-</button>
-
-{{-- Overlay mobile --}}
-<div id="sidebar-overlay"
-     onclick="toggleSidebar()"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;backdrop-filter:blur(2px)">
-</div>
-
 <script>
-    // Jams
+    // Jam
     function updateClock() {
-        const now = new Date();
-        const opts = { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', hour12: false };
-        document.getElementById('clock').textContent = now.toLocaleDateString('id-ID', opts);
+    const now = new Date();
+    const tanggal = now.toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short' });
+    const waktu   = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false });
+    document.getElementById('clock').textContent = `${tanggal} · ${waktu}`;
     }
     updateClock();
     setInterval(updateClock, 1000);
 
-    // Mobile sidebar toggle
-    function toggleSidebar() {
-        const sb = document.getElementById('sidebar');
-        const ov = document.getElementById('sidebar-overlay');
-        const isOpen = sb.classList.toggle('open');
-        ov.style.display = isOpen ? 'block' : 'none';
+    // Sidebar push 
+    const zone    = document.getElementById('sidebar-hover-zone');
+    const sidebar = document.getElementById('sidebar');
+
+    function openSidebar()  { document.body.classList.add('sidebar-open'); }
+    function closeSidebar() { document.body.classList.remove('sidebar-open'); }
+
+    zone.addEventListener('mouseenter', openSidebar);
+    sidebar.addEventListener('mouseenter', openSidebar);
+
+    // Tutup hanya jika kursor keluar dari keduanya
+    function handleLeave(e) {
+        const to = e.relatedTarget;
+        if (!zone.contains(to) && !sidebar.contains(to) && to !== zone && to !== sidebar) {
+            closeSidebar();
+        }
     }
+    zone.addEventListener('mouseleave', handleLeave);
+    sidebar.addEventListener('mouseleave', handleLeave);
 </script>
 
 @stack('scripts')

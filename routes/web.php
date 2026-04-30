@@ -8,6 +8,7 @@ use App\Http\Controllers\KlaimBpjsController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\PelayananPasienController;
 use App\Http\Controllers\SdmController;
+use App\Http\Controllers\IndikatorMutuController;
 
 // Root redirect
 Route::get('/', function () {
@@ -15,7 +16,6 @@ Route::get('/', function () {
         ? redirect()->route('dashboard')
         : redirect()->route('login');
 });
-
 
 
 Route::get('/cek-db', function () {
@@ -85,25 +85,24 @@ Route::middleware('auth')->group(function () {
     Route::prefix('sdm')->name('sdm.')->middleware(['auth'])->group(function () {
         Route::get('/portal/sdm', [SdmController::class, 'index'])->name('portal.sdm');
     });
-    // ── Dashboard Indikator Mutu (nanti) ──────────────────
-    // Route::get('/mutu', [MutuController::class, 'index'])->name('mutu.index');
+   // ── Dashboard Indikator Mutu ──────────────────
+    Route::get('/portal/indikator-mutu', [IndikatorMutuController::class, 'index'])
+        ->name('portal.indikatormutu');
+
+    Route::get('/portal/indikator-mutu/data', [IndikatorMutuController::class, 'getData'])
+        ->name('portal.indikatormutu.data');
+ 
 
     // Dashboard Klaim BPJS
-    Route::prefix('bpjs')->group(function () {
-        Route::get('meta',    [KlaimBpjsController::class, 'meta']);   // ← tambah ini
-        Route::get('summary', [KlaimBpjsController::class, 'summary']);
-        Route::get('chart',   [KlaimBpjsController::class, 'chart']);
-        Route::get('list',    [KlaimBpjsController::class, 'list']);
+    Route::prefix('bpjs')->name('bpjs.')->group(function () {
+        Route::get('/meta',        [KlaimBpjsController::class, 'meta']      )->name('meta');
+        Route::get('/summary',     [KlaimBpjsController::class, 'summary']   )->name('summary');
+        Route::get('/chart-jenis', [KlaimBpjsController::class, 'chartJenis'])->name('chart-jenis');
+        Route::get('/list',        [KlaimBpjsController::class, 'list']      )->name('list');
     });
-    Route::get('/bpjs', function () {
-        return view('portal.klaimbpjs');
-    })->name('portal.klaimbpjs');
-
-    Route::prefix('bpjs')->group(function () {
-        Route::get('summary', [KlaimBpjsController::class, 'summary']);
-        Route::get('chart',   [KlaimBpjsController::class, 'chart']);
-        Route::get('list',    [KlaimBpjsController::class, 'list']);
-    });
+    Route::get('/bpjs', function() { 
+    return view('portal.klaimbpjs'); 
+})->name('portal.klaimbpjs')->middleware('auth');
 });
 
 // API verify token (untuk web eksternal)

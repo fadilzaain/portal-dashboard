@@ -369,21 +369,26 @@
         </a>
 
         {{-- 4. Indikator Mutu --}}
-        <a href="#" class="app-card theme-rose coming-soon">
+        <a href="{{ route('portal.indikatormutu') }}" class="app-card theme-rose">
             <div class="card-top">
                 <div class="app-icon icon-rose">
                     <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
                 </div>
-                <span class="coming-badge">Coming Soon</span>
+                <span class="card-type-badge badge-redirect">DASHBOARD</span>
             </div>
             <div>
                 <div class="app-name">Indikator Mutu</div>
                 <div class="app-desc">Monitoring indikator mutu dan keselamatan pasien rumah sakit.</div>
             </div>
+            <!-- :#e11d48 -->
             <div class="card-footer">
-                <span class="card-open-btn" style="color:#e11d48">Segera Hadir</span>
+                <span class="card-open-btn" style="color:#e11d48 ">
+                    Buka Dashboard
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </span>
+                <span class="card-status-dot"></span>
             </div>
         </a>
 
