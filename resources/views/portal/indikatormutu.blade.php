@@ -450,7 +450,7 @@
                         <tr id="thead-row">
                             <th style="min-width:260px; text-align:left;">Indikator</th>
                             <th>Target</th>
-                            {{-- Kolom bulan dirender via JS --}}
+                            {{-- kolom bulan bisa render via js --}}
                         </tr>
                     </thead>
                     <tbody id="tbody-indikator">
@@ -554,7 +554,7 @@ function renderTabel(tabelData, filters) {
         return;
     }
 
-    // Build header kolom bulan dari data indikator pertama
+    // header kolom bulan dari data indikator pertama
     const firstBulanData = tabelData[0].bulan_data ?? [];
     const theadRow = document.getElementById('thead-row');
     theadRow.innerHTML = `<th style="min-width:260px; text-align:left;">Indikator</th><th>Target</th>`;
@@ -564,7 +564,7 @@ function renderTabel(tabelData, filters) {
     });
     theadRow.innerHTML += `<th>Rata-rata</th><th>Status</th>`;
 
-    // Sub-header (Num / Den / Capaian) per bulan
+    // Sub-header (Num, Denum, Capaian) per bulan
     let subheadHtml = `<tr style="background:var(--navy-800);">
         <th style="text-align:left; font-size:.65rem; color:var(--text-muted);"></th>
         <th></th>`;
@@ -693,8 +693,8 @@ function renderGrafik(grafikData) {
         },
     });
 
-    // Garis target per dataset (annotation manual via afterDraw)
-    // Bisa ditambahkan chartjs-plugin-annotation jika perlu
+    // Garis target per dataset (afterDraw)
+    // Tambah chartjs-plugin-annotation jika perlu
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────

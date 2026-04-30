@@ -30,7 +30,6 @@ return new class extends Migration
             $table->tinyInteger('bulan')->comment('1-12');
             $table->decimal('numerator', 10, 2)->comment('Pembilang');
             $table->decimal('denominator', 10, 2)->comment('Penyebut');
-            $table->decimal('capaian', 8, 2)->virtualAs('ROUND((numerator / NULLIF(denominator, 0)) * 100, 2)')->comment('Capaian otomatis (%)');
             $table->text('keterangan')->nullable();
             $table->timestamps();
 
