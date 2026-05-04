@@ -1,11 +1,8 @@
-{{-- resources/views/portal/pelayanan-pasien.blade.php --}}
-@extends('layouts.app') {{-- Sesuaikan dengan layout utama dashboard Anda --}}
-
+@extends('layouts.app')
 @section('title', 'Portal Pelayanan Pasien')
 
 @push('styles')
 <style>
-  /* Design Token */
   :root {
     --pp-bg:          #0d1117;
     --pp-surface:     #161b22;
@@ -13,7 +10,6 @@
     --pp-border:      rgba(48,54,61,0.8);
     --pp-text:        #e6edf3;
     --pp-text-muted:  #7d8590;
-    --pp-text-dim:    #484f58;
     --pp-accent:      #2563eb;
     --pp-accent-glow: rgba(37,99,235,0.15);
     --pp-green:       #22c55e;
@@ -25,427 +21,230 @@
     --pp-mono:        'JetBrains Mono', monospace;
   }
 
+  * { box-sizing: border-box; }
   .pp-wrap { font-family: var(--pp-font); color: var(--pp-text); }
 
-  /* Header */
+  /* ── Header ─────────────────────────────────────────────────── */
   .pp-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
   }
-  .pp-header-left h1 {
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.3px;
-    margin: 0;
-  }
-  .pp-header-left p {
-    font-size: 13px;
-    color: var(--pp-text-muted);
-    margin: 4px 0 0;
-  }
+  .pp-header h1 { font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -0.3px; color: #060e1e; }
+
   .pp-badge-live {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(34,197,94,0.12);
-    border: 1px solid rgba(34,197,94,0.3);
-    color: var(--pp-green);
-    font-size: 12px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-weight: 500;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
+    color: var(--pp-green); font-size: 11px; padding: 3px 10px;
+    border-radius: 20px; font-weight: 600;
   }
   .pp-badge-live::before {
-    content: '';
-    width: 6px; height: 6px;
-    background: var(--pp-green);
-    border-radius: 50%;
-    animation: pulse-dot 1.5s ease-in-out infinite;
+    content:''; width:6px; height:6px; background:var(--pp-green);
+    border-radius:50%; animation: pulse-dot 1.5s ease-in-out infinite;
   }
-  @keyframes pulse-dot {
-    0%,100% { opacity:1; }
-    50% { opacity:0.3; }
-  }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  /* Filter Bar */
+  /* ── Filter Bar ─────────────────────────────────────────────── */
   .pp-filter-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    background: var(--pp-surface);
-    border: 1px solid var(--pp-border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--pp-surface); border: 1px solid var(--pp-border);
+    border-radius: 10px; padding: 10px 16px; margin-bottom: 20px;
   }
   .pp-filter-bar label { font-size: 12px; color: var(--pp-text-muted); font-weight: 500; }
   .pp-filter-bar input[type="date"],
   .pp-filter-bar select {
-    background: var(--pp-surface2);
-    border: 1px solid var(--pp-border);
-    border-radius: 8px;
-    color: var(--pp-text);
-    font-size: 13px;
-    padding: 7px 12px;
-    outline: none;
-    font-family: var(--pp-font);
+    background: var(--pp-surface2); border: 1px solid var(--pp-border);
+    border-radius: 7px; color: var(--pp-text); font-size: 13px;
+    padding: 6px 11px; outline: none; font-family: var(--pp-font);
   }
   .pp-filter-bar input[type="date"]:focus,
-  .pp-filter-bar select:focus {
-    border-color: var(--pp-accent);
-    box-shadow: 0 0 0 3px var(--pp-accent-glow);
-  }
+  .pp-filter-bar select:focus { border-color: var(--pp-accent); box-shadow: 0 0 0 3px var(--pp-accent-glow); }
   .pp-btn {
-    background: var(--pp-accent);
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 8px 18px;
-    cursor: pointer;
-    font-family: var(--pp-font);
-    transition: opacity .15s;
+    background: var(--pp-accent); border: none; border-radius: 7px;
+    color: #fff; font-size: 13px; font-weight: 600; padding: 7px 18px;
+    cursor: pointer; font-family: var(--pp-font); transition: opacity .15s;
   }
-  .pp-btn:hover { opacity: .85; }
+  .pp-btn:hover { opacity:.85; }
   .pp-btn-ghost {
-    background: transparent;
-    border: 1px solid var(--pp-border);
-    color: var(--pp-text-muted);
+    background: transparent; border: 1px solid var(--pp-border);
+    color: var(--pp-text-muted); border-radius: 7px; font-size: 13px;
+    padding: 7px 14px; cursor: pointer; font-family: var(--pp-font); transition: all .15s;
+    text-decoration: none; display: inline-flex; align-items: center;
   }
-  .pp-btn-ghost:hover { background: var(--pp-surface2); }
+  .pp-btn-ghost:hover { background: var(--pp-surface2); color: var(--pp-text); }
 
-  /* Indikator Mutu Cards */
-  .pp-indikator-grid {
+  /* ── Top 4 Cards ─────────────────────────────────────────────── */
+  .pp-top-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 14px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
-  @media (max-width: 1100px) { .pp-indikator-grid { grid-template-columns: repeat(2,1fr); } }
-  @media (max-width: 600px)  { .pp-indikator-grid { grid-template-columns: 1fr; } }
+  @media(max-width:1100px){ .pp-top-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:600px) { .pp-top-grid{ grid-template-columns:1fr; } }
 
-  .pp-indikator-card {
+  .pp-top-card {
     background: var(--pp-surface);
     border: 1px solid var(--pp-border);
     border-radius: 14px;
-    padding: 20px;
+    padding: 20px 20px 16px;
     position: relative;
     overflow: hidden;
-    transition: border-color .2s, box-shadow .2s;
+    transition: border-color .2s, transform .2s;
   }
-  .pp-indikator-card:hover {
-    border-color: rgba(37,99,235,0.5);
-    box-shadow: 0 0 0 1px rgba(37,99,235,0.1), 0 4px 24px rgba(0,0,0,0.3);
-  }
-  .pp-indikator-card .glow-bar {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    border-radius: 14px 14px 0 0;
-  }
-  .pp-indikator-card .ic-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--pp-text-muted);
-    margin-bottom: 8px;
-  }
-  .pp-indikator-card .ic-value {
-    font-size: 36px;
-    font-weight: 700;
-    letter-spacing: -1px;
-    line-height: 1;
-    font-family: var(--pp-mono);
-  }
-  .pp-indikator-card .ic-unit {
-    font-size: 14px;
-    font-weight: 400;
-    color: var(--pp-text-muted);
-    margin-left: 4px;
-  }
-  .pp-indikator-card .ic-standar {
-    font-size: 11px;
-    color: var(--pp-text-muted);
-    margin-top: 10px;
-  }
-  .pp-indikator-card .ic-progress {
-    margin-top: 10px;
-    height: 4px;
-    background: var(--pp-surface2);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .pp-indikator-card .ic-progress-bar {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 1s ease;
-  }
-  .pp-indikator-card .ic-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    font-weight: 500;
-    margin-top: 8px;
-    padding: 3px 8px;
-    border-radius: 6px;
-  }
-  .status-baik    { background: rgba(34,197,94,0.12); color: var(--pp-green); }
-  .status-waspada { background: rgba(245,158,11,0.12); color: var(--pp-yellow); }
-  .status-buruk   { background: rgba(239,68,68,0.12);  color: var(--pp-red); }
+  .pp-top-card:hover { border-color: rgba(37,99,235,0.4); transform: translateY(-1px); }
 
-  /* Unit Cards (ranap-rajal-IGD) */
-  .pp-unit-grid {
+  .pp-top-card .tc-header {
+    display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;
+  }
+  .pp-top-card .tc-label {
+    font-size: 12px; font-weight: 600; color: var(--pp-text-muted);
+    letter-spacing: 0.3px;
+  }
+  .pp-top-card .tc-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .pp-top-card .tc-value {
+    font-size: 38px; font-weight: 700; letter-spacing: -1.5px;
+    line-height: 1; font-family: var(--pp-mono); margin-bottom: 4px;
+  }
+  .pp-top-card .tc-unit {
+    font-size: 16px; font-weight: 500; margin-left: 3px; opacity: .7;
+  }
+  .pp-top-card .tc-standar {
+    font-size: 11px; color: var(--pp-text-muted); margin-bottom: 10px;
+  }
+  .pp-top-card .tc-progress {
+    height: 4px; background: rgba(255,255,255,.07); border-radius: 4px; overflow: hidden; margin-bottom: 8px;
+  }
+  .pp-top-card .tc-progress-fill { height: 100%; border-radius: 4px; transition: width 1.2s ease; }
+  .pp-top-card .tc-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
+  }
+  .badge-ideal { background: rgba(34,197,94,0.12);  color: #22c55e; }
+  .badge-warn  { background: rgba(245,158,11,0.12); color: #f59e0b; }
+  .badge-over  { background: rgba(239,68,68,0.12);  color: #ef4444; }
+
+  /* card kunjungan hari ini */
+  .pp-top-card .tc-delta {
+    font-size: 12px; font-weight: 500; margin-top: 6px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .delta-up   { color: #22c55e; }
+  .delta-down { color: #ef4444; }
+
+  /* ── Sumber badge ──────────────────────────────────────────── */
+  .src-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.4px;
+    padding: 2px 7px; border-radius: 20px; text-transform: uppercase;
+  }
+  .src-api   { background:rgba(34,197,94,0.12); color:#22c55e; border:1px solid rgba(34,197,94,0.2); }
+  .src-dummy { background:rgba(245,158,11,0.12);color:#f59e0b; border:1px solid rgba(245,158,11,0.2); }
+
+  /* ── Chart Row 1: Tren + BOR ─────────────────────────────────── */
+  .pp-chart-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 3fr 2fr;
     gap: 14px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
-  @media (max-width: 900px)  { .pp-unit-grid { grid-template-columns: 1fr; } }
+  @media(max-width:900px){ .pp-chart-row{ grid-template-columns:1fr; } }
 
-  .pp-unit-card {
-    background: var(--pp-surface);
-    border: 1px solid var(--pp-border);
-    border-radius: 14px;
-    padding: 20px;
-  }
-  .pp-unit-card .uc-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .pp-unit-card .uc-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--pp-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-  }
-  .pp-unit-card .uc-badge {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-weight: 500;
-  }
-  .pp-unit-card .uc-main-value {
-    font-size: 42px;
-    font-weight: 700;
-    letter-spacing: -1.5px;
-    line-height: 1;
-    font-family: var(--pp-mono);
-    margin-bottom: 4px;
-  }
-  .pp-unit-card .uc-main-label {
-    font-size: 12px;
-    color: var(--pp-text-muted);
-    margin-bottom: 16px;
-  }
-  .pp-unit-card .uc-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding-top: 14px;
-    border-top: 1px solid var(--pp-border);
-  }
-  .pp-unit-card .uc-stat-item .uc-stat-val {
-    font-size: 20px;
-    font-weight: 600;
-    font-family: var(--pp-mono);
-  }
-  .pp-unit-card .uc-stat-item .uc-stat-lbl {
-    font-size: 11px;
-    color: var(--pp-text-muted);
-    margin-top: 2px;
-  }
-
-  /* Chart Session */
-  .pp-chart-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 14px;
-    margin-bottom: 24px;
-  }
-  @media (max-width: 900px) { .pp-chart-grid { grid-template-columns: 1fr; } }
-
-  .pp-chart-grid-3 {
+  /* ── Chart Row 2: Poli + Triage + Tabel ─────────────────────── */
+  .pp-chart-row3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 14px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
-  @media (max-width: 1100px) { .pp-chart-grid-3 { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 700px)  { .pp-chart-grid-3 { grid-template-columns: 1fr; } }
+  @media(max-width:1100px){ .pp-chart-row3{ grid-template-columns:1fr 1fr; } }
+  @media(max-width:700px) { .pp-chart-row3{ grid-template-columns:1fr; } }
 
-  /* Card Canvas */
-  .pp-chart-card .chart-container {
-    position: relative;
-    height: 240px;   
-    width: 100%;
+  /* ── Chart Row 3: AVLOS + TOI (dari API) ──────────────────────── */
+  .pp-chart-row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
   }
-    .pp-chart-card .chart-container-sm {
-    position: relative;
-    height: 200px;
-    width: 100%;
-  }
-  .pp-chart-card {
-    background: var(--pp-surface);
-    border: 1px solid var(--pp-border);
-    border-radius: 14px;
-    padding: 20px;
-  }
-  .pp-chart-card .cc-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .pp-chart-card .cc-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--pp-text);
-  }
-  .pp-chart-card .cc-subtitle {
-    font-size: 11px;
-    color: var(--pp-text-muted);
-    margin-top: 2px;
-  }
-  /* Wrapper */
-  .chart-canvas-wrap {
-    position: relative;
-    height: 240px;
-    width: 100%;
-  }
-  .chart-canvas-wrap-sm {
-    position: relative;
-    height: 210px;
-    width: 100%;
-  }
-  canvas {
-    max-height: 100% !important;
-  }
+  @media(max-width:900px){ .pp-chart-row2{ grid-template-columns:1fr; } }
 
-  /* Tabel Poli */
-  .pp-table-wrap { overflow-x: auto; }
-  .pp-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
+  /* ── Card Chart ─────────────────────────────────────────────── */
+  .pp-card {
+    background: var(--pp-surface); border: 1px solid var(--pp-border);
+    border-radius: 14px; padding: 18px 20px;
   }
-  .pp-table th {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--pp-text-muted);
-    padding: 8px 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--pp-border);
+  .pp-card-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 14px;
   }
-  .pp-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(48,54,61,0.5);
-    color: var(--pp-text);
-    vertical-align: middle;
-  }
-  .pp-table tr:last-child td { border-bottom: none; }
-  .pp-table tr:hover td { background: var(--pp-surface2); }
-  .pp-poli-bar-wrap { display:flex; align-items:center; gap:8px; }
-  .pp-poli-bar {
-    flex: 1;
-    height: 6px;
-    background: var(--pp-surface2);
-    border-radius: 6px;
-    overflow: hidden;
-    max-width: 100px;
-  }
-  .pp-poli-bar-fill {
-    height: 100%;
-    background: var(--pp-accent);
-    border-radius: 6px;
-    transition: width 1s ease;
-  }
+  .pp-card-title   { font-size: 14px; font-weight: 600; color: var(--pp-text); }
+  .pp-card-subtitle{ font-size: 11px; color: var(--pp-text-muted); margin-top: 2px; }
 
-  /* Section tittle */
-  .pp-section-title {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--pp-text-muted);
-    margin: 0 0 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .pp-section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--pp-border);
-  }
+  .chart-wrap    { position: relative; height: 240px; width: 100%; }
+  .chart-wrap-sm { position: relative; height: 210px; width: 100%; }
+  canvas { max-height: 100% !important; }
 
-  /* Load Skeleton */
-  .pp-skeleton {
-    background: linear-gradient(90deg, var(--pp-surface) 25%, var(--pp-surface2) 50%, var(--pp-surface) 75%);
-    background-size: 200% 100%;
-    animation: skeleton-shimmer 1.5s infinite;
-    border-radius: 6px;
+  /* ── Tabel Rawat Jalan ─────────────────────────────────────── */
+  .pp-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .pp-tbl th {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--pp-text-muted);
+    padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--pp-border);
   }
-  @keyframes skeleton-shimmer { to { background-position: -200% 0; } }
+  .pp-tbl td { padding: 8px 10px; border-bottom: 1px solid rgba(48,54,61,0.4); color: var(--pp-text); vertical-align: middle; }
+  .pp-tbl tr:last-child td { border-bottom: none; }
+  .pp-tbl tr:hover td { background: var(--pp-surface2); }
+  .pp-bar-wrap { display: flex; align-items: center; gap: 6px; }
+  .pp-bar { flex:1; height:5px; background:rgba(255,255,255,.07); border-radius:4px; overflow:hidden; max-width:80px; }
+  .pp-bar-fill { height:100%; background:var(--pp-accent); border-radius:4px; transition:width 1s ease; }
+
+  /* ── Banner dummy ───────────────────────────────────────────── */
+  .pp-banner-dummy {
+    background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3);
+    border-radius:8px; padding:9px 14px; margin-bottom:16px;
+    font-size:12px; color:#f59e0b; display:flex; align-items:center; gap:8px;
+  }
 </style>
 
-{{-- Google Fonts --}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-{{-- Chart.js --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 @endpush
 
 
 @section('content')
 <div class="pp-wrap">
-  {{-- Banner dummy data (hilang otomatis saat DB sudah terkoneksi) --}}
-@if($isDummy)
-<div style="
-    background: rgba(245,158,11,0.1);
-    border: 1px solid rgba(245,158,11,0.35);
-    border-radius: 10px;
-    padding: 10px 16px;
-    margin-bottom: 20px;
-    font-size: 12px;
-    color: #f59e0b;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-">
-    ⚠ <strong></strong> — Menampilkan data dummy. Koneksi ke database <code style="background:rgba(245,158,11,0.15);padding:1px 6px;border-radius:4px;">erm_rs</code> belum tersedia.
-</div>
-@endif
 
-  {{-- HEADER --}}
+  @if($isDummy)
+  <div class="pp-banner-dummy">
+    ⚠ <strong>Sebagian data masih dummy</strong> — BOR/AVLOS/TOI sudah dari API. Rajal, IGD, Ranap menunggu endpoint.
+  </div>
+  @endif
+
+  {{-- ── Header ── --}}
   <div class="pp-header">
-    <div class="pp-header-left">
+    <div style="display:flex;align-items:center;gap:12px;">
       <h1>Portal Pelayanan Pasien</h1>
-      <p>Indikator mutu & kunjungan pasien — periode {{ \Carbon\Carbon::parse($tanggalMulai)->format('d M Y') }} s.d. {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d M Y') }}</p>
+      @if(!$isDummy)
+        <span class="pp-badge-live">Live Data</span>
+      @endif
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span class="pp-badge-live">Live Data</span>
-      <a href="{{ route('portal.pelayananpasien.ranap', request()->query()) }}" class="pp-btn pp-btn-ghost" style="font-size:12px; padding:7px 14px;">
-        Detail Ranap →
+    <!-- <div style="display:flex;align-items:center;gap:8px;">
+      <a href="{{ route('portal.pelayananpasien.ranap', request()->query()) }}"
+         class="pp-btn-ghost" style="font-size:12px;padding:6px 14px;">
+        -
       </a>
-    </div>
+    </div> -->
   </div>
 
-  {{-- FILTER BAR --}}
+  {{-- ── Filter ── --}}
   <form method="GET" action="{{ route('portal.pelayananpasien') }}" class="pp-filter-bar">
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--pp-text-muted);flex-shrink:0">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
     <label>Dari</label>
     <input type="date" name="dari" value="{{ $tanggalMulai }}">
     <label>Sampai</label>
@@ -457,484 +256,430 @@
       @endfor
     </select>
     <button type="submit" class="pp-btn">Tampilkan</button>
-    <a href="{{ route('portal.pelayananpasien') }}" class="pp-btn pp-btn-ghost">Reset</a>
+    <a href="{{ route('portal.pelayananpasien') }}" class="pp-btn-ghost">Reset</a>
   </form>
 
-  {{-- SECTION: INDIKATOR MUTU --}}
-  <p class="pp-section-title">Indikator Mutu Pelayanan Rawat Inap</p>
+  {{-- ══════════════════════════════════════════════════════════
+       ROW 1: BOR · LOS · TOI · Kunjungan Hari Ini
+  ══════════════════════════════════════════════════════════ --}}
+  @php
+    $topCards = [
+      [
+        'label'   => 'BOR (Bed Occupancy Rate)',
+        'nilai'   => $bor,
+        'unit'    => '%',
+        'standar' => 'Standar 60 – 85%',
+        'color'   => '#2563eb',
+        'icon_bg' => 'rgba(37,99,235,0.15)',
+        'pct'     => min($bor, 100),
+        'status'  => ($bor >= 60 && $bor <= 85) ? 'ideal' : ($bor < 60 ? 'warn' : 'over'),
+        'label_s' => ($bor >= 60 && $bor <= 85) ? '✓ Ideal' : ($bor < 60 ? '↓ Rendah' : '↑ Tinggi'),
+        'icon'    => '<path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>',
+      ],
+      [
+        'label'   => 'LOS (Length of Stay)',
+        'nilai'   => $los,
+        'unit'    => 'hari',
+        'standar' => 'Standar 6 – 9 hari',
+        'color'   => '#a78bfa',
+        'icon_bg' => 'rgba(167,139,250,0.15)',
+        'pct'     => min(round(($los / 15) * 100), 100),
+        'status'  => ($los >= 6 && $los <= 9) ? 'ideal' : 'warn',
+        'label_s' => ($los >= 6 && $los <= 9) ? '✓ Ideal' : '⚠ Periksa',
+        'icon'    => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+      ],
+      [
+        'label'   => 'TOI (Turn Over Interval)',
+        'nilai'   => $toi,
+        'unit'    => 'hari',
+        'standar' => 'Standar 1 – 3 hari',
+        'color'   => '#ef4444',
+        'icon_bg' => 'rgba(239,68,68,0.15)',
+        'pct'     => min(round(($toi / 6) * 100), 100),
+        'status'  => ($toi >= 1 && $toi <= 3) ? 'ideal' : 'warn',
+        'label_s' => ($toi >= 1 && $toi <= 3) ? '✓ Ideal' : '⚠ Periksa',
+        'icon'    => '<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>',
+      ],
+      [
+        'label'   => 'Kunjungan Hari Ini',
+        'nilai'   => $ringkasanRajal->sum('total_kunjungan'),
+        'unit'    => '',
+        'standar' => 'Total semua poli rawat jalan',
+        'color'   => '#06b6d4',
+        'icon_bg' => 'rgba(6,182,212,0.15)',
+        'pct'     => 0,
+        'status'  => 'ideal',
+        'label_s' => '',
+        'is_kunjungan' => true,
+        'icon'    => '<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>',
+      ],
+    ];
+  @endphp
 
-  <div class="pp-indikator-grid">
-
-    @php
-      $indikators = [
-        [
-          'key'    => 'BOR',
-          'label'  => 'Bed Occupancy Rate',
-          'nilai'  => $bor,
-          'unit'   => '%',
-          'min'    => $standar['bor_min'],
-          'max'    => $standar['bor_max'],
-          'color'  => '#2563eb',
-          'desc'   => 'Pemakaian tempat tidur',
-          'pct'    => min(round($bor), 100),
-        ],
-        [
-          'key'    => 'LOS',
-          'label'  => 'Length of Stay',
-          'nilai'  => $los,
-          'unit'   => 'hari',
-          'min'    => $standar['los_min'],
-          'max'    => $standar['los_max'],
-          'color'  => '#a78bfa',
-          'desc'   => 'Rata-rata lama dirawat',
-          'pct'    => min(round(($los / 15) * 100), 100),
-        ],
-        [
-          'key'    => 'TOI',
-          'label'  => 'Turn Over Interval',
-          'nilai'  => $toi,
-          'unit'   => 'hari',
-          'min'    => $standar['toi_min'],
-          'max'    => $standar['toi_max'],
-          'color'  => '#06b6d4',
-          'desc'   => 'Interval antar pasien',
-          'pct'    => min(round(($toi / 10) * 100), 100),
-        ],
-        [
-          'key'    => 'BTO',
-          'label'  => 'Bed Turn Over',
-          'nilai'  => $bto,
-          'unit'   => 'kali',
-          'min'    => $standar['bto_min'],
-          'max'    => $standar['bto_max'],
-          'color'  => '#f59e0b',
-          'desc'   => 'Frekuensi pemakaian TT',
-          'pct'    => min(round(($bto / 60) * 100), 100),
-        ],
-      ];
-
-      foreach ($indikators as &$ind) {
-        if ($ind['nilai'] >= $ind['min'] && $ind['nilai'] <= $ind['max']) {
-          $ind['status'] = 'baik';
-          $ind['status_label'] = '✓ Ideal';
-        } elseif ($ind['nilai'] < $ind['min'] * 0.8 || $ind['nilai'] > $ind['max'] * 1.2) {
-          $ind['status'] = 'buruk';
-          $ind['status_label'] = '✗ Di luar standar';
-        } else {
-          $ind['status'] = 'waspada';
-          $ind['status_label'] = '⚠ Perlu perhatian';
-        }
-      }
-    @endphp
-
-    @foreach ($indikators as $ind)
-    <div class="pp-indikator-card">
-      <div class="glow-bar" style="background: {{ $ind['color'] }};"></div>
-      <div class="ic-label">{{ $ind['key'] }} — {{ $ind['label'] }}</div>
-      <div class="ic-value" style="color: {{ $ind['color'] }}">
-        {{ number_format($ind['nilai'], 1) }}<span class="ic-unit">{{ $ind['unit'] }}</span>
+  <div class="pp-top-grid">
+    @foreach($topCards as $tc)
+    <div class="pp-top-card">
+      <div class="tc-header">
+        <div class="tc-label">{{ $tc['label'] }}</div>
+        <div class="tc-icon" style="background:{{ $tc['icon_bg'] }};color:{{ $tc['color'] }}">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            {!! $tc['icon'] !!}
+          </svg>
+        </div>
       </div>
-      <div class="ic-standar">Standar: {{ $ind['min'] }}–{{ $ind['max'] }} {{ $ind['unit'] }}</div>
-      <div class="ic-progress">
-        <div class="ic-progress-bar" style="width: {{ $ind['pct'] }}%; background: {{ $ind['color'] }};"></div>
+
+      <div class="tc-value" style="color:{{ $tc['color'] }}">
+        {{ is_float($tc['nilai']) ? number_format($tc['nilai'], 1) : number_format($tc['nilai']) }}
+        @if($tc['unit'])<span class="tc-unit">{{ $tc['unit'] }}</span>@endif
       </div>
-      <span class="ic-status status-{{ $ind['status'] }}">{{ $ind['status_label'] }}</span>
+
+      <div class="tc-standar">{{ $tc['standar'] }}</div>
+
+      @if(!isset($tc['is_kunjungan']))
+        <div class="tc-progress">
+          <div class="tc-progress-fill" style="width:{{ $tc['pct'] }}%;background:{{ $tc['color'] }};"></div>
+        </div>
+        <span class="tc-badge badge-{{ $tc['status'] }}">{{ $tc['label_s'] }}</span>
+      @else
+        <div class="tc-delta delta-up">
+          ▲ dari kemarin
+        </div>
+      @endif
     </div>
     @endforeach
-
   </div>
+   {{-- ══════════════════════════════════════════════════════════
+       ROW 2: AVLOS + TOI Bulanan (data real dari Google Sheet API)
+  ══════════════════════════════════════════════════════════ --}}
+  <div class="pp-chart-row2">
 
-  {{-- SECTION: UNIT PELAYANAN --}}
-  <p class="pp-section-title">Statistik Unit Pelayanan</p>
-
-  <div class="pp-unit-grid">
-
-    {{-- RANAP --}}
-    <div class="pp-unit-card">
-      <div class="uc-header">
-        <span class="uc-title">Rawat Inap</span>
-        <span class="uc-badge" style="background:rgba(37,99,235,.15);color:#60a5fa;">RANAP</span>
+    <div class="pp-card">
+      <div class="pp-card-header">
+        <div>
+          <div class="pp-card-title">AVLOS Bulanan {{ $tahun }}</div>
+          <div class="pp-card-subtitle">Rata-rata lama dirawat · Standar 6–9 hari</div>
+        </div>
+        <span class="src-badge {{ $isDummy ? 'src-dummy' : 'src-api' }}">
+          {{ $isDummy ? '⚠ Dummy' : '✓ API' }}
+        </span>
       </div>
-      <div class="uc-main-value" style="color:#60a5fa;">{{ number_format($ringkasanRanap['total_masuk']) }}</div>
-      <div class="uc-main-label">Total pasien masuk periode ini</div>
-      <div class="uc-stats">
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#22c55e;">{{ number_format($ringkasanRanap['total_keluar']) }}</div>
-          <div class="uc-stat-lbl">Keluar / pulang</div>
-        </div>
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#f59e0b;">{{ number_format($ringkasanRanap['masih_dirawat']) }}</div>
-          <div class="uc-stat-lbl">Masih dirawat</div>
-        </div>
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#ef4444;">{{ number_format($ringkasanRanap['total_meninggal']) }}</div>
-          <div class="uc-stat-lbl">Meninggal</div>
-        </div>
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#a78bfa;">{{ $los }} hr</div>
-          <div class="uc-stat-lbl">Rata-rata LOS</div>
-        </div>
+      <div class="chart-wrap">
+        <canvas id="chartAvlos"></canvas>
       </div>
     </div>
 
-    {{-- RAJAL --}}
-    <div class="pp-unit-card">
-      <div class="uc-header">
-        <span class="uc-title">Rawat Jalan</span>
-        <span class="uc-badge" style="background:rgba(6,182,212,.15);color:#22d3ee;">RAJAL</span>
+    <div class="pp-card">
+      <div class="pp-card-header">
+        <div>
+          <div class="pp-card-title">TOI Bulanan {{ $tahun }}</div>
+          <div class="pp-card-subtitle">Interval antar pasien · Standar 1–3 hari</div>
+        </div>
+        <span class="src-badge {{ $isDummy ? 'src-dummy' : 'src-api' }}">
+          {{ $isDummy ? '⚠ Dummy' : '✓ API' }}
+        </span>
       </div>
-      <div class="uc-main-value" style="color:#22d3ee;">{{ number_format($ringkasanRajal->sum('total_kunjungan')) }}</div>
-      <div class="uc-main-label">Total kunjungan semua poli</div>
-      <div class="uc-stats">
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#22c55e;">{{ number_format($ringkasanRajal->sum('pasien_baru')) }}</div>
-          <div class="uc-stat-lbl">Pasien baru</div>
-        </div>
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#60a5fa;">{{ number_format($ringkasanRajal->sum('pasien_lama')) }}</div>
-          <div class="uc-stat-lbl">Pasien lama</div>
-        </div>
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#34d399;">{{ number_format($ringkasanRajal->sum('bpjs')) }}</div>
-          <div class="uc-stat-lbl">BPJS</div>
-        </div>
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#fbbf24;">{{ number_format($ringkasanRajal->sum('umum')) }}</div>
-          <div class="uc-stat-lbl">Umum</div>
-        </div>
-      </div>
-    </div>
-
-    {{-- IGD --}}
-    <div class="pp-unit-card">
-      <div class="uc-header">
-        <span class="uc-title">IGD</span>
-        <span class="uc-badge" style="background:rgba(239,68,68,.15);color:#f87171;">IGD</span>
-      </div>
-      <div class="uc-main-value" style="color:#f87171;">{{ number_format($ringkasanIGD['total']) }}</div>
-      <div class="uc-main-label">Total kunjungan IGD</div>
-      <div class="uc-stats">
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#22c55e;">{{ number_format($ringkasanIGD['pulang']) }}</div>
-          <div class="uc-stat-lbl">Pulang</div>
-        </div>
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#60a5fa;">{{ number_format($ringkasanIGD['rawat_inap']) }}</div>
-          <div class="uc-stat-lbl">Rawat inap</div>
-        </div>
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#ef4444;">{{ number_format($ringkasanIGD['meninggal']) }}</div>
-          <div class="uc-stat-lbl">Meninggal</div>
-        </div>
-        <div class="uc-stat-item">
-          <div class="uc-stat-val" style="color:#f59e0b;">{{ number_format($ringkasanIGD['avg_waktu_tunggu']) }} mt</div>
-          <div class="uc-stat-lbl">Rata-rata tunggu</div>
-        </div>
+      <div class="chart-wrap">
+        <canvas id="chartToi"></canvas>
       </div>
     </div>
 
   </div>
 
-{{-- SECTION: CHART TREND KUNJUNGAN + BOR --}}
-<p class="pp-section-title">Grafik & Tren</p>
 
-<div class="pp-chart-grid">
+  {{-- ══════════════════════════════════════════════════════════
+       ROW 3: Tren Kunjungan Harian (kiri) + BOR Bulanan (kanan)
+  ══════════════════════════════════════════════════════════ --}}
+  <div class="pp-chart-row">
 
-    {{-- Chart: Trend Harian --}}
-    <div class="pp-chart-card">
-        <div class="cc-header">
-            <div>
-                <div class="cc-title">Tren Kunjungan Harian</div>
-                <div class="cc-subtitle">Ranap · Rajal · IGD</div>
-            </div>
+    {{-- Tren Harian --}}
+    <div class="pp-card">
+      <div class="pp-card-header">
+        <div>
+          <div class="pp-card-title">Tren Kunjungan Harian</div>
+          <div class="pp-card-subtitle">
+            Periode {{ \Carbon\Carbon::parse($tanggalMulai)->format('d M Y') }}
+            — {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d M Y') }}
+          </div>
         </div>
-        <div class="chart-canvas-wrap">
-            <canvas id="chartTrendHarian"></canvas>
-        </div>
+        <span class="src-badge src-dummy">⚠ Dummy</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chartTrendHarian"></canvas>
+      </div>
     </div>
 
-    {{-- Chart: BOR Bulanan --}}
-    <div class="pp-chart-card">
-        <div class="cc-header">
-            <div>
-                <div class="cc-title">BOR Bulanan {{ $tahun }}</div>
-                <div class="cc-subtitle">Target 60–85%</div>
-            </div>
+    {{-- BOR Bulanan --}}
+    <div class="pp-card">
+      <div class="pp-card-header">
+        <div>
+          <div class="pp-card-title">BOR Bulanan {{ $tahun }}</div>
+          <div class="pp-card-subtitle">Target 60 – 85%</div>
         </div>
-        <div class="chart-canvas-wrap">
-            <canvas id="chartBOR"></canvas>
-        </div>
+        <span class="src-badge {{ $isDummy ? 'src-dummy' : 'src-api' }}">
+          {{ $isDummy ? '⚠ Dummy' : '✓ API' }}
+        </span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chartBOR"></canvas>
+      </div>
     </div>
 
-</div>
+  </div>
 
-<div class="pp-chart-grid-3">
+  {{-- ══════════════════════════════════════════════════════════
+       ROW 4: Kunjungan per Poli + IGD Triage + Tabel Rawat Jalan
+  ══════════════════════════════════════════════════════════ --}}
+  <div class="pp-chart-row3">
 
-    {{-- Chart: Rajal per Poli (bar) --}}
-    <div class="pp-chart-card">
-        <div class="cc-header">
-            <div>
-                <div class="cc-title">Kunjungan per Poli</div>
-                <div class="cc-subtitle">Top poli rawat jalan</div>
-            </div>
+    {{-- Kunjungan per Poli --}}
+    <div class="pp-card">
+      <div class="pp-card-header">
+        <div>
+          <div class="pp-card-title">Kunjungan per Poli</div>
+          <div class="pp-card-subtitle">Top poli rawat jalan</div>
         </div>
-        <div class="chart-canvas-wrap-sm">
-            <canvas id="chartRajal"></canvas>
-        </div>
+        <span class="src-badge src-dummy">⚠ Dummy</span>
+      </div>
+      <div class="chart-wrap-sm">
+        <canvas id="chartRajal"></canvas>
+      </div>
     </div>
 
-    {{-- Chart: IGD per Triage (doughnut) --}}
-    <div class="pp-chart-card">
-        <div class="cc-header">
-            <div>
-                <div class="cc-title">IGD per Triage</div>
-                <div class="cc-subtitle">Distribusi kategori</div>
-            </div>
+    {{-- IGD per Triage --}}
+    <div class="pp-card">
+      <div class="pp-card-header">
+        <div>
+          <div class="pp-card-title">IGD per Triage</div>
+          <div class="pp-card-subtitle">Distribusi kategori</div>
         </div>
-        <div class="chart-canvas-wrap-sm">
-            <canvas id="chartTriage"></canvas>
+        <span class="src-badge src-dummy">⚠ Dummy</span>
+      </div>
+      <div class="chart-wrap-sm" style="position:relative;">
+        <canvas id="chartTriage"></canvas>
+        {{-- Total di tengah doughnut --}}
+        <div id="triage-center" style="
+          position:absolute; top:50%; left:50%; transform:translate(-50%,-55%);
+          text-align:center; pointer-events:none;
+        ">
+          <div style="font-size:22px;font-weight:700;font-family:var(--pp-mono);color:var(--pp-text);" id="triage-total">–</div>
+          <div style="font-size:10px;color:var(--pp-text-muted);font-weight:600;">Pasien</div>
         </div>
+      </div>
     </div>
 
-    {{-- Tabel Rajal per Poli --}}
-    <div class="pp-chart-card">
-        <div class="cc-header">
-            <div>
-                <div class="cc-title">Tabel Rawat Jalan</div>
-                <div class="cc-subtitle">Semua poli</div>
-            </div>
+    {{-- Tabel Rawat Jalan --}}
+    <div class="pp-card">
+      <div class="pp-card-header">
+        <div>
+          <div class="pp-card-title">Tabel Rawat Jalan</div>
+          <div class="pp-card-subtitle">Semua poli</div>
         </div>
-        <div class="pp-table-wrap">
-            <table class="pp-table">
-                <thead>
-                    <tr>
-                        <th>Poli</th>
-                        <th>Kunjungan</th>
-                        <th>Proporsi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $totalRajal = $ringkasanRajal->sum('total_kunjungan') ?: 1; @endphp
-                    @foreach ($ringkasanRajal->take(8) as $poli)
-                    @php $pct = round(($poli->total_kunjungan / $totalRajal) * 100, 1); @endphp
-                    <tr>
-                        <td>{{ $poli->nama_poli }}</td>
-                        <td><strong style="font-family: var(--pp-mono);">{{ number_format($poli->total_kunjungan) }}</strong></td>
-                        <td>
-                            <div class="pp-poli-bar-wrap">
-                                <div class="pp-poli-bar">
-                                    <div class="pp-poli-bar-fill" style="width:{{ $pct }}%;"></div>
-                                </div>
-                                <span style="font-size:11px; color:var(--pp-text-muted); white-space:nowrap;">{{ $pct }}%</span>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+        <span class="src-badge src-dummy">⚠ Dummy</span>
+      </div>
+      <div style="overflow-x:auto;overflow-y:auto;max-height:230px;">
+        <table class="pp-tbl">
+          <thead>
+            <tr>
+              <th>Poli</th>
+              <th style="text-align:right;">Kunjungan</th>
+              <th>Proporsi</th>
+            </tr>
+          </thead>
+          <tbody>
+            @php $totalRajal = $ringkasanRajal->sum('total_kunjungan') ?: 1; @endphp
+            @foreach($ringkasanRajal as $poli)
+              @php $pct = round(($poli->total_kunjungan / $totalRajal) * 100, 1); @endphp
+              <tr>
+                <td>{{ $poli->nama_poli }}</td>
+                <td style="text-align:right;font-family:var(--pp-mono);font-weight:600;">
+                  {{ number_format($poli->total_kunjungan) }}
+                </td>
+                <td>
+                  <div class="pp-bar-wrap">
+                    <div class="pp-bar">
+                      <div class="pp-bar-fill" style="width:{{ $pct }}%;"></div>
+                    </div>
+                    <span style="font-size:10px;color:var(--pp-text-muted);white-space:nowrap;">{{ $pct }}%</span>
+                  </div>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
     </div>
 
-</div>
-
+  </div>
 </div>{{-- .pp-wrap --}}
 @endsection
 
 
 @push('scripts')
 <script>
-// ======================================================
-// DATA dari PHP 
-// ======================================================
-const trendData  = {!! $chartTrend  !!};
-const borData    = {!! $chartBOR    !!};
-const rajalData  = {!! $chartRajal  !!};
-const triageData = {!! $chartTriage !!};
+// ── Data dari PHP ────────────────────────────────────────────────────
+const trendData  = {!! $trendHarian->toJson()    !!};
+const borData    = {!! $chartBOR->toJson()        !!};
+const avlosData  = {!! $chartAvlos->toJson()      !!};
+const rajalData  = {!! $ringkasanRajal->toJson()  !!};
+const triageData = {!! $triageIGD->toJson()       !!};
 
-// Warna
-const COLORS = {
-  ranap  : '#2563eb',
-  rajal  : '#06b6d4',
-  igd    : '#ef4444',
-  bor    : '#a78bfa',
-  target : 'rgba(34,197,94,0.25)',
-  triage : ['#ef4444','#f59e0b','#22c55e','#3b82f6','#a78bfa'],
-};
-
-// Chart defaults
 Chart.defaults.font.family = "'DM Sans', system-ui, sans-serif";
 Chart.defaults.font.size   = 11;
 Chart.defaults.color       = '#7d8590';
 
-// ======================================================
-// 1. CHART TREND HARIAN
-// ======================================================
+const TOOLTIP_STYLE = { backgroundColor:'#1c2330', borderColor:'rgba(48,54,61,0.8)', borderWidth:1, padding:10, titleColor:'#e6edf3', bodyColor:'#7d8590' };
+
+// ── 1. Tren Kunjungan Harian ─────────────────────────────────────────
 new Chart(document.getElementById('chartTrendHarian'), {
   type: 'line',
   data: {
-    labels  : trendData.map(d => d.tanggal),
+    labels: trendData.map(d => d.tanggal),
     datasets: [
-      {
-        label          : 'Ranap',
-        data           : trendData.map(d => d.ranap),
-        borderColor    : COLORS.ranap,
-        backgroundColor: 'rgba(37,99,235,0.08)',
-        borderWidth    : 2,
-        fill           : true,
-        tension        : 0.4,
-        pointRadius    : 0,
-        pointHoverRadius: 4,
-      },
-      {
-        label          : 'Rajal',
-        data           : trendData.map(d => d.rajal),
-        borderColor    : COLORS.rajal,
-        backgroundColor: 'rgba(6,182,212,0.08)',
-        borderWidth    : 2,
-        fill           : true,
-        tension        : 0.4,
-        pointRadius    : 0,
-        pointHoverRadius: 4,
-      },
-      {
-        label          : 'IGD',
-        data           : trendData.map(d => d.igd),
-        borderColor    : COLORS.igd,
-        backgroundColor: 'rgba(239,68,68,0.08)',
-        borderWidth    : 2,
-        fill           : true,
-        tension        : 0.4,
-        pointRadius    : 0,
-        pointHoverRadius: 4,
-      },
+      { label:'Ranap', data:trendData.map(d=>d.ranap), borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.08)',  borderWidth:2, fill:true, tension:0.4, pointRadius:0, pointHoverRadius:4 },
+      { label:'Rajal', data:trendData.map(d=>d.rajal), borderColor:'#06b6d4', backgroundColor:'rgba(6,182,212,0.08)',  borderWidth:2, fill:true, tension:0.4, pointRadius:0, pointHoverRadius:4 },
+      { label:'IGD',   data:trendData.map(d=>d.igd),   borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.06)',  borderWidth:2, fill:true, tension:0.4, pointRadius:0, pointHoverRadius:4 },
     ],
   },
   options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: { display: true, position: 'top', labels: { boxWidth: 8, padding: 14 } },
-      tooltip: { backgroundColor: '#1c2330', borderColor: '#30363d', borderWidth: 1 },
-    },
-    scales: {
-      x: { grid: { color: 'rgba(48,54,61,0.6)' }, ticks: { maxTicksLimit: 10 } },
-      y: { grid: { color: 'rgba(48,54,61,0.6)' }, beginAtZero: true },
+    responsive:true, maintainAspectRatio:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{ legend:{ display:true, position:'top', labels:{ boxWidth:8, padding:16, usePointStyle:true } }, tooltip: TOOLTIP_STYLE },
+    scales:{
+      x:{ grid:{ color:'rgba(48,54,61,0.5)' }, ticks:{ maxTicksLimit:8 } },
+      y:{ grid:{ color:'rgba(48,54,61,0.5)' }, beginAtZero:true },
     },
   },
 });
 
-// ======================================================
-// 2. CHART BOR BULANAN
-// ======================================================
+// ── 2. BOR Bulanan ───────────────────────────────────────────────────
 new Chart(document.getElementById('chartBOR'), {
   type: 'bar',
   data: {
-    labels  : borData.map(d => d.bulan),
+    labels: borData.map(d => d.bulan),
     datasets: [
       {
-        label          : 'BOR (%)',
-        data           : borData.map(d => d.bor),
+        label: 'BOR (%)',
+        data : borData.map(d => d.bor),
         backgroundColor: borData.map(d =>
-          d.bor >= 60 && d.bor <= 85 ? 'rgba(167,139,250,0.8)' :
-          d.bor < 60 ? 'rgba(245,158,11,0.7)' : 'rgba(239,68,68,0.7)'
+          d.bor === 0              ? 'rgba(48,54,61,0.35)' :
+          d.bor >= 60 && d.bor <= 85 ? 'rgba(167,139,250,0.85)' :
+          d.bor < 60               ? 'rgba(245,158,11,0.75)' : 'rgba(239,68,68,0.75)'
         ),
-        borderRadius   : 6,
-        borderSkipped  : false,
+        borderRadius:5, borderSkipped:false,
       },
-      {
-        label       : 'Target Min (60%)',
-        data        : borData.map(() => 60),
-        type        : 'line',
-        borderColor : 'rgba(34,197,94,0.5)',
-        borderDash  : [4, 4],
-        borderWidth : 1.5,
-        pointRadius : 0,
-        fill        : false,
-      },
-      {
-        label       : 'Target Max (85%)',
-        data        : borData.map(() => 85),
-        type        : 'line',
-        borderColor : 'rgba(239,68,68,0.5)',
-        borderDash  : [4, 4],
-        borderWidth : 1.5,
-        pointRadius : 0,
-        fill        : false,
-      },
+      { label:'Min 60%', data:borData.map(()=>60), type:'line', borderColor:'rgba(34,197,94,0.45)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
+      { label:'Max 85%', data:borData.map(()=>85), type:'line', borderColor:'rgba(239,68,68,0.45)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
     ],
   },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend  : { display: false },
-      tooltip : { backgroundColor: '#1c2330', borderColor: '#30363d', borderWidth: 1 },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{ display:false },
+      tooltip:{ ...TOOLTIP_STYLE, callbacks:{ label: ctx => ctx.raw === 0 ? 'Belum ada data' : `BOR: ${ctx.raw}%` } },
     },
-    scales: {
-      x: { grid: { display: false } },
-      y: {
-        grid   : { color: 'rgba(48,54,61,0.6)' },
-        min    : 0,
-        max    : 100,
-        ticks  : { callback: v => v + '%' },
-      },
+    scales:{
+      x:{ grid:{ display:false } },
+      y:{ grid:{ color:'rgba(48,54,61,0.5)' }, min:0, max:100, ticks:{ callback: v => v+'%' } },
     },
   },
 });
 
-// ======================================================
-// 3. CHART RAJAL PER POLI (horizontal bar)
-// ======================================================
-const rajalTop = rajalData.sort((a,b) => b.total_kunjungan - a.total_kunjungan).slice(0, 8);
+// ── 3. Kunjungan per Poli ─────────────────────────────────────────────
+const rajalTop = [...rajalData].sort((a,b)=>b.total_kunjungan-a.total_kunjungan).slice(0,8);
 new Chart(document.getElementById('chartRajal'), {
   type: 'bar',
-  data: {
-    labels  : rajalTop.map(d => d.nama_poli),
-    datasets: [{
-      label          : 'Kunjungan',
-      data           : rajalTop.map(d => d.total_kunjungan),
-      backgroundColor: 'rgba(6,182,212,0.75)',
-      borderRadius   : 4,
-    }],
+  data:{
+    labels: rajalTop.map(d=>d.nama_poli),
+    datasets:[{ label:'Kunjungan', data:rajalTop.map(d=>d.total_kunjungan), backgroundColor:'rgba(6,182,212,0.75)', borderRadius:4 }],
   },
-  options: {
-    indexAxis  : 'y',
-    responsive : true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend  : { display: false },
-      tooltip : { backgroundColor: '#1c2330', borderColor: '#30363d', borderWidth: 1 },
-    },
-    scales: {
-      x: { grid: { color: 'rgba(48,54,61,0.6)' } },
-      y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false }, tooltip: TOOLTIP_STYLE },
+    scales:{
+      x:{ grid:{ color:'rgba(48,54,61,0.5)' }, ticks:{ maxTicksLimit:5 } },
+      y:{ grid:{ display:false }, ticks:{ font:{ size:11 } } },
     },
   },
 });
 
-// ======================================================
-// 4. CHART TRIAGE IGD (doughnut)
-// ======================================================
+// ── 4. IGD Triage (doughnut + total di tengah) ───────────────────────
+const triageTotal = triageData.reduce((s,d) => s + d.jumlah, 0);
+document.getElementById('triage-total').textContent = triageTotal.toLocaleString('id-ID');
+
 new Chart(document.getElementById('chartTriage'), {
   type: 'doughnut',
-  data: {
-    labels  : triageData.map(d => d.kategori_triage || 'Tidak Diketahui'),
-    datasets: [{
-      data           : triageData.map(d => d.jumlah),
-      backgroundColor: COLORS.triage,
-      borderColor    : '#161b22',
-      borderWidth    : 3,
-      hoverOffset    : 6,
+  data:{
+    labels: triageData.map(d=>d.kategori_triage||'Tidak Diketahui'),
+    datasets:[{
+      data: triageData.map(d=>d.jumlah),
+      backgroundColor:['#ef4444','#f59e0b','#22c55e','#3b82f6','#a78bfa'],
+      borderColor:'#161b22', borderWidth:3, hoverOffset:6,
     }],
   },
-  options: {
-    responsive : true,
-    maintainAspectRatio: false,
-    cutout     : '65%',
-    plugins: {
-      legend  : { position: 'bottom', labels: { boxWidth: 10, padding: 12 } },
-      tooltip : { backgroundColor: '#1c2330', borderColor: '#30363d', borderWidth: 1 },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'62%',
+    plugins:{
+      legend:{ position:'right', labels:{ boxWidth:10, padding:10, font:{ size:11 },
+        generateLabels(chart) {
+          const data = chart.data;
+          return data.labels.map((label, i) => {
+            const val = data.datasets[0].data[i];
+            const pct = triageTotal > 0 ? ((val / triageTotal) * 100).toFixed(1) : 0;
+            return {
+              text: `${label}  ${val} (${pct}%)`,
+              fillStyle: data.datasets[0].backgroundColor[i],
+              strokeStyle: '#161b22',
+              lineWidth: 2,
+              index: i,
+            };
+          });
+        }
+      }},
+      tooltip: TOOLTIP_STYLE,
+    },
+  },
+});
+
+// ── 5. AVLOS Bulanan ─────────────────────────────────────────────────
+new Chart(document.getElementById('chartAvlos'), {
+  type: 'line',
+  data:{
+    labels: avlosData.map(d=>d.bulan),
+    datasets:[
+      { label:'AVLOS (hr)', data:avlosData.map(d=>d.avlos), borderColor:'#34d399', backgroundColor:'rgba(52,211,153,0.1)', borderWidth:2, fill:true, tension:0.4, pointRadius:4, pointHoverRadius:6, pointBackgroundColor:'#34d399' },
+      { label:'Min (6hr)', data:avlosData.map(()=>6), type:'line', borderColor:'rgba(34,197,94,0.4)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
+      { label:'Max (9hr)', data:avlosData.map(()=>9), type:'line', borderColor:'rgba(239,68,68,0.4)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
+    ],
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{ legend:{ display:true, position:'top', labels:{ boxWidth:8, padding:12, usePointStyle:true } }, tooltip:{ ...TOOLTIP_STYLE, callbacks:{ label: ctx => ctx.raw===0?'Belum ada data':`${ctx.dataset.label}: ${ctx.raw} hr` } } },
+    scales:{
+      x:{ grid:{ color:'rgba(48,54,61,0.5)' } },
+      y:{ grid:{ color:'rgba(48,54,61,0.5)' }, beginAtZero:true, ticks:{ callback: v=>v+' hr' } },
+    },
+  },
+});
+
+// ── 6. TOI Bulanan ───────────────────────────────────────────────────
+new Chart(document.getElementById('chartToi'), {
+  type: 'line',
+  data:{
+    labels: avlosData.map(d=>d.bulan),
+    datasets:[
+      { label:'TOI (hr)', data:avlosData.map(d=>d.toi), borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.1)', borderWidth:2, fill:true, tension:0.4, pointRadius:4, pointHoverRadius:6, pointBackgroundColor:'#f59e0b' },
+      { label:'Min (1hr)', data:avlosData.map(()=>1), type:'line', borderColor:'rgba(34,197,94,0.4)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
+      { label:'Max (3hr)', data:avlosData.map(()=>3), type:'line', borderColor:'rgba(239,68,68,0.4)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
+    ],
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{ legend:{ display:true, position:'top', labels:{ boxWidth:8, padding:12, usePointStyle:true } }, tooltip:{ ...TOOLTIP_STYLE, callbacks:{ label: ctx => ctx.raw===0?'Belum ada data':`${ctx.dataset.label}: ${ctx.raw} hr` } } },
+    scales:{
+      x:{ grid:{ color:'rgba(48,54,61,0.5)' } },
+      y:{ grid:{ color:'rgba(48,54,61,0.5)' }, beginAtZero:true, ticks:{ callback: v=>v+' hr' } },
     },
   },
 });

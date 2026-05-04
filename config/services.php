@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'googlesheet' => [
+        'url'       => env('GOOGLESHEET_API_URL'),
+        'key'       => env('GOOGLESHEET_API_KEY'),
+        'cache_ttl' => env('GOOGLESHEET_CACHE_TTL', 300),
+    ],
+
 ];

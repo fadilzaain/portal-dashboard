@@ -1,10 +1,3 @@
-{{--
-    Partial: partials/icon.blade.php
-    Penggunaan: @include('partials.icon', ['name' => 'chart-bar'])
-
-    Daftar icon yang tersedia: chart-bar, users, document-text, cog, globe
---}}
-
 @switch($name)
 
     @case('chart-bar')

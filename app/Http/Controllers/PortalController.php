@@ -10,7 +10,6 @@ class PortalController extends Controller
 {
     public function redirect(string $appId)
     {
-        //konfigurasi app berdasarkan ID
         $app = $this->findApp($appId);
 
         if (! $app) {

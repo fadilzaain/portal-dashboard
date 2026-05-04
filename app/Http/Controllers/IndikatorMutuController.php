@@ -25,7 +25,7 @@ class IndikatorMutuController extends Controller
     }
 
     /**
-     * API: Ambil data tabel + grafik (dipanggil via fetch/AJAX dari Blade)
+     * Ambil data tabel + grafik (dipanggil via fetch/AJAX dari Blade)
      */
     public function getData(Request $request): JsonResponse
     {

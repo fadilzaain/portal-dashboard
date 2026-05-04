@@ -64,7 +64,7 @@ Route::middleware('auth')->group(function () {
     // Portal utama (landing 5 pilihan)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Portal redirect ke web eksternal (keuangan, dll)
+    // Portal redirect ke web pilihan
     Route::get('/portal/keuangan', [KeuanganController::class, 'index'])
         ->name('portal.keuangan');
 

@@ -21,7 +21,6 @@ class KlaimBpjsController extends Controller
 
     /**
      * Resolve date range dari request.
-     * Priority: custom (from/to) → period (weekly/monthly/yearly)
      */
     private function resolveDateRange(Request $request): array
     {
@@ -66,7 +65,7 @@ class KlaimBpjsController extends Controller
     }
 
     /**
-     * Derive period string dari custom range (untuk format label/group).
+     * Derive period string dari custom range.
      */
     private function derivePeriod(Request $request): string
     {
@@ -106,8 +105,7 @@ class KlaimBpjsController extends Controller
     }
 
     /**
-     * Fill gap periode tanpa data → nilai 0.
-     * Dipakai untuk chart komposisi status (field: terbayar, pending, tidak_layak, diproses).
+     * Fill gap periode tanpa data = nilai 0.
      */
     private function fillGaps(
         \Illuminate\Support\Collection $rows,
@@ -136,8 +134,8 @@ class KlaimBpjsController extends Controller
     }
 
     /**
-     * Fill gap periode tanpa data → nilai 0.
-     * Dipakai untuk chartJenis (field: pengajuan, terbayar_count, nominal).
+     * fill gap periode tanpa data → nilai 0.
+     * dipakai untuk chartJenis (field: pengajuan, terbayar_count, nominal).
      */
     private function fillGapsChart(
         \Illuminate\Support\Collection $rows,
@@ -188,16 +186,12 @@ class KlaimBpjsController extends Controller
     //  PUBLIC ENDPOINTS
     // ══════════════════════════════════════════════════════════════
 
-    /**
-     * GET /bpjs — Tampilkan halaman Blade dashboard.
-     */
     public function index()
     {
         return view('bpjs.klaim');
     }
 
     /**
-     * GET /bpjs/meta
      * Return: default date range (bulan dari tanggal data terbaru).
      */
     public function meta(): JsonResponse
@@ -220,7 +214,6 @@ class KlaimBpjsController extends Controller
     }
 
     /**
-     * GET /bpjs/summary
      * Return: agregasi nominal & count per status (+ delta vs periode sebelumnya).
      */
     public function summary(Request $request): JsonResponse
@@ -299,7 +292,6 @@ class KlaimBpjsController extends Controller
     }
 
     /**
-     * GET /bpjs/chart-jenis
      * Return: data chart terpisah rinap vs rjalan + summary donut.
      * Format: {
      *   rinap:   { labels, pengajuan[], terbayar_count[], nominal[] },
@@ -319,7 +311,7 @@ class KlaimBpjsController extends Controller
 
         $fmt = $this->labelFormat($period);
 
-        // ── RINAP ──
+        // ── Rinap ──
         $rinapRows = collect($this->db()->select("
             SELECT
                 DATE_FORMAT(tglPulang, '{$groupFormat}')             AS period_key,
@@ -333,7 +325,7 @@ class KlaimBpjsController extends Controller
             ORDER BY period_key
         ", [$from, $to]));
 
-        // ── RJALAN ──
+        // ── Rjalan ──
         $rjalanRows = collect($this->db()->select("
             SELECT
                 DATE_FORMAT(tglSep, '{$groupFormat}')                AS period_key,
@@ -399,7 +391,6 @@ class KlaimBpjsController extends Controller
     }
 
     /**
-     * GET /bpjs/list
      * Return: daftar klaim gabungan rinap+rjalan, support filter status & search.
      */
     public function list(Request $request): JsonResponse

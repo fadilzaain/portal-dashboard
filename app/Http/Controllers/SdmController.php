@@ -3,86 +3,93 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class SdmController extends Controller
 {
+    private string $apiBase;
+
+    public function __construct()
+    {
+        $this->apiBase = env('API_SIKAWAN_BASE', 'http://192.168.10.8/sikawan-api/public/api/v1');
+    }
+    
     public function index()
     {
-        //Total Pegawai
-        $totalPegawai = DB::connection('pegawai')->table('karyawan')->count();
-        $totalAktif   = DB::connection('pegawai')->table('karyawan')->where('aktif', 'Aktif')->count();
-        $totalPensiun = DB::connection('pegawai')->table('karyawan')->where('aktif', 'Pensiun')->count();
-        $totalKeluar  = DB::connection('pegawai')->table('karyawan')->whereIn('aktif', ['Keluar', 'Pindah'])->count();
+        try {
+            $response = Http::timeout(10)->get("{$this->apiBase}/sikawan");
 
-        // status pns atau honorer (yang aktif)
-        $statusData = DB::connection('pegawai')->table('karyawan')
-            ->where('aktif', 'Aktif')
-            ->select('status', DB::raw('COUNT(*) as total'))
-            ->groupBy('status')
-            ->pluck('total', 'status');
-
-        
-        $totalPns     = $statusData['PNS']     ?? 0;
-        $totalHonorer = $statusData['Honorer'] ?? 0;
-        // $totalCpns    = $statusData['CPNS']    ?? 0;
-        foreach ($statusData as $key => $val) {
-            if (strtolower($key) === 'pns')     $totalPns     = $val;
-            if (strtolower($key) === 'honorer') $totalHonorer = $val;
+            $data = $response->successful()
+                ? ($response->json('data') ?? [])
+                : [];
+        } catch (\Exception $e) {
+            $data = [];
         }
 
-        //distribusi per unit kerja
-        $distribusiUnit = DB::connection('pegawai')->table('karyawan')
-            ->where('aktif', 'Aktif')
-            ->select(DB::raw('`unit kerja`'), DB::raw('COUNT(*) as total'))
-            ->groupBy(DB::raw('`unit kerja`'))
-            ->orderByDesc('total')
-            ->limit(10)
-            ->get();
+        // Helper: ambil nilai integer dari array result
+        $get = fn(string $key) => (int) ($data[$key] ?? 0);
 
-        $unitLabels = $distribusiUnit->pluck('unit kerja')->toArray();
-        $unitData   = $distribusiUnit->pluck('total')->toArray();
+        // ── STAT CARDS ───────────────────────────────────────────────────────
+        $totalPegawai       = $get('total_pegawai');
+        $totalPns           = $get('total_pns');
+        $totalP3k           = $get('total_p3k');
+        $totalP3kParuhWaktu = $get('total_p3k_pw');
+        $totalCpns          = $get('total_cpns');
+        $totalKontrak       = $get('total_kontrak');
+        $totalTetap         = $get('total_tetap');
+        $totalOrientasi     = $get('total_orientasi');
+        $totalMedis         = $get('total_medis');
+        $totalNonMedis      = $get('total_non_medis');
 
-        //trend 6 bulan
-        //Pakai created_at sebagai proxy tanggal masuk.
-        //Kalau ada kolom tanggal_masuk di tabel karyawan, ganti created_at di bawah.
-        // $trendLabels  = [];
-        // $trendPns     = [];
-        // $trendHonorer = [];
+        // Total aktif = jumlah semua status kepegawaian
+        $totalAktif = $totalPns + $totalP3k + $totalP3kParuhWaktu
+                    + $totalCpns + $totalKontrak + $totalTetap + $totalOrientasi;
 
-        // for ($i = 5; $i >= 0; $i--) {
-        //     $bulan = Carbon::now()->subMonths($i);
-        //     $trendLabels[] = $bulan->translatedFormat('M Y');
+        // ── doughnut chart profesi ─────────────────────────────────────────
+        $dokterSpesialis = $get('total_dokter_spesialis');
+        $dokterUmum      = $get('total_dokter_umum');
+        $perawat         = $get('total_perawat');
+        $bidan           = $get('total_bidan');
 
-        //     $base = DB::connection('pegawai')->table('karyawan')
-        //         ->whereYear(DB::raw('`TMT Masuk`'), $bulan->year)
-        //         ->whereMonth(DB::raw('`TMT Masuk`'), $bulan->month);
+        // tenada medis lainnya
+        $medisLainnya = max(0, $totalMedis - $dokterSpesialis - $dokterUmum - $perawat - $bidan);
 
-        //     $trendPns[]     = (clone $base)->where('status', 'PNS')->count();
-        //     $trendHonorer[] = (clone $base)->where('status', 'Honorer')->count();
-        // }
+        $profesiLabels = ['Dokter Spesialis', 'Dokter Umum', 'Perawat', 'Bidan', 'Tenaga Medis Lainnya', 'Tenaga Non Medis'];
+        $profesiValues = [$dokterSpesialis, $dokterUmum, $perawat, $bidan, $medisLainnya, $totalNonMedis];
 
-        //distribusi gender
-        $genderData = DB::connection('pegawai')->table('karyawan')
-            ->where('aktif', 'Aktif')
-            ->select('kelamin', DB::raw('COUNT(*) as total'))
-            ->groupBy('kelamin')
-            ->pluck('total', 'kelamin');
+        // ── bar chart status kepegawaian ───────────────────────────────────
+        $statusLabels = ['PNS', 'P3K', 'P3K Paruh Waktu', 'CPNS', 'Kontrak', 'Tetap', 'Orientasi'];
+        $statusValues = [$totalPns, $totalP3k, $totalP3kParuhWaktu, $totalCpns, $totalKontrak, $totalTetap, $totalOrientasi];
 
-        $lakiLaki  = $genderData['Laki-Laki']  ?? 0;
-        $perempuan = $genderData['Perempuan']  ?? 0;
-        foreach ($genderData as $key => $val) {
-            $k = strtolower($key);
-            if (in_array($k, ['l', 'laki-laki', 'laki laki', 'pria'])) $lakiLaki  = $val;
-            if (in_array($k, ['p', 'perempuan', 'wanita']))             $perempuan = $val;
-        }
+        // ── bzetting note : integrate nanti ────────────────────────────────
+        //   $r = Http::timeout(10)->get("{$this->apiBase}/bezetting");
+        //   $bezettingData = collect($r->json('data') ?? [])
+        //       ->map(fn($row) => (object) $row);
+        //
+        $bezettingData = collect();
+
+        // ── Shift Hari Ini ───────────────────────────────────────────
+        $shiftSummary = [
+            'PAGI'  => ['total' => $get('total_shift_pagi'),  'detail' => []],
+            'SIANG' => ['total' => $get('total_shift_siang'), 'detail' => []],
+            'MALAM' => ['total' => $get('total_shift_malam'), 'detail' => []],
+        ];
+
+        $shiftTimes = [
+            'PAGI'  => '07.00 – 14.00',
+            'SIANG' => '14.00 – 21.00',
+            'MALAM' => '21.00 – 07.00',
+        ];
 
         return view('portal.sdm', compact(
-            'totalPegawai', 'totalAktif', 'totalPensiun', 'totalKeluar',
-            'totalPns', 'totalHonorer',
-            'unitLabels', 'unitData',
-            'lakiLaki', 'perempuan'
+            'totalPegawai', 'totalAktif',
+            'totalPns', 'totalP3k', 'totalP3kParuhWaktu', 'totalCpns',
+            'totalKontrak', 'totalTetap', 'totalOrientasi',
+            'totalMedis', 'totalNonMedis',
+            'profesiLabels', 'profesiValues',
+            'statusLabels',  'statusValues',
+            'bezettingData',
+            'shiftSummary',  'shiftTimes',
         ));
     }
 }
