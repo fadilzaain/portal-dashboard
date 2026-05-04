@@ -11,6 +11,13 @@
     $p1 = $bpjsTot > 0 ? round($bpjsTB / $bpjsTot * 100) : 0;
     $p2 = $bpjsTot > 0 ? round($bpjsPD / $bpjsTot * 100) : 0;
     $p3 = max(0, 100 - $p1 - $p2);
+    $juta = fn(float $n): string =>
+        $n >= 1_000_000_000
+            ? 'Rp ' . number_format($n / 1_000_000_000, 2) . ' M'
+            : 'Rp ' . number_format($n / 1_000_000, 2) . ' jt';
+
+    $nominalRI  = $bpjs['nominal_rinap']  ?? 0;
+    $nominalRJ  = $bpjs['nominal_rjalan'] ?? 0;
 @endphp
 
 <a href="{{ route('portal.klaimbpjs') }}" class="app-card theme-amber" style="grid-column: span 2;">
@@ -33,7 +40,7 @@
         <div class="klaim-box">
             <div>
                 <div class="klaim-label">Rawat Inap (RI)</div>
-                <div class="klaim-val">{{ number_format($bpjsRI) }}</div>
+                <div class="klaim-val">{{ $juta($nominalRI) }}</div>
             </div>
             <div class="klaim-icon icon-blue">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#3b82f6" stroke-width="1.8">
@@ -44,7 +51,7 @@
         <div class="klaim-box">
             <div>
                 <div class="klaim-label">Rawat Jalan (RJ)</div>
-                <div class="klaim-val">{{ number_format($bpjsRJ) }}</div>
+                <div class="klaim-val">{{ $juta($nominalRJ) }}</div>
             </div>
             <div class="klaim-icon icon-amber">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" stroke-width="1.8">

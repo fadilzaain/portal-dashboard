@@ -128,6 +128,7 @@ class DashboardController extends Controller
             $rinapRaw = DB::connection('klaim_bpjs')->selectOne("
                 SELECT
                     COUNT(*) AS total,
+                    SUM(biaya_byPengajuan) AS nominal,
                     SUM(CASE WHEN status LIKE '3%' THEN 1 ELSE 0 END) AS terbayar,
                     SUM(CASE WHEN status LIKE '2%' THEN 1 ELSE 0 END) AS pending,
                     SUM(CASE WHEN status LIKE '4%' THEN 1 ELSE 0 END) AS tidak_layak
@@ -138,6 +139,7 @@ class DashboardController extends Controller
             $rjalanRaw = DB::connection('klaim_bpjs')->selectOne("
                 SELECT
                     COUNT(*) AS total,
+                    SUM(biaya_byPengajuan) AS nominal,
                     SUM(CASE WHEN status LIKE '3%' THEN 1 ELSE 0 END) AS terbayar,
                     SUM(CASE WHEN status LIKE '2%' THEN 1 ELSE 0 END) AS pending,
                     SUM(CASE WHEN status LIKE '4%' THEN 1 ELSE 0 END) AS tidak_layak
@@ -146,14 +148,17 @@ class DashboardController extends Controller
             ", [$from, $to]);
 
             $bpjs = [
-                'rawat_inap'  => (int) ($rinapRaw->total     ?? 0),
-                'rawat_jalan' => (int) ($rjalanRaw->total    ?? 0),
-                'terbayar'    => (int) ($rinapRaw->terbayar  ?? 0) + (int) ($rjalanRaw->terbayar  ?? 0),
-                'pending'     => (int) ($rinapRaw->pending   ?? 0) + (int) ($rjalanRaw->pending   ?? 0),
-                'tidak_layak' => (int) ($rinapRaw->tidak_layak ?? 0) + (int) ($rjalanRaw->tidak_layak ?? 0),
+                'rawat_inap'     => (int)   ($rinapRaw->total    ?? 0),
+                'rawat_jalan'    => (int)   ($rjalanRaw->total   ?? 0),
+                'nominal_rinap'  => (float) ($rinapRaw->nominal  ?? 0),
+                'nominal_rjalan' => (float) ($rjalanRaw->nominal ?? 0),
+                'terbayar'       => (int)   ($rinapRaw->terbayar    ?? 0) + (int) ($rjalanRaw->terbayar    ?? 0),
+                'pending'        => (int)   ($rinapRaw->pending     ?? 0) + (int) ($rjalanRaw->pending     ?? 0),
+                'tidak_layak'    => (int)   ($rinapRaw->tidak_layak ?? 0) + (int) ($rjalanRaw->tidak_layak ?? 0),
             ];
+
         } catch (\Exception $e) {
-            $bpjs = ['rawat_inap' => 0, 'rawat_jalan' => 0, 'terbayar' => 0, 'pending' => 0, 'tidak_layak' => 0];
+            $bpjs = ['rawat_inap' => 0, 'rawat_jalan' => 0, 'nominal_rinap' => 0, 'nominal_rjalan' => 0, 'terbayar' => 0, 'pending' => 0, 'tidak_layak' => 0];
         }
 
         $apps = config('portal.apps');

@@ -11,7 +11,7 @@
             <img src="{{ asset('images/logo-rsud-jombang.png') }}" 
                 alt="Logo RSUD Jombang" 
                 class="w-16 h-16 mx-auto mb-4 object-contain" />
-            <h1 class="text-2xl font-semibold text-gray-900">Selamat datang</h1>
+            <h1 class="text-2xl font-semibold text-gray-900">Selamat Datang</h1>
             <p class="text-sm text-gray-500 mt-1">Dashboard integrasi RSUD Jombang</p>
         </div>
 
