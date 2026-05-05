@@ -26,10 +26,10 @@ class SdmController extends Controller
             $data = [];
         }
 
-        // Helper: ambil nilai integer dari array result
+        // helper: ambil nilai integer dari array result
         $get = fn(string $key) => (int) ($data[$key] ?? 0);
 
-        // ── STAT CARDS ───────────────────────────────────────────────────────
+        // stat cards
         $totalPegawai       = $get('total_pegawai');
         $totalPns           = $get('total_pns');
         $totalP3k           = $get('total_p3k');
@@ -45,30 +45,30 @@ class SdmController extends Controller
         $totalAktif = $totalPns + $totalP3k + $totalP3kParuhWaktu
                     + $totalCpns + $totalKontrak + $totalTetap + $totalOrientasi;
 
-        // ── doughnut chart profesi ─────────────────────────────────────────
+        // doughnut chart profesi
         $dokterSpesialis = $get('total_dokter_spesialis');
         $dokterUmum      = $get('total_dokter_umum');
         $perawat         = $get('total_perawat');
         $bidan           = $get('total_bidan');
 
-        // tenada medis lainnya
+        // tenaga medis lainnya
         $medisLainnya = max(0, $totalMedis - $dokterSpesialis - $dokterUmum - $perawat - $bidan);
 
         $profesiLabels = ['Dokter Spesialis', 'Dokter Umum', 'Perawat', 'Bidan', 'Tenaga Medis Lainnya', 'Tenaga Non Medis'];
         $profesiValues = [$dokterSpesialis, $dokterUmum, $perawat, $bidan, $medisLainnya, $totalNonMedis];
 
-        // ── bar chart status kepegawaian ───────────────────────────────────
+        // bar chart status kepegawaian 
         $statusLabels = ['PNS', 'P3K', 'P3K Paruh Waktu', 'CPNS', 'Kontrak', 'Tetap', 'Orientasi'];
         $statusValues = [$totalPns, $totalP3k, $totalP3kParuhWaktu, $totalCpns, $totalKontrak, $totalTetap, $totalOrientasi];
 
-        // ── bzetting note : integrate nanti ────────────────────────────────
-        //   $r = Http::timeout(10)->get("{$this->apiBase}/bezetting");
-        //   $bezettingData = collect($r->json('data') ?? [])
+        // bzetting note : integrate nanti 
+        // $r = Http::timeout(10)->get("{$this->apiBase}/bezetting");
+        // $bezettingData = collect($r->json('data') ?? [])
         //       ->map(fn($row) => (object) $row);
         //
         $bezettingData = collect();
 
-        // ── Shift Hari Ini ───────────────────────────────────────────
+        // shift Hari Ini 
         $shiftSummary = [
             'PAGI'  => ['total' => $get('total_shift_pagi'),  'detail' => []],
             'SIANG' => ['total' => $get('total_shift_siang'), 'detail' => []],

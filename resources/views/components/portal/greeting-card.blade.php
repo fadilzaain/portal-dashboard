@@ -5,9 +5,9 @@
         <div>
             <p class="greeting-time" id="greeting-time">—</p>
             <h1 class="greeting-text">
-                Selamat datang, <span style="color:#14b8a6">{{ explode(' ', auth()->user()->name ?? 'Pengguna')[0] }}</span> ✨
+                Selamat datang, <span style="color:#14b8a6">{{ explode(' ', auth()->user()->name ?? 'Pengguna')[0] }}</span> 
             </h1>
-            <p class="greeting-sub">Berikut ringkasan Dashboard Integrasi RSUD Jombang.</p>
+            <p class="greeting-sub">Ringkasan Dashboard Integrasi RSUD Jombang.</p>
         </div>
 
         {{-- Filter Bulan & Tahun --}}

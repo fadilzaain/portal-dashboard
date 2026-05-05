@@ -225,20 +225,22 @@
   @endif
 
   {{-- ── Header ── --}}
-  <div class="pp-header">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <h1>Portal Pelayanan Pasien</h1>
-      @if(!$isDummy)
-        <span class="pp-badge-live">Live Data</span>
-      @endif
-    </div>
-    <!-- <div style="display:flex;align-items:center;gap:8px;">
-      <a href="{{ route('portal.pelayananpasien.ranap', request()->query()) }}"
-         class="pp-btn-ghost" style="font-size:12px;padding:6px 14px;">
-        -
-      </a>
-    </div> -->
+<div class="pp-header">
+  <div style="display:flex;align-items:center;gap:12px;">
+
+    {{-- Tombol Home --}}
+    <a href="{{ route('dashboard') }}" class="pp-btn-ghost" style="padding:6px 10px;" title="Kembali ke Home">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+
+    <h1>Portal Pelayanan Pasien</h1>
+    @if(!$isDummy)
+      <span class="pp-badge-live">Live Data</span>
+    @endif
   </div>
+</div>
 
   {{-- ── Filter ── --}}
   <form method="GET" action="{{ route('portal.pelayananpasien') }}" class="pp-filter-bar">
@@ -351,39 +353,28 @@
    {{-- ══════════════════════════════════════════════════════════
        ROW 2: AVLOS + TOI Bulanan (data real dari Google Sheet API)
   ══════════════════════════════════════════════════════════ --}}
-  <div class="pp-chart-row2">
-
-    <div class="pp-card">
-      <div class="pp-card-header">
+  {{-- ══════════════════════════════════════════════════════════
+     ROW 2: Barber-Johnson (data real dari API)
+══════════════════════════════════════════════════════════ --}}
+<div class="pp-card" style="margin-bottom: 20px;">
+    <div class="pp-card-header">
         <div>
-          <div class="pp-card-title">AVLOS Bulanan {{ $tahun }}</div>
-          <div class="pp-card-subtitle">Rata-rata lama dirawat · Standar 6–9 hari</div>
+          <div class="pp-card-title">Grafik {{ $tahun }}</div>
+          <div class="pp-card-subtitle">Standar Depkes RI · BOR, AVLOS, TOI</div>
         </div>
-        <span class="src-badge {{ $isDummy ? 'src-dummy' : 'src-api' }}">
-          {{ $isDummy ? '⚠ Dummy' : '✓ API' }}
-        </span>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="chartAvlos"></canvas>
-      </div>
+      <span class="src-badge src-api">✓ API</span>
     </div>
-
-    <div class="pp-card">
-      <div class="pp-card-header">
-        <div>
-          <div class="pp-card-title">TOI Bulanan {{ $tahun }}</div>
-          <div class="pp-card-subtitle">Interval antar pasien · Standar 1–3 hari</div>
-        </div>
-        <span class="src-badge {{ $isDummy ? 'src-dummy' : 'src-api' }}">
-          {{ $isDummy ? '⚠ Dummy' : '✓ API' }}
-        </span>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="chartToi"></canvas>
-      </div>
-    </div>
-
+  <div class="chart-wrap" style="height: 420px;">
+    <canvas id="chartBJ"></canvas>
   </div>
+  <div style="margin-top:12px; padding:9px 14px; background:rgba(37,99,235,0.06); border:1px solid rgba(37,99,235,0.2); border-radius:8px; font-size:11px; color:var(--pp-text-muted); display:flex; gap:16px; flex-wrap:wrap;">
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span> Zona efisien (AVLOS 6–9 hr, TOI 1–3 hr)</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#2563eb;display:inline-block;"></span> Di luar standar</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:22px;height:2px;background:rgba(34,197,94,0.6);display:inline-block;border-top:2px dashed rgba(34,197,94,0.6);"></span> BOR 60%</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:22px;height:2px;display:inline-block;border-top:2px dashed rgba(37,99,235,0.6);"></span> BOR 75%</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:22px;height:2px;display:inline-block;border-top:2px dashed rgba(239,68,68,0.6);"></span> BOR 85%</span>
+  </div>
+</div>
 
 
   {{-- ══════════════════════════════════════════════════════════
@@ -640,48 +631,187 @@ new Chart(document.getElementById('chartTriage'), {
   },
 });
 
-// ── 5. AVLOS Bulanan ─────────────────────────────────────────────────
-new Chart(document.getElementById('chartAvlos'), {
-  type: 'line',
-  data:{
-    labels: avlosData.map(d=>d.bulan),
-    datasets:[
-      { label:'AVLOS (hr)', data:avlosData.map(d=>d.avlos), borderColor:'#34d399', backgroundColor:'rgba(52,211,153,0.1)', borderWidth:2, fill:true, tension:0.4, pointRadius:4, pointHoverRadius:6, pointBackgroundColor:'#34d399' },
-      { label:'Min (6hr)', data:avlosData.map(()=>6), type:'line', borderColor:'rgba(34,197,94,0.4)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
-      { label:'Max (9hr)', data:avlosData.map(()=>9), type:'line', borderColor:'rgba(239,68,68,0.4)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
-    ],
-  },
-  options:{
-    responsive:true, maintainAspectRatio:false,
-    interaction:{ mode:'index', intersect:false },
-    plugins:{ legend:{ display:true, position:'top', labels:{ boxWidth:8, padding:12, usePointStyle:true } }, tooltip:{ ...TOOLTIP_STYLE, callbacks:{ label: ctx => ctx.raw===0?'Belum ada data':`${ctx.dataset.label}: ${ctx.raw} hr` } } },
-    scales:{
-      x:{ grid:{ color:'rgba(48,54,61,0.5)' } },
-      y:{ grid:{ color:'rgba(48,54,61,0.5)' }, beginAtZero:true, ticks:{ callback: v=>v+' hr' } },
-    },
-  },
-});
+// ── 5. Barber-Johnson ────────────────────────────────────────────────
+(function () {
+  const bjData = avlosData; // dari PHP: {bulan, avlos, toi, bor}
 
-// ── 6. TOI Bulanan ───────────────────────────────────────────────────
-new Chart(document.getElementById('chartToi'), {
-  type: 'line',
-  data:{
-    labels: avlosData.map(d=>d.bulan),
-    datasets:[
-      { label:'TOI (hr)', data:avlosData.map(d=>d.toi), borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.1)', borderWidth:2, fill:true, tension:0.4, pointRadius:4, pointHoverRadius:6, pointBackgroundColor:'#f59e0b' },
-      { label:'Min (1hr)', data:avlosData.map(()=>1), type:'line', borderColor:'rgba(34,197,94,0.4)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
-      { label:'Max (3hr)', data:avlosData.map(()=>3), type:'line', borderColor:'rgba(239,68,68,0.4)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false },
-    ],
-  },
-  options:{
-    responsive:true, maintainAspectRatio:false,
-    interaction:{ mode:'index', intersect:false },
-    plugins:{ legend:{ display:true, position:'top', labels:{ boxWidth:8, padding:12, usePointStyle:true } }, tooltip:{ ...TOOLTIP_STYLE, callbacks:{ label: ctx => ctx.raw===0?'Belum ada data':`${ctx.dataset.label}: ${ctx.raw} hr` } } },
-    scales:{
-      x:{ grid:{ color:'rgba(48,54,61,0.5)' } },
-      y:{ grid:{ color:'rgba(48,54,61,0.5)' }, beginAtZero:true, ticks:{ callback: v=>v+' hr' } },
+  const bjZonePlugin = {
+    id: 'bjZone',
+    beforeDatasetsDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      const x1 = x.getPixelForValue(6),  x2 = x.getPixelForValue(9);
+      const y1 = y.getPixelForValue(3),  y2 = y.getPixelForValue(1);
+      ctx.save();
+      ctx.fillStyle   = 'rgba(34,197,94,0.08)';
+      ctx.strokeStyle = 'rgba(34,197,94,0.5)';
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.rect(x1, y1, x2 - x1, y2 - y1);
+      ctx.fill();
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font      = '10px DM Sans, system-ui';
+      ctx.fillStyle = 'rgba(34,197,94,0.85)';
+      ctx.fillText('Zona Efisien', x1 + 6, y1 + 14);
+      ctx.restore();
+    }
+  };
+
+  const borCurvesPlugin = {
+    id: 'borCurves',
+    afterDatasetsDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      [
+        { bor: 60, color: 'rgba(34,197,94,0.55)',  label: 'BOR 60%' },
+        { bor: 75, color: 'rgba(37,99,235,0.55)',  label: 'BOR 75%' },
+        { bor: 85, color: 'rgba(239,68,68,0.55)',  label: 'BOR 85%' },
+      ].forEach(({ bor, color, label }) => {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth   = 1.5;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        let first = true;
+        for (let i = 0; i <= 120; i++) {
+          const los = 1 + (i / 120) * 13;
+          const toi = los * (100 - bor) / bor;
+          if (toi < 0.05 || toi > 9) { first = true; continue; }
+          const px = x.getPixelForValue(los);
+          const py = y.getPixelForValue(toi);
+          if (first) { ctx.moveTo(px, py); first = false; }
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // label di ujung kurva
+        const losLbl = bor <= 65 ? 11.5 : bor <= 80 ? 10 : 8.5;
+        const toiLbl = losLbl * (100 - bor) / bor;
+        if (toiLbl > 0.1 && toiLbl < 8.5) {
+          ctx.setLineDash([]);
+          ctx.font      = '10px DM Sans, system-ui';
+          ctx.fillStyle = color.replace('0.55', '1');
+          ctx.fillText(label, x.getPixelForValue(losLbl) + 4, y.getPixelForValue(toiLbl) - 4);
+        }
+        ctx.restore();
+      });
+    }
+  };
+
+  const pointLabelPlugin = {
+  id: 'pointLabels',
+  afterDraw(chart) {
+    const { ctx } = chart;
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+
+    chart.data.datasets.forEach((ds, di) => {
+      const meta = chart.getDatasetMeta(di);
+      ds.data.forEach((pt, pi) => {
+        if (!pt.x || pt.x === 0) return;
+        const el   = meta.data[pi];
+        const text = pt.label;
+
+        ctx.font = '700 11px Arial, sans-serif';
+        const tw = ctx.measureText(text).width;
+        const bx = el.x - tw / 2 - 6;
+        const by = el.y - 32;
+        const bw = tw + 12;
+        const bh = 18;
+        const r  = 4;
+
+        // background pill
+        ctx.beginPath();
+        ctx.moveTo(bx + r, by);
+        ctx.lineTo(bx + bw - r, by);
+        ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
+        ctx.lineTo(bx + bw, by + bh - r);
+        ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+        ctx.lineTo(bx + r, by + bh);
+        ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+        ctx.lineTo(bx, by + r);
+        ctx.quadraticCurveTo(bx, by, bx + r, by);
+        ctx.closePath();
+        ctx.fillStyle = pt.efisien ? '#16a34a' : '#1d4ed8';
+        ctx.fill();
+
+        // border tipis
+        ctx.strokeStyle = pt.efisien ? '#bbf7d0' : '#bfdbfe';
+        ctx.lineWidth   = 1;
+        ctx.stroke();
+
+        // teks
+        ctx.fillStyle    = '#ffffff';
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, el.x, by + bh / 2);
+      });
+    });
+
+    ctx.restore();
+  }
+};
+
+  const pts = bjData
+    .filter(d => d.avlos > 0 || d.toi > 0)
+    .map(d => ({
+      x:       d.avlos,
+      y:       d.toi,
+      label:   d.bulan,
+      bor:     d.bor,
+      efisien: d.avlos >= 6 && d.avlos <= 9 && d.toi >= 1 && d.toi <= 3 && d.bor >= 60 && d.bor <= 85,
+    }));
+
+  new Chart(document.getElementById('chartBJ'), {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label:           'Bulanan',
+        data:            pts,
+        backgroundColor: pts.map(p => p.efisien ? 'rgba(34,197,94,0.85)' : 'rgba(37,99,235,0.85)'),
+        borderColor:     pts.map(p => p.efisien ? '#16a34a' : '#1d4ed8'),
+        borderWidth:     2,
+        pointRadius:     9,
+        pointHoverRadius: 12,
+      }],
     },
-  },
-});
+    options: {
+      responsive:           true,
+      maintainAspectRatio:  false,
+      animation:            { duration: 700 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...TOOLTIP_STYLE,
+          callbacks: {
+            title: ctx  => ctx[0].raw.label,
+            label: ctx  => [
+              `AVLOS : ${ctx.raw.x} hari`,
+              `TOI   : ${ctx.raw.y} hari`,
+              `BOR   : ${ctx.raw.bor}%`,
+              ctx.raw.efisien ? '✓ Dalam zona efisien' : '⚠ Di luar standar',
+            ],
+          },
+        },
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'AVLOS — Rata-rata lama dirawat (hari)', font: { size: 12 }, color: '#7d8590' },
+          min: 0, max: 15,
+          grid:  { color: 'rgba(48,54,61,0.5)' },
+          ticks: { color: '#7d8590', callback: v => v + ' hr' },
+        },
+        y: {
+          title: { display: true, text: 'TOI — Interval antar pasien (hari)', font: { size: 12 }, color: '#7d8590' },
+          min: 0, max: 9,
+          grid:  { color: 'rgba(48,54,61,0.5)' },
+          ticks: { color: '#7d8590', callback: v => v + ' hr' },
+        },
+      },
+    },
+    plugins: [bjZonePlugin, borCurvesPlugin, pointLabelPlugin],
+  });
+})();
 </script>
 @endpush

@@ -18,7 +18,7 @@ class DashboardController extends Controller
                        'Juli','Agustus','September','Oktober','November','Desember'];
         $bulanLabel = $bulanNames[$bulan];
 
-        // ── 1. Pelayanan Pasien ───────────────────────
+        // 1.Pelayanan Pasien
         try {
             /** @var \App\Services\GoogleSheetApiService $gsApi */
             $gsApi     = app(\App\Services\GoogleSheetApiService::class);
@@ -40,7 +40,7 @@ class DashboardController extends Controller
             $pelayanan = ['bor' => 0, 'los' => 0, 'toi' => 0, 'bto' => 0];
         }
 
-        // ── 2. Keuangan ─────────────────────────────────────────────────
+        // 2. Keuangan
         try {
             $pendapatan = (float) DB::connection('mysql3')
                 ->table('tr_mutasirekbank')
@@ -63,7 +63,7 @@ class DashboardController extends Controller
             $keuangan = ['pendapatan' => 0, 'belanja' => 0];
         }
 
-        // ── 3. SDM ──────────────────────────────────────────────────────
+        // 3. SDM 
         try {
             $apiBase  = env('API_SIKAWAN_BASE', 'http://192.168.10.8/sikawan-api/public/api/v1');
             $response = Http::timeout(10)->get("{$apiBase}/sikawan");
@@ -100,16 +100,14 @@ class DashboardController extends Controller
             'shift_malam' => $dataSdm['total_shift_malam'] ?? 0,
         ];
 
-        // ── 4. Indikator Mutu ────────────────────────────────────────────
+        // 4. Indikator Mutu 
         try {
             $service = app(\App\Services\IndikatorMutuService::class);
 
             // Konversi bulan - triwulan
             $triwulan = (int) ceil($bulan / 3);
-
-            $filters    = ['tahun' => $tahun, 'triwulan' => $triwulan, 'jenis_mutu' => null];
-            $indikators = $service->getIndikatorDenganCapaian($filters);
-            $tabel      = $service->formatDataTabel($indikators, $triwulan);
+            $pmkpRaw  = $service->fetchPmkp($triwulan, $tahun);
+            $tabel    = $service->formatTabel($pmkpRaw);
 
             $mutu = [
                 'total'          => count($tabel),
@@ -120,7 +118,7 @@ class DashboardController extends Controller
             $mutu = ['total' => 0, 'tercapai' => 0, 'tidak_tercapai' => 0];
         }
 
-        // ── 5. Klaim BPJS ────────────────────────────────────────────────
+        // 5. Klaim BPJS 
         try {
             $from = Carbon::create($tahun, $bulan, 1)->startOfMonth();
             $to   = Carbon::create($tahun, $bulan, 1)->endOfMonth();

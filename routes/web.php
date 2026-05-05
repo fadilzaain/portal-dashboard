@@ -61,7 +61,7 @@ Route::middleware('auth')->group(function () {
 
 
 
-    // Portal utama (landing 5 pilihan)
+    // Portal utama 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Portal redirect ke web pilihan
@@ -85,12 +85,14 @@ Route::middleware('auth')->group(function () {
     Route::prefix('sdm')->name('sdm.')->middleware(['auth'])->group(function () {
         Route::get('/portal/sdm', [SdmController::class, 'index'])->name('portal.sdm');
     });
-   // ── Dashboard Indikator Mutu ──────────────────
+   // Dashboard Indikator Mutu
     Route::get('/portal/indikator-mutu', [IndikatorMutuController::class, 'index'])
         ->name('portal.indikatormutu');
 
     Route::get('/portal/indikator-mutu/data', [IndikatorMutuController::class, 'getData'])
         ->name('portal.indikatormutu.data');
+    Route::get('/portal/indikator-mutu/ndr',  [IndikatorMutuController::class, 'getNdr'])  
+        ->name('portal.indikatormutu.ndr');
  
 
     // Dashboard Klaim BPJS

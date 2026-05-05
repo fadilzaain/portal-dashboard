@@ -352,7 +352,18 @@ body { background: var(--navy-950); color: var(--text-primary); }
 <div class="sdm-wrap" style="padding: 1.5rem;">
 
     {{-- ── DATE BAR ── --}}
-    <div class="sdm-datebar">
+    <div class="sdm-wrap" style="padding: 1.5rem;">
+
+    {{-- ── DATE BAR ── --}}
+    <div class="sdm-datebar" style="display:flex; align-items:center; justify-content:space-between;">
+        
+        <a href="{{ url('dashboard') }}" class="btn-home">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            Home
+        </a>
+
         <div class="sdm-datebar-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -365,6 +376,7 @@ body { background: var(--navy-950); color: var(--text-primary); }
                 <polyline points="6 9 12 15 18 9"/>
             </svg>
         </div>
+
     </div>
 
     {{-- ── STAT ROW 1 ── --}}

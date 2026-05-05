@@ -134,7 +134,7 @@ class KlaimBpjsController extends Controller
     }
 
     /**
-     * fill gap periode tanpa data → nilai 0.
+     * fill gap periode tanpa data nilai 0.
      * dipakai untuk chartJenis (field: pengajuan, terbayar_count, nominal).
      */
     private function fillGapsChart(
@@ -176,10 +176,10 @@ class KlaimBpjsController extends Controller
 
     // ══════════════════════════════════════════════════════════════
     //  KETERANGAN STATUS BPJS:
-    //    LIKE '1%' → Diproses  (Proses Verifikasi)
-    //    LIKE '2%' → Pending   (Klaim Pending)
-    //    LIKE '3%' → Terbayar  (Klaim Terbayar)
-    //    LIKE '4%' → Tidak Layak
+    //    LIKE '1%' = Diproses  (Proses Verifikasi)
+    //    LIKE '2%' = Pending   (Klaim Pending)
+    //    LIKE '3%' = Terbayar  (Klaim Terbayar)
+    //    LIKE '4%' = Tidak Layak
     // ══════════════════════════════════════════════════════════════
 
     // ══════════════════════════════════════════════════════════════
@@ -293,11 +293,6 @@ class KlaimBpjsController extends Controller
 
     /**
      * Return: data chart terpisah rinap vs rjalan + summary donut.
-     * Format: {
-     *   rinap:   { labels, pengajuan[], terbayar_count[], nominal[] },
-     *   rjalan:  { labels, pengajuan[], terbayar_count[], nominal[] },
-     *   summary: { terbayar, pending, tidak_layak, diproses }
-     * }
      */
     public function chartJenis(Request $request): JsonResponse
     {
@@ -342,7 +337,7 @@ class KlaimBpjsController extends Controller
         $rinapFilled  = $this->fillGapsChart($rinapRows,  $from, $to, $period, $groupFormat);
         $rjalanFilled = $this->fillGapsChart($rjalanRows, $from, $to, $period, $groupFormat);
 
-        // Labels (sama untuk kedua chart karena fill gaps pakai range yang sama)
+        // Labels
         $labels = $rinapFilled->map(fn($r) => $fmt($r->period_key))->values();
 
         // ── SUMMARY untuk donut ──
@@ -391,7 +386,7 @@ class KlaimBpjsController extends Controller
     }
 
     /**
-     * Return: daftar klaim gabungan rinap+rjalan, support filter status & search.
+     * Return: daftar klaim gabungan rinap+rjalan
      */
     public function list(Request $request): JsonResponse
     {

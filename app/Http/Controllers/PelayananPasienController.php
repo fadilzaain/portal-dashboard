@@ -24,26 +24,24 @@ class PelayananPasienController extends Controller
 
         $isDummy = false;
 
-        // ── bor, avlos, toi ────────────────────────────────
+        // bor, avlos, toi
         try {
             $rateTahun = $this->api->getRateTahun($tahun);
 
-            // Bulan yang punya data (BOR > 0)
+            // bulan yang punya data (BOR > 0)
             $bulanAktif = $rateTahun->filter(fn($r) => $r->bor > 0);
 
-            // Rata-rata indikator dari bulan yang aktif 
+            // rata-rata indikator dari bulan yang aktif 
             $bor = $bulanAktif->avg('bor')  ?? 0;
             $los = $bulanAktif->avg('avlos') ?? 0;
             $toi = $bulanAktif->avg('toi')  ?? 0;
 
-            // BTO dari API adalah per-hari (fraksi kecil), akumulasi = sum seluruh bulan aktif
-            // Jika API sudah mengembalikan BTO bulanan, gunakan sum; jika harian gunakan avg*30
-            // Untuk sementara: rata-rata * 12 sebagai estimasi tahunan (sesuaikan saat endpoint baru tersedia)
+            // BTO dari API adalah perhari, akumulasi = sum seluruh bulan aktif
+            // kalo API sudah mengembalikan BTO bulanan, gunakan sum; jika harian gunakan avg*30
+            // Untuk sementara: rata-rata *12 sebagai estimasi tahunan (endpoint tersedia baru sesuaikan)
             $btoRaw = $bulanAktif->avg('bto') ?? 0;
-            $bto    = round($btoRaw * 30, 2); // konversi harian → bulanan (estimasi)
+            $bto    = round($btoRaw * 30, 2); 
 
-            // Ambil bulan aktif terakhir sebagai nilai "current" jika filter bulan tertentu
-            // Jika filter rentang tanggal: pakai rata-rata bulan dalam rentang
             $bulanDalam = $this->getBulanDalamRentang($tanggalMulai, $tanggalSelesai);
             if (! empty($bulanDalam)) {
                 $filtered = $rateTahun->filter(fn($r) => in_array($r->bulan, $bulanDalam) && $r->bor > 0);
@@ -68,19 +66,19 @@ class PelayananPasienController extends Controller
             $rateTahun = collect();
         }
 
-        // ── Ringkasan Ranap ─────────────────────────────────────────────────
-        // note : ganti dengan $this->api->getRingkasanRanap() jika endpoint tersedia
+        // ringkasan ranap
+        // note : ganti dengan $this->api->getRingkasanRanap() jika API jadi
         $ringkasanRanap = $isDummy ? $this->dummyRanap() : $this->dummyRanap();
 
-        // ── Ringkasan Rajal ─────────────────────────────────────────────────
-        // note : Ganti dengan $this->api->getRingkasanRajal() jika endpoint tersedia
+        // ringkasan rajal
+        // note : Ganti dengan $this->api->getRingkasanRajal() jika API jadi
         $ringkasanRajal = $isDummy ? $this->dummyRajal() : $this->dummyRajal();
 
-        // ── Ringkasan IGD ───────────────────────────────────────────────────
-        // note : Ganti dengan $this->api->getRingkasanIGD() setelah endpoint tersedia
+        // ringkasan igd
+        // note : Ganti dengan $this->api->getRingkasanIGD() jika API jadi
         $ringkasanIGD = $isDummy ? $this->dummyIGD() : $this->dummyIGD();
 
-        // ── Chart BOR Bulanan (dari API rateTahun) ──────────────────────────
+        // chart BOR bulanan
         $bulanLabel = [1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',
                        7=>'Jul',8=>'Ags',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'];
 
@@ -92,26 +90,27 @@ class PelayananPasienController extends Controller
             ];
         });
 
-        // ── Chart Trend Harian ──────────────────────────────────────────────
-        // note : ganti dengan $this->api->getTrendHarian() jika endpoint tersedia
+        // chart tren harian
+        // note : ganti dengan $this->api->getTrendHarian() jika API jadi
         $trendHarian = $this->dummyTrendHarian();
 
-        // ── Chart Triage IGD ────────────────────────────────────────────────
-        // note : ganti dengan $this->api->getTriageIGD() jika endpoint tersedia
+        // chart triage IGD
+        // note : ganti dengan $this->api->getTriageIGD() jika API jadi
         $triageIGD = $this->dummyTriage();
 
-        // ── Build chart avlos, toi, bto ─
+        // build chart avlos, toi, bto
         $chartAvlos = collect(range(1, 12))->map(function ($m) use ($rateTahun, $bulanLabel) {
             $row = $rateTahun->firstWhere('bulan', $m);
             return (object) [
                 'bulan' => $bulanLabel[$m],
                 'avlos' => $row ? round($row->avlos, 2) : 0,
                 'toi'   => $row ? round($row->toi,   2) : 0,
+                'bor'   => $row ? round($row->bor,   2) : 0,
                 'bto'   => $row ? round($row->bto * 30, 2) : 0,
             ];
         });
 
-        // ── Standar ────────────────────────────────────────────────────────────
+        // standar
         $standar = [
             'bor_min' => 60,  'bor_max' => 85,
             'los_min' => 6,   'los_max' => 9,
@@ -142,7 +141,6 @@ class PelayananPasienController extends Controller
 
         try {
             $rateTahun = $this->api->getRateTahun($tahun);
-            // Filter bulan sesuai rentang tanggal
             $bulanDalam = $this->getBulanDalamRentang($tanggalMulai, $tanggalSelesai);
             $dataRanap  = $rateTahun->filter(fn($r) => empty($bulanDalam) || in_array($r->bulan, $bulanDalam));
         } catch (\Exception $e) {
@@ -158,7 +156,6 @@ class PelayananPasienController extends Controller
     // PRIVATE HELPERS
     // ══════════════════════════════════════════════════════════════
 
-    /** Ambil array nomor bulan yang ada dalam rentang tanggal */
     private function getBulanDalamRentang(string $dari, string $sampai): array
     {
         $start = Carbon::parse($dari);
@@ -173,8 +170,7 @@ class PelayananPasienController extends Controller
         return array_unique($bulan);
     }
 
-    // ── Dummy data ────
-
+    // DUMMY DATAA
     private function dummyRanap(): array
     {
         return [

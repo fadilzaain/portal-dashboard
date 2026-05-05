@@ -230,6 +230,20 @@
         }
         .logout-btn:hover { color: #f87171; }
 
+        .btn-home {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 5px 13px;
+        background: transparent;
+        border: 1px solid rgba(255,255,255,.07);
+        border-radius: 8px;
+        color: #7d8590;
+        font-size: 11px;
+        text-decoration: none;
+        transition: all .15s;
+        flex-shrink: 0;
+        }
+        .btn-home:hover { background: rgba(255,255,255,.05); color: #e2e8f0; }
+
         /* ── Main Content — push saat sidebar hover ── */
         #main-wrap {
             margin-left: 0;
