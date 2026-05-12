@@ -2,16 +2,16 @@
 
 <div class="greeting-card">
     <div class="greeting-inner">
-        <div>
+        <div class="greeting-text-wrap">
             <p class="greeting-time" id="greeting-time">—</p>
             <h1 class="greeting-text">
-                Selamat datang, <span style="color:#14b8a6">{{ explode(' ', auth()->user()->name ?? 'Pengguna')[0] }}</span> 
+                Selamat datang, <span style="color:#14b8a6">{{ explode(' ', auth()->user()->name ?? 'Pengguna')[0] }}</span>
             </h1>
             <p class="greeting-sub">Ringkasan Dashboard Integrasi RSUD Jombang.</p>
         </div>
 
         {{-- Filter Bulan & Tahun --}}
-        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+        <div class="greeting-filter">
             <div class="filter-group">
                 <span class="filter-label">Bulan</span>
                 <select class="filter-select" id="filter-bulan" onchange="applyFilter()">
@@ -48,3 +48,56 @@
         </div>
     </div>
 </div>
+
+@once
+@push('styles')
+<style>
+    /* Responsive overrides untuk greeting card */
+    .greeting-filter {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 640px) {
+        .greeting-card { padding: 1.25rem 1rem; margin-bottom: 1.25rem; }
+
+        .greeting-inner {
+            flex-direction: column;
+            align-items: stretch;
+            gap: .85rem;
+        }
+
+        .greeting-text { font-size: 1.15rem; }
+        .greeting-sub  { font-size: .78rem; }
+
+        .greeting-filter {
+            width: 100%;
+            gap: .5rem;
+        }
+        .greeting-filter .filter-group {
+            flex: 1;
+            min-width: 0;
+        }
+        .greeting-filter .filter-select {
+            width: 100%;
+        }
+
+        .greeting-stats {
+            gap: 0;
+            justify-content: space-between;
+        }
+        .g-divider { display: none; }
+        .g-stat { flex: 1; text-align: center; }
+        .g-stat-val { font-size: .85rem; }
+    }
+
+    @media (max-width: 380px) {
+        .greeting-text { font-size: 1rem; }
+        .greeting-stats { flex-wrap: wrap; gap: .5rem; }
+        .g-stat { flex: 0 0 calc(50% - .25rem); }
+    }
+</style>
+@endpush
+@endonce

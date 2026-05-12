@@ -471,7 +471,7 @@ function buildRuanganToggles(ruanganList, datasets) {
   btnTotal.onclick = () => toggleNdrLine(0, btnTotal);
   container.appendChild(btnTotal);
 
-  // Tombol per ruangan (mulai index 2 — skip Total RS dan Target)
+  // Tombol per ruangan (mulai index 2)
   ruanganList.forEach((nama, i) => {
     const dsIdx = i + 2; // dataset index: 0=Total, 1=Target, 2+= ruangan
     const btn = document.createElement('button');

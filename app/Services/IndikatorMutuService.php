@@ -118,7 +118,7 @@ class IndikatorMutuService
 
             $bulanData = $this->buildBulanData($row);
 
-            // Rata-rata dari bulan yang tersedia (dipertahankan dari Service lama)
+            // Rata-rata dari bulan yang tersedia 
             $capaianValues = collect($bulanData)
                 ->pluck('capaian')
                 ->filter(fn($v) => $v !== null);
