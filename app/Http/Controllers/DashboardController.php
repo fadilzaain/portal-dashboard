@@ -18,6 +18,9 @@ class DashboardController extends Controller
                        'Juli','Agustus','September','Oktober','November','Desember'];
         $bulanLabel = $bulanNames[$bulan];
 
+        $bulanData = 3; // hardcode ke bulan maret
+        $bulanLabelData = $bulanNames[$bulanData];
+
         // 1.Pelayanan Pasien
         try {
             /** @var \App\Services\GoogleSheetApiService $gsApi */
@@ -25,7 +28,7 @@ class DashboardController extends Controller
             $rateTahun = $gsApi->getRateTahun($tahun);
 
             // Ambil data bulan yang sesuai
-            $row = $rateTahun->firstWhere('bulan', $bulan);
+            $row = $rateTahun->firstWhere('bulan', $bulanData); //hardcode maret
 
             // BTO dari API adalah nilai harian, kali 30 untuk estimasi bulanan
             $btoRaw = $row ? round($row->bto * 30, 1) : 0;
@@ -45,14 +48,14 @@ class DashboardController extends Controller
             $pendapatan = (float) DB::connection('mysql3')
                 ->table('tr_mutasirekbank')
                 ->whereYear('effective_date', $tahun)
-                ->whereMonth('effective_date', $bulan)
+                ->whereMonth('effective_date', $bulanData) // hardcode bulan maret
                 ->whereNotNull('credit')->where('credit', '>', 0)
                 ->sum('credit');
 
             $belanja = (float) DB::connection('mysql2')
                 ->table('cheque')
                 ->whereYear('tanggal', $tahun)
-                ->whereMonth('tanggal', $bulan)
+                ->whereMonth('tanggal', $bulanData) // hardcode bulan maret
                 ->sum('jumlah');
 
             $keuangan = [
@@ -120,8 +123,8 @@ class DashboardController extends Controller
 
         // 5. Klaim BPJS 
         try {
-            $from = Carbon::create($tahun, $bulan, 1)->startOfMonth();
-            $to   = Carbon::create($tahun, $bulan, 1)->endOfMonth();
+            $from = Carbon::create($tahun, $bulanData, 1)->startOfMonth(); // hardcode bulan maret
+            $to   = Carbon::create($tahun, $bulanData, 1)->endOfMonth(); // hardcode bulan maret
 
             $rinapRaw = DB::connection('klaim_bpjs')->selectOne("
                 SELECT
@@ -171,6 +174,7 @@ class DashboardController extends Controller
         return view('dashboard.index', compact(
             'apps',
             'bulan', 'tahun', 'bulanLabel',
+            'bulanLabelData',
             'pelayanan', 'keuangan', 'sdm', 'mutu', 'bpjs'
         ));
     }
