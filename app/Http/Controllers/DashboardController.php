@@ -132,10 +132,14 @@ class DashboardController extends Controller
                     SUM(biaya_byPengajuan) AS nominal,
                     SUM(CASE WHEN status LIKE '3%' THEN 1 ELSE 0 END) AS terbayar,
                     SUM(CASE WHEN status LIKE '2%' THEN 1 ELSE 0 END) AS pending,
-                    SUM(CASE WHEN status LIKE '4%' THEN 1 ELSE 0 END) AS tidak_layak
+                    SUM(CASE WHEN status LIKE '4%' THEN 1 ELSE 0 END) AS tidak_layak,
+                    SUM(CASE WHEN status LIKE '3%' THEN biaya_byPengajuan ELSE 0 END) AS nominal_terbayar,
+                    SUM(CASE WHEN status LIKE '2%' THEN biaya_byPengajuan ELSE 0 END) AS nominal_pending,
+                    SUM(CASE WHEN status LIKE '4%' THEN biaya_byPengajuan ELSE 0 END) AS nominal_tidak_layak
                 FROM mon_klaim_rinap
                 WHERE tglPulang BETWEEN ? AND ?
             ", [$from, $to]);
+            
 
             $rjalanRaw = DB::connection('klaim_bpjs')->selectOne("
                 SELECT
@@ -143,20 +147,27 @@ class DashboardController extends Controller
                     SUM(biaya_byPengajuan) AS nominal,
                     SUM(CASE WHEN status LIKE '3%' THEN 1 ELSE 0 END) AS terbayar,
                     SUM(CASE WHEN status LIKE '2%' THEN 1 ELSE 0 END) AS pending,
-                    SUM(CASE WHEN status LIKE '4%' THEN 1 ELSE 0 END) AS tidak_layak
+                    SUM(CASE WHEN status LIKE '4%' THEN 1 ELSE 0 END) AS tidak_layak,
+                    SUM(CASE WHEN status LIKE '3%' THEN biaya_byPengajuan ELSE 0 END) AS nominal_terbayar,
+                    SUM(CASE WHEN status LIKE '2%' THEN biaya_byPengajuan ELSE 0 END) AS nominal_pending,
+                    SUM(CASE WHEN status LIKE '4%' THEN biaya_byPengajuan ELSE 0 END) AS nominal_tidak_layak
                 FROM mon_klaim_rjalan
                 WHERE tglSep BETWEEN ? AND ?
             ", [$from, $to]);
 
             $bpjs = [
-                'rawat_inap'     => (int)   ($rinapRaw->total    ?? 0),
-                'rawat_jalan'    => (int)   ($rjalanRaw->total   ?? 0),
-                'nominal_rinap'  => (float) ($rinapRaw->nominal  ?? 0),
-                'nominal_rjalan' => (float) ($rjalanRaw->nominal ?? 0),
-                'terbayar'       => (int)   ($rinapRaw->terbayar    ?? 0) + (int) ($rjalanRaw->terbayar    ?? 0),
-                'pending'        => (int)   ($rinapRaw->pending     ?? 0) + (int) ($rjalanRaw->pending     ?? 0),
-                'tidak_layak'    => (int)   ($rinapRaw->tidak_layak ?? 0) + (int) ($rjalanRaw->tidak_layak ?? 0),
+                'rawat_inap'            => (int)   ($rinapRaw->total    ?? 0),
+                'rawat_jalan'           => (int)   ($rjalanRaw->total   ?? 0),
+                'nominal_rinap'         => (float) ($rinapRaw->nominal  ?? 0),
+                'nominal_rjalan'        => (float) ($rjalanRaw->nominal ?? 0),
+                'nominal_terbayar'      => (float)($rinapRaw->nominal_terbayar  ?? 0) + (float)($rjalanRaw->nominal_terbayar  ?? 0),
+                'nominal_pending'       => (float)($rinapRaw->nominal_pending   ?? 0) + (float)($rjalanRaw->nominal_pending   ?? 0),
+                'nominal_tidak_layak'   => (float)($rinapRaw->nominal_tidak_layak ?? 0) + (float)($rjalanRaw->nominal_tidak_layak ?? 0),
+                'terbayar'              => (int)   ($rinapRaw->terbayar    ?? 0) + (int) ($rjalanRaw->terbayar    ?? 0),
+                'pending'               => (int)   ($rinapRaw->pending     ?? 0) + (int) ($rjalanRaw->pending     ?? 0),
+                'tidak_layak'           => (int)   ($rinapRaw->tidak_layak ?? 0) + (int) ($rjalanRaw->tidak_layak ?? 0),
             ];
+   
 
         } catch (\Exception $e) {
             $bpjs = ['rawat_inap' => 0, 'rawat_jalan' => 0, 'nominal_rinap' => 0, 'nominal_rjalan' => 0, 'terbayar' => 0, 'pending' => 0, 'tidak_layak' => 0];

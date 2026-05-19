@@ -7,6 +7,9 @@
     $bpjsPD  = $bpjs['pending']      ?? 0;
     $bpjsTL  = $bpjs['tidak_layak'] ?? 0;
     $bpjsTot = $bpjsTB + $bpjsPD + $bpjsTL;
+    $nominalTB = $bpjs['nominal_terbayar']    ?? 0;
+    $nominalPD = $bpjs['nominal_pending']     ?? 0;
+    $nominalTL = $bpjs['nominal_tidak_layak'] ?? 0;
 
     $p1 = $bpjsTot > 0 ? round($bpjsTB / $bpjsTot * 100) : 0;
     $p2 = $bpjsTot > 0 ? round($bpjsPD / $bpjsTot * 100) : 0;
@@ -20,7 +23,7 @@
     $nominalRJ  = $bpjs['nominal_rjalan'] ?? 0;
 @endphp
 
-<a href="{{ route('portal.klaimbpjs') }}" class="app-card theme-amber" style="grid-column: span 2;">
+<a href="{{ route('portal.klaimbpjs') }}" class="app-card theme-amber bpjs-card">
     <div class="card-header-row">
         <div class="card-header-left">
             <div class="app-icon icon-amber">
@@ -64,19 +67,22 @@
     <div>
         <div style="font-size:.6rem;color:#475569;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem;">Status Klaim</div>
         <div class="klaim-status">
-            <div class="ks-box">
-                <div class="ks-label">Terbayar</div>
-                <div class="ks-val" style="color:#22c55e">{{ number_format($bpjsTB) }}</div>
-            </div>
-            <div class="ks-box">
-                <div class="ks-label">Pending</div>
-                <div class="ks-val" style="color:#f59e0b">{{ number_format($bpjsPD) }}</div>
-            </div>
-            <div class="ks-box">
-                <div class="ks-label">Tdk Layak</div>
-                <div class="ks-val" style="color:#f43f5e">{{ number_format($bpjsTL) }}</div>
-            </div>
-        </div>
+    <div class="ks-box">
+        <div class="ks-label">Terbayar</div>
+        <div class="ks-val" style="color:#22c55e">{{ $juta($nominalTB) }}</div>
+        <div style="font-size:.6rem;color:#22c55e;opacity:.7;font-family:'DM Mono',monospace;margin-top:.2rem;letter-spacing:.03em;">{{ number_format($bpjsTB) }}</div>
+    </div>
+    <div class="ks-box">
+        <div class="ks-label">Pending</div>
+        <div class="ks-val" style="color:#f59e0b">{{ $juta($nominalPD) }}</div>
+        <div style="font-size:.6rem;color:#f59e0b;opacity:.7;font-family:'DM Mono',monospace;margin-top:.2rem;letter-spacing:.03em;">{{ number_format($bpjsPD) }}</div>
+    </div>
+    <div class="ks-box">
+        <div class="ks-label">Tdk Layak</div>
+        <div class="ks-val" style="color:#f43f5e">{{ $juta($nominalTL) }}</div>
+        <div style="font-size:.6rem;color:#f43f5e;opacity:.7;font-family:'DM Mono',monospace;margin-top:.2rem;letter-spacing:.03em;">{{ number_format($bpjsTL) }}</div>
+    </div>
+</div>
 
         <div class="klaim-bar">
             <div class="kb-seg" style="width:{{ $p1 }}%;background:#22c55e"></div>

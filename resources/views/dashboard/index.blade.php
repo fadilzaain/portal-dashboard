@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Beranda Portal')
-@section('page_title', 'Beranda Portal')
+@section('page_title', 'DASH-i')
 @section('page_subtitle', 'Pilih Dashboard')
 
 @push('styles')
@@ -232,8 +232,10 @@
     .month-amber  { color: #f59e0b; border-color: rgba(245,158,11,.3);  background: rgba(245,158,11,.08);  }
 
     /* ══════════════════════════════════════
-       MOBILE RESPONSIVE — 640px
+    MOBILE RESPONSIVE — 640px
     ══════════════════════════════════════ */
+    .bpjs-card { grid-column: span 2; }
+
     @media (max-width: 640px) {
         /* Greeting card */
         .greeting-card { padding: 1.25rem 1rem; margin-bottom: 1.25rem; border-radius: 16px; }
@@ -251,20 +253,18 @@
         .g-stat-val { font-size: .85rem; }
 
         /* Cards */
+        .app-grid { grid-template-columns: 1fr; gap: .85rem; }
+        .bpjs-card { grid-column: span 1; }
         .app-card { padding: 1.1rem 1rem; border-radius: 14px; }
         .app-icon { width: 36px; height: 36px; border-radius: 10px; }
         .card-title-wrap .app-name { font-size: .82rem; }
         .card-month-badge { font-size: .55rem; padding: .15rem .4rem; }
 
-        /* Klaim row stack vertical di HP kecil */
         .klaim-row { grid-template-columns: 1fr 1fr; gap: .4rem; }
         .klaim-val { font-size: 1rem; }
         .ks-val    { font-size: .95rem; }
 
-        /* Mutu */
         .mutu-box-val { font-size: 1.1rem; }
-
-        /* SDM */
         .sdm-big-num { font-size: 1.6rem; }
     }
 
@@ -275,7 +275,82 @@
         .greeting-stats { flex-wrap: wrap; gap: .5rem; }
         .g-stat { flex: 0 0 calc(50% - .25rem); }
     }
-</style>
+
+    /* ══════════════════════════════════════
+    LARGE SCREEN — TV / MONITOR BESAR
+    ══════════════════════════════════════ */
+
+    /* 1440px — monitor standar besar */
+    @media (min-width: 1440px) {
+        #page-content { padding: 2.5rem 3rem; }
+
+        .app-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .greeting-card { padding: 2.25rem 3rem; }
+        .greeting-text { font-size: 1.75rem; }
+
+        .klaim-val   { font-size: 1.4rem; }
+        .ks-val      { font-size: 1.25rem; }
+        .stat-box-val { font-size: 1.1rem; }
+        .sdm-big-num { font-size: 2.4rem; }
+        .mutu-box-val { font-size: 1.5rem; }
+        .fin-val      { font-size: .9rem; }
+    }
+
+    /* 1920px — Full HD TV */
+    @media (min-width: 1920px) {
+        #page-content { padding: 3rem 4rem; }
+
+        .app-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .greeting-card { padding: 2.75rem 4rem; border-radius: 24px; }
+        .greeting-text { font-size: 2rem; }
+        .greeting-sub  { font-size: .95rem; }
+        .g-stat-val    { font-size: 1.1rem; }
+
+        .app-card { padding: 1.85rem 2rem; border-radius: 22px; gap: 1.1rem; }
+        .app-icon { width: 52px; height: 52px; border-radius: 14px; }
+        .card-title-wrap .app-name { font-size: 1.05rem; }
+        .card-title-wrap .app-sub  { font-size: .75rem; }
+        .card-month-badge { font-size: .7rem; padding: .25rem .7rem; }
+
+        .klaim-val    { font-size: 1.6rem; }
+        .klaim-label  { font-size: .7rem; }
+        .ks-val       { font-size: 1.4rem; }
+        .ks-label     { font-size: .65rem; }
+        .stat-box-val { font-size: 1.2rem; }
+        .sdm-big-num  { font-size: 2.8rem; }
+        .mutu-box-val { font-size: 1.7rem; }
+        .fin-val      { font-size: 1rem; }
+        .fin-label    { font-size: .75rem; }
+
+        .klaim-bar  { height: 7px; }
+        .progress-bar-wrap { height: 7px; }
+    }
+
+    /* 2560px — 2K / TV besar */
+    @media (min-width: 2560px) {
+        #page-content { padding: 4rem 6rem; }
+
+        .app-grid { gap: 2.5rem; }
+
+        .greeting-text { font-size: 2.4rem; }
+        .app-card { padding: 2.25rem 2.5rem; }
+        .app-icon { width: 60px; height: 60px; }
+        .card-title-wrap .app-name { font-size: 1.2rem; }
+
+        .klaim-val    { font-size: 1.9rem; }
+        .ks-val       { font-size: 1.6rem; }
+        .sdm-big-num  { font-size: 3.4rem; }
+        .mutu-box-val { font-size: 2rem; }
+    }
+    </style>
 @endpush
 
 @section('content')
