@@ -1,12 +1,15 @@
 @props(['keuangan', 'bulanLabel', 'tahun'])
 
 @php
-    $pendapatan = $keuangan['pendapatan'] ?? 0;
-    $belanja    = $keuangan['belanja']    ?? 0;
-    $selisih    = $pendapatan - $belanja;
-    $isSurplus  = $selisih >= 0;
-    $pctBelanja = $pendapatan > 0 ? min(100, round($belanja / $pendapatan * 100)) : 0;
+    $pendapatan  = $keuangan['pendapatan']  ?? 0;
+    $belanja     = $keuangan['belanja']     ?? 0;
+    $bulanAkhir  = $keuangan['bulan_akhir'] ?? now()->month;
+    $selisih     = $pendapatan - $belanja;
+    $isSurplus   = $selisih >= 0;
+    $pctBelanja  = $pendapatan > 0 ? min(100, round($belanja / $pendapatan * 100)) : 0;
 
+    $bulanNames = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    $labelPeriode = 'Jan – ' . $bulanNames[$bulanAkhir]; //
     $fmtRupiah = function($n) {
         if ($n >= 1_000_000_000) return 'Rp ' . number_format($n / 1_000_000_000, 1, ',', '.') . ' M';
         if ($n >= 1_000_000)     return 'Rp ' . number_format($n / 1_000_000, 1, ',', '.') . ' Jt';
@@ -27,7 +30,7 @@
                 <div class="app-sub">Ringkasan pendapatan &amp; belanja</div>
             </div>
         </div>
-        <span class="card-month-badge month-green">{{ $bulanLabel }} {{ $tahun }}</span>
+            <span class="card-month-badge month-green">{{ $labelPeriode }} {{ $tahun }}</span>
     </div>
 
     <div class="fin-row">
@@ -55,7 +58,7 @@
         <div class="progress-bar-wrap">
             <div class="progress-bar-fill" style="width:{{ $pctBelanja }}%"></div>
         </div>
-        <div class="progress-pct">{{ $pctBelanja }}% belanja dari pendapatan</div>
+            <div class="progress-pct">{{ $pctBelanja }}% belanja dari pendapatan · YTD {{ $tahun }}</div>
     </div>
 
     <div class="card-footer">

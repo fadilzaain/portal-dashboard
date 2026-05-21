@@ -21,10 +21,9 @@ class KeuanganController extends Controller
     //API Trend
     public function apiTrend(Request $request)
     {
-        $tahun    = $request->tahun ?? now()->year;
-        $bulanIni = now()->month;
-        $bulanLalu = $bulanIni === 1 ? 12 : $bulanIni - 1;
-        $tahunLalu = $bulanIni === 1 ? $tahun - 1 : $tahun;
+        $tahun    = (int) ($request->tahun ?? now()->year);
+        $bulanIni = (int) ($request->bulan ?? now()->month);         
+        $tahunYoY = $tahun - 1;                                      
 
         //Belanja dari mysql2 (Cheque)
         $targetPerBulan = DB::connection('mysql2')->table('transaksi')
@@ -62,14 +61,19 @@ class KeuanganController extends Controller
             'realisasi' => $pendapatanPerBulan[$i] ?? 0.0,
         ]);
 
+        // MOM perbandingan bulan ditahun terbaru v bulan di tahun sebelumnya
         $mom = [
-            'pendapatan_bulan_ini'  => $pendapatanPerBulan[$bulanIni]  ?? 0.0,
+            'pendapatan_bulan_ini'  => $pendapatanPerBulan[$bulanIni] ?? 0.0,
             'pendapatan_bulan_lalu' => (float) DB::connection('mysql3')->table('tr_mutasirekbank')
-                ->whereYear('effective_date', $tahunLalu)->whereMonth('effective_date', $bulanLalu)
-                ->whereNotNull('credit')->where('credit', '>', 0)->sum('credit'),
+                ->whereYear('effective_date', $tahunYoY)                 
+                ->whereMonth('effective_date', $bulanIni)                
+                ->whereNotNull('credit')->where('credit', '>', 0)
+                ->sum('credit'),
             'belanja_bulan_ini'     => $realisasiPerBulan[$bulanIni]   ?? 0.0,
             'belanja_bulan_lalu'    => (float) DB::connection('mysql2')->table('cheque')
-                ->whereYear('tanggal', $tahunLalu)->whereMonth('tanggal', $bulanLalu)->sum('jumlah'),
+                ->whereYear('tanggal', $tahunYoY)                        
+                ->whereMonth('tanggal', $bulanIni)                       
+                ->sum('jumlah'),
         ];
 
         return response()->json(compact('pendapatan', 'belanja', 'mom'));
