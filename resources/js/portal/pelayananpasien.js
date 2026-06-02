@@ -45,7 +45,7 @@ function emptyChart(canvasId) {
   ctx.fillText('Belum ada data', canvas.width / 2, canvas.height / 2);
 }
 
-// ── 1. Tren Kunjungan Harian ──────────────────────────────────
+// ── Tren Kunjungan Harian ──────────────────────────────────
 (function initTrendHarian() {
   const canvas = document.getElementById('chartTrendHarian');
   if (!canvas) return;
@@ -78,7 +78,7 @@ function emptyChart(canvasId) {
   });
 })();
 
-// ── 2. BOR Bulanan ────────────────────────────────────────────
+// ── BOR Bulanan ────────────────────────────────────────────
 (function initBOR() {
   const canvas = document.getElementById('chartBOR');
   if (!canvas) return;
@@ -96,10 +96,10 @@ function emptyChart(canvasId) {
           borderRadius: 5,
           borderSkipped: false,
           backgroundColor: borData.map(d =>
-            d.bor === 0           ? 'rgba(48,54,61,0.35)'  :
-            d.bor >= 60 && d.bor <= 85 ? 'rgba(167,139,250,0.85)' :
-            d.bor < 60             ? 'rgba(245,158,11,0.75)' :
-                                     'rgba(239,68,68,0.75)'
+            d.bor === 0                ? 'rgba(48,54,61,0.35)'       :
+            d.bor >= 60 && d.bor <= 85 ? 'rgba(167,139,250,0.85)'   :
+            d.bor < 60                 ? 'rgba(245,158,11,0.75)'     :
+                                         'rgba(239,68,68,0.75)'
           ),
         },
         {
@@ -132,7 +132,7 @@ function emptyChart(canvasId) {
   });
 })();
 
-// ── 3. Kunjungan per Poli ─────────────────────────────────────
+// ── Kunjungan per Poli ─────────────────────────────────────
 (function initRajal() {
   const canvas = document.getElementById('chartRajal');
   if (!canvas) return;
@@ -167,7 +167,7 @@ function emptyChart(canvasId) {
   });
 })();
 
-// ── 4. IGD per Triage ─────────────────────────────────────────
+// ── IGD per Triage ─────────────────────────────────────────
 (function initTriage() {
   const canvas = document.getElementById('chartTriage');
   if (!canvas) return;
@@ -222,7 +222,7 @@ function emptyChart(canvasId) {
   });
 })();
 
-// ── 5. Barber-Johnson ─────────────────────────────────────────
+// ── Barber-Johnson ─────────────────────────────────────────
 (function initBarberJohnson() {
   let bjChart = null;
 
@@ -235,22 +235,59 @@ function emptyChart(canvasId) {
   function renderBJ(idx) {
     if (bjChart) { bjChart.destroy(); bjChart = null; }
 
-    const d  = avlosData?.[idx];
-    if (!d)   return;
+    const d = avlosData?.[idx];
+    if (!d) return;
 
-    const ef    = isEfisien(d);
-    const yBOR  = +(d.bor / 10).toFixed(2);
-    const xBOR  = +(yBOR - 10).toFixed(2);
+    const ef = isEfisien(d);
+
+    // ─────────────────────────────────────────────────────────
+    // KOORDINAT TITIK FOCAL (titik kinerja RS pada grafik BJ)
+    // ─────────────────────────────────────────────────────────
+    //
+    // Cara baca grafik Barber-Johnson (standar Depkes RI):
+    //   1. Tarik garis horizontal dari nilai AVLOS di sumbu Y
+    //   2. Garis itu akan memotong garis BOR (diagonal dari origin)
+    //   3. Titik potong itulah titik kinerja RS = (TOI, AVLOS)
+    //   4. Dari titik itu, turun ke sumbu X → baca nilai TOI
+    //   5. Dari titik itu, lihat garis BTO yang melewatinya
+    //
+    // Kesimpulan: titik focal cukup (TOI, AVLOS) — tidak perlu kalkulasi lain.
+    // Syarat data konsisten: AVLOS ≈ (BOR / (100 - BOR)) × TOI
+
+    const fx = +d.toi.toFixed(2);    // koordinat X = TOI
+    const fy = +d.avlos.toFixed(2);  // koordinat Y = AVLOS
+
+    // Garis BTO: AVLOS + TOI = C_BTO
     const C_BTO = +(d.periode / (d.bto || 1)).toFixed(2);
-    const fx    = +d.toi.toFixed(2);
-    const fy    = +d.avlos.toFixed(2);
 
+    // ─────────────────────────────────────────────────────────
     // KPI cards
+    // ─────────────────────────────────────────────────────────
     [
-      { id: 'BOR',   val: d.bor,   unit: '%',   coord: `Y = ${yBOR} | X = ${xBOR}` },
-      { id: 'BTO',   val: d.bto,   unit: '',    coord: `Y + X = ${C_BTO}` },
-      { id: 'AVLOS', val: d.avlos, unit: ' hr', coord: `Y = ${fy}` },
-      { id: 'TOI',   val: d.toi,   unit: ' hr', coord: `X = ${fx}` },
+      {
+        id:    'BOR',
+        val:   d.bor,
+        unit:  '%',
+        coord: `Titik potong: (${fx}, ${fy})`,
+      },
+      {
+        id:    'BTO',
+        val:   d.bto,
+        unit:  '',
+        coord: `AVLOS + TOI = ${C_BTO}`,
+      },
+      {
+        id:    'AVLOS',
+        val:   d.avlos,
+        unit:  ' hr',
+        coord: `Y = ${fy}`,
+      },
+      {
+        id:    'TOI',
+        val:   d.toi,
+        unit:  ' hr',
+        coord: `X = ${fx}`,
+      },
     ].forEach(({ id, val, unit, coord }) => {
       const vEl = document.getElementById('bjKpi'   + id);
       const cEl = document.getElementById('bjCoord' + id);
@@ -269,12 +306,10 @@ function emptyChart(canvasId) {
     // Legend
     const legendItems = [
       ['#06b6d4', 'dash', `BOR ${d.bor}% (aktual)`],
-      ['#ef4444', 'dash', 'BOR 75%'],
-      ['#f59e0b', 'dash', 'BOR 60%'],
-      ['#a78bfa', 'dash', 'BOR 85%'],
-      ['#2563eb', 'dash', `Garis BTO (Y+X=${C_BTO})`],
+      ['#efff14', 'dash', 'BOR 60%'],
+      ['#2563eb', 'dash', `Garis BTO (AVLOS+TOI=${C_BTO})`],
       ['#22c55e', 'dash', 'AVLOS & TOI'],
-      [ef ? '#22c55e' : '#2563eb', 'dot', 'Titik focal (TOI, AVLOS)'],
+      [ef ? '#22c55e' : '#2563eb', 'dot', `Titik focal (TOI=${fx}, AVLOS=${fy})`],
       ['rgba(34,197,94,0.15)', 'box', 'Daerah efisien'],
     ];
 
@@ -289,23 +324,36 @@ function emptyChart(canvasId) {
         }${l}</span>`).join('');
     }
 
-    // ── Plugin: zona efisien ──
+    // ── daerah efisien ──
     const zonePlugin = {
       id: 'bjZone',
       beforeDatasetsDraw({ ctx, scales: { x, y } }) {
-        const x1 = x.getPixelForValue(1), x2 = x.getPixelForValue(3);
-        const y1 = y.getPixelForValue(12), y2 = y.getPixelForValue(3);
+        const x1 = x.getPixelForValue(1);
+        const x2 = x.getPixelForValue(3);
+        const yA = y.getPixelForValue(12);
+        const yB = y.getPixelForValue(9);
+        const yC = y.getPixelForValue(3);
+
         ctx.save();
         ctx.fillStyle   = 'rgba(34,197,94,0.07)';
         ctx.strokeStyle = 'rgba(34,197,94,0.4)';
         ctx.lineWidth   = 1.2;
         ctx.setLineDash([5, 4]);
-        ctx.beginPath(); ctx.rect(x1, y1, x2 - x1, y2 - y1);
-        ctx.fill(); ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x1, yC);
+        ctx.lineTo(x1, yA);
+        ctx.lineTo(x2, yA);
+        ctx.lineTo(x2, yB);
+        ctx.closePath();
+
+        ctx.fill();
+        ctx.stroke();
         ctx.setLineDash([]);
+
         ctx.font      = 'bold 10px DM Sans,sans-serif';
         ctx.fillStyle = 'rgba(34,197,94,0.85)';
-        ctx.fillText('Daerah Efisien', x1 + 6, y1 + 14);
+        ctx.fillText('Daerah Efisien', x1 + 6, yA + 14);
         ctx.restore();
       },
     };
@@ -316,11 +364,11 @@ function emptyChart(canvasId) {
       afterDatasetsDraw({ ctx, scales: { x, y } }) {
         if (!d.bor) return;
 
-        // Garis BOR
+        // ── Garis BOR ──
+        // y = slope × x, slope = BOR / (100 - BOR)
+        // Garis dari origin (0,0) — titik potong dengan y=AVLOS ada di x=TOI
         const borLines = [
-          { bor: 60,    color: '#f59e0b', label: 'BOR 60%',        dash: [4, 3] },
-          { bor: 75,    color: '#ef4444', label: 'BOR 75%',        dash: [6, 4] },
-          { bor: 85,    color: '#a78bfa', label: 'BOR 85%',        dash: [4, 3] },
+          { bor: 60,    color: '#efff14', label: 'BOR 60%',        dash: [4, 3] },
           { bor: d.bor, color: '#06b6d4', label: `BOR ${d.bor}%`, dash: [7, 3] },
         ];
 
@@ -346,7 +394,7 @@ function emptyChart(canvasId) {
           ctx.restore();
         });
 
-        // Garis BTO (Y + X = C_BTO)
+        // ── Garis BTO: AVLOS + TOI = C_BTO ──
         const bto_y0 = Math.min(C_BTO, 14);
         const bto_x0 = C_BTO - bto_y0;
         const bto_x1 = Math.min(C_BTO, 8);
@@ -358,14 +406,18 @@ function emptyChart(canvasId) {
         ctx.moveTo(x.getPixelForValue(bto_x0), y.getPixelForValue(bto_y0));
         ctx.lineTo(x.getPixelForValue(bto_x1), y.getPixelForValue(bto_y1));
         ctx.stroke();
-        const midX = (bto_x0 + bto_x1) / 2, midY = (bto_y0 + bto_y1) / 2;
+        const midX = (bto_x0 + bto_x1) / 2;
+        const midY = (bto_y0 + bto_y1) / 2;
         ctx.setLineDash([]);
         ctx.font = 'bold 10px DM Sans,sans-serif';
         ctx.fillStyle = '#2563eb'; ctx.textAlign = 'left';
         ctx.fillText(`BTO = ${d.bto}`, x.getPixelForValue(midX) + 5, y.getPixelForValue(midY) - 5);
         ctx.restore();
 
-        // Garis AVLOS (horizontal)
+        // ── Garis AVLOS (horizontal) ──
+        // Dari sumbu Y (x=0) ke titik focal
+        // Ini adalah garis pembaca: temukan AVLOS di sumbu Y, tarik ke kanan
+        // sampai memotong garis BOR → itulah titik kinerja RS
         ctx.save();
         ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.4; ctx.setLineDash([3, 3]);
         ctx.beginPath();
@@ -378,7 +430,8 @@ function emptyChart(canvasId) {
         ctx.fillText(`AVLOS = ${fy}`, x.getPixelForValue(0) - 4, y.getPixelForValue(fy) + 4);
         ctx.restore();
 
-        // Garis TOI (vertikal)
+        // ── Garis TOI (vertikal) ──
+        // Dari titik focal turun ke sumbu X → baca nilai TOI
         ctx.save();
         ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.4; ctx.setLineDash([3, 3]);
         ctx.beginPath();
@@ -398,7 +451,8 @@ function emptyChart(canvasId) {
       id: 'bjFocal',
       afterDraw({ ctx, scales: { x, y } }) {
         if (!d.bor) return;
-        const px = x.getPixelForValue(fx), py = y.getPixelForValue(fy);
+        const px = x.getPixelForValue(fx);
+        const py = y.getPixelForValue(fy);
 
         ctx.save();
         ctx.fillStyle   = ef ? '#16a34a' : '#1d4ed8';
@@ -423,9 +477,10 @@ function emptyChart(canvasId) {
         ctx.strokeStyle = ef ? '#bbf7d0' : '#bfdbfe';
         ctx.lineWidth   = 1;
         ctx.fill(); ctx.stroke();
-        ctx.fillStyle     = '#fff';
-        ctx.textAlign     = 'center';
-        ctx.textBaseline  = 'middle';
+
+        ctx.fillStyle    = '#fff';
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
         ctx.fillText(label, px, by + bh / 2);
         ctx.restore();
       },

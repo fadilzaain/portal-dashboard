@@ -102,6 +102,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/chart-jenis', [KlaimBpjsController::class, 'chartJenis'])->name('chart-jenis');
         Route::get('/list',        [KlaimBpjsController::class, 'list']      )->name('list');
     });
+
+    // WEB API detail BOR, LOS, TOI
+    Route::get('/api-proxy/borlostoi/{kode}/{dari}/{sampai}', function ($kode, $dari, $sampai) {
+        $url = "http://192.168.10.8:8082/getborlostoi/{$kode}/{$dari}/{$sampai}";
+        $response = \Illuminate\Support\Facades\Http::timeout(10)->get($url);
+        return $response->json();
+    });
+
+    Route::get('/api-proxy/borlostoi/{kode}/{dari}/{sampai}', 
+        [App\Http\Controllers\PelayananPasienController::class, 'borProxy']
+    );
+
+    
     Route::get('/bpjs', function() { 
     return view('portal.klaimbpjs'); 
 })->name('portal.klaimbpjs')->middleware('auth');

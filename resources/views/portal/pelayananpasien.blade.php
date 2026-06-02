@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 @vite(['resources/css/portal/pelayananpasien.css'])
+@vite(['resources/css/portal/bor-modal.css'])
 @endpush
 
 @section('content')
@@ -31,16 +32,22 @@
       <line x1="8"  y1="2" x2="8"  y2="6"/>
       <line x1="3"  y1="10" x2="21" y2="10"/>
     </svg>
-    <label>Dari</label>
-    <input type="date" name="dari"   value="{{ $tanggalMulai }}">
-    <label>Sampai</label>
-    <input type="date" name="sampai" value="{{ $tanggalSelesai }}">
-    <label>Tahun BOR</label>
+
+    <label>Bulan</label>
+    <select name="bulan">
+      @php $namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']; @endphp
+      @foreach($namaBulan as $i => $nb)
+        <option value="{{ $i + 1 }}" @selected(($i + 1) == $bulan)>{{ $nb }}</option>
+      @endforeach
+    </select>
+
+    <label>Tahun</label>
     <select name="tahun">
       @for($y = now()->year; $y >= now()->year - 4; $y--)
         <option value="{{ $y }}" @selected($y == $tahun)>{{ $y }}</option>
       @endfor
     </select>
+
     <button type="submit" class="pp-btn">Tampilkan</button>
     <a href="{{ route('portal.pelayananpasien') }}" class="pp-btn-ghost">Reset</a>
   </form>
@@ -100,8 +107,8 @@
   @endphp
 
   <div class="pp-top-grid">
-    @foreach($topCards as $tc)
-    <div class="pp-top-card">
+    @foreach($topCards as $idx => $tc)
+    <div class="pp-top-card" @if($idx === 0) id="borKpiCard" style="cursor:pointer" title="Klik untuk detail BOR per ruangan" @endif>
       <div class="tc-header">
         <div class="tc-label">{{ $tc['label'] }}</div>
         <div class="tc-icon" style="background:{{ $tc['icon_bg'] }};color:{{ $tc['color'] }}">
@@ -140,9 +147,9 @@
     <div class="pp-card-header">
       <div>
         <div class="pp-card-title">Grafik Barber-Johnson {{ $tahun }}</div>
-        <div class="pp-card-subtitle">Sumbu Y = AVLOS · Sumbu X = TOI · Standar Depkes RI</div>
+        <div class="pp-card-subtitle"> Standar Depkes RI</div>
       </div>
-      <span class="src-badge src-api">✓ DB</span>
+      <span class="src-badge src-api">✓ API</span>
     </div>
 
     {{-- Filter bulan --}}
@@ -201,9 +208,9 @@
       <div class="pp-card-header">
         <div>
           <div class="pp-card-title">BOR Bulanan {{ $tahun }}</div>
-          <div class="pp-card-subtitle">Target 60 – 85%</div>
+          <!-- <div class="pp-card-subtitle">Target 60 – 85%</div> -->
         </div>
-        <span class="src-badge src-api">✓ DB</span>
+        <span class="src-badge src-api">✓ API</span>
       </div>
       <div class="chart-wrap">
         <canvas id="chartBOR"></canvas>
@@ -304,9 +311,7 @@
 </div>{{-- end pp-wrap --}}
 @endsection
 
-{{-- ═══════════════════════════════════════════
-     INJECT DATA KE JS (satu tempat, aman)
-════════════════════════════════════════════ --}}
+
 @push('scripts')
 <script>
 window.PP_DATA = {
@@ -318,4 +323,5 @@ window.PP_DATA = {
 };
 </script>
 @vite(['resources/js/portal/pelayananpasien.js'])
+@vite(['resources/js/portal/bor-modal.js'])
 @endpush

@@ -1,0 +1,176 @@
+/* ============================================================
+   resources/css/indikator-mutu.css
+   ============================================================ */
+
+:root {
+    --n950: #050d1a; --n900: #0a1628; --n800: #0f2040; --n700: #162b55;
+    --n600: #1e3a6e; --n500: #264d91;
+    --ab: #38bdf8; --ag: #34d399; --aa: #f59e0b; --ar: #f87171; --ap: #a78bfa;
+    --tp: #e2e8f0; --tm: #94a3b8; --bd: rgba(56, 189, 248, .15);
+}
+
+body { background: var(--n950); color: var(--tp); }
+
+/* ── Filter Bar ───────────────────────────────────────────── */
+.filter-bar {
+    background: var(--n900);
+    border: 1px solid var(--bd);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+}
+
+.filter-label {
+    font-size: .68rem; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--tm);
+    margin-bottom: .3rem; display: block;
+}
+
+.filter-select {
+    background: var(--n800); border: 1px solid var(--bd);
+    color: var(--tp); border-radius: 8px;
+    padding: .45rem .75rem; font-size: .85rem; width: 100%;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6,9 12,15 18,9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right .6rem center;
+    padding-right: 2rem; cursor: pointer; transition: border-color .2s;
+}
+.filter-select:focus { outline: none; border-color: var(--ab); }
+.filter-select option { background: var(--n800); }
+
+.btn-filter {
+    background: linear-gradient(135deg, var(--n600), var(--n500));
+    border: 1px solid var(--ab); color: var(--ab);
+    border-radius: 8px; padding: .48rem 1.25rem;
+    font-size: .85rem; font-weight: 600; cursor: pointer;
+    transition: all .2s; display: flex; align-items: center;
+    gap: .4rem; white-space: nowrap;
+}
+.btn-filter:hover { background: var(--ab); color: var(--n900); }
+
+.btn-reset {
+    background: transparent; border: 1px solid var(--bd);
+    color: var(--tm); border-radius: 8px;
+    padding: .48rem .85rem; font-size: .85rem;
+    cursor: pointer; transition: all .2s;
+}
+.btn-reset:hover { border-color: var(--ar); color: var(--ar); }
+
+/* ── Badges ───────────────────────────────────────────────── */
+.badge-nasional, .badge-prioritas, .badge-tercapai, .badge-belum {
+    border-radius: 20px; padding: .15rem .6rem;
+    font-size: .67rem; font-weight: 700;
+    letter-spacing: .04em; white-space: nowrap;
+}
+.badge-nasional  { background: rgba(56,189,248,.15); color: var(--ab); border: 1px solid rgba(56,189,248,.3); }
+.badge-prioritas { background: rgba(245,158,11,.15);  color: var(--aa); border: 1px solid rgba(245,158,11,.3); }
+.badge-tercapai  { background: rgba(52,211,153,.15);  color: var(--ag); border: 1px solid rgba(52,211,153,.3);  border-radius: 6px; padding: .15rem .5rem; font-size: .72rem; }
+.badge-belum     { background: rgba(248,113,113,.15); color: var(--ar); border: 1px solid rgba(248,113,113,.3); border-radius: 6px; padding: .15rem .5rem; font-size: .72rem; }
+
+/* ── Table ────────────────────────────────────────────────── */
+.im-table-wrapper { background: var(--n900); border: 1px solid var(--bd); border-radius: 12px; overflow: hidden; }
+
+.im-table-header {
+    padding: 1rem 1.5rem; border-bottom: 1px solid var(--bd);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: .5rem;
+}
+.im-table-header h2 { font-size: .95rem; font-weight: 700; display: flex; align-items: center; gap: .5rem; margin: 0; }
+
+.im-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.im-table thead th {
+    background: var(--n800); color: var(--tm);
+    font-size: .67rem; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: .65rem .85rem; white-space: nowrap;
+    text-align: center; border-bottom: 1px solid var(--bd);
+}
+.im-table thead th:first-child { text-align: left; }
+.im-table tbody tr { border-bottom: 1px solid rgba(56,189,248,.06); transition: background .15s; }
+.im-table tbody tr:hover { background: rgba(56,189,248,.04); }
+.im-table tbody tr:last-child { border-bottom: none; }
+.im-table td { padding: .75rem .85rem; text-align: center; vertical-align: middle; }
+.im-table td:first-child { text-align: left; }
+
+.indikator-nama { font-weight: 600; line-height: 1.4; }
+.target-cell    { font-weight: 700; color: var(--aa); }
+.capaian-ok     { color: var(--ag); font-weight: 700; }
+.capaian-fail   { color: var(--ar); font-weight: 700; }
+.capaian-null   { color: var(--tm); font-style: italic; font-size: .75rem; }
+
+.pb-wrap { background: rgba(255,255,255,.07); border-radius: 4px; height: 4px; margin-top: 3px; overflow: hidden; }
+.pb-fill { height: 4px; border-radius: 4px; transition: width .4s ease; }
+
+/* ── Charts ───────────────────────────────────────────────── */
+.chart-wrap { background: var(--n900); border: 1px solid var(--bd); border-radius: 12px; overflow: hidden; }
+
+.chart-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem; border-bottom: 1px solid rgba(56,189,248,.1);
+}
+.chart-title { display: flex; align-items: center; gap: .5rem; font-size: .9rem; font-weight: 700; }
+
+.chart-legend { display: flex; justify-content: center; gap: 1.5rem; margin-top: .75rem; }
+.chart-legend-item { display: flex; align-items: center; gap: .4rem; font-size: .73rem; color: var(--tm); }
+.legend-line   { width: 22px; height: 2px; display: inline-block; border-radius: 2px; }
+.legend-dashed { width: 22px; display: inline-block; }
+
+/* ── NDR Toggles ──────────────────────────────────────────── */
+.ndr-toggle-btn {
+    background: var(--n800); border: 1px solid var(--bd);
+    color: var(--tm); border-radius: 20px;
+    padding: .2rem .65rem; font-size: .72rem;
+    font-weight: 600; cursor: pointer;
+    transition: all .2s; user-select: none;
+}
+.ndr-toggle-btn.active { border-color: var(--ar); color: var(--ar); background: rgba(248,113,113,.1); }
+
+/* ── Insight Bar ──────────────────────────────────────────── */
+.insight-bar {
+    margin: 0 1.25rem 1rem; padding: .65rem 1rem;
+    border-radius: 8px; font-size: .78rem;
+    color: var(--tm); display: flex; align-items: center; gap: .5rem;
+}
+.insight-capaian { background: rgba(56,189,248,.06); border: 1px solid rgba(56,189,248,.15); }
+.insight-ndr     { background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15); }
+
+/* ── Loading ──────────────────────────────────────────────── */
+.loading-overlay {
+    display: none; position: absolute; inset: 0;
+    background: rgba(5,13,26,.75); border-radius: 12px;
+    z-index: 10; align-items: center; justify-content: center;
+    flex-direction: column; gap: .75rem;
+}
+.loading-overlay.active { display: flex; }
+.spinner {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(56,189,248,.2);
+    border-top-color: var(--ab);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── TW Tabs ──────────────────────────────────────────────── */
+.tw-tabs { display: flex; gap: .4rem; }
+.tw-tab {
+    background: var(--n800); border: 1px solid var(--bd);
+    color: var(--tm); border-radius: 8px;
+    padding: .3rem .75rem; font-size: .78rem;
+    font-weight: 600; cursor: pointer; transition: all .2s;
+}
+.tw-tab.active { background: rgba(56,189,248,.1); border-color: var(--ab); color: var(--ab); }
+.tw-tab:hover:not(.active) { border-color: rgba(56,189,248,.35); color: var(--tp); }
+
+/* ── Summary Card ─────────────────────────────────────────── */
+.summary-card { background: var(--n900); border: 1px solid var(--bd); border-radius: 14px; padding: 1.25rem 1.5rem; }
+.summary-label { font-size: .63rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .5rem; }
+.summary-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--n950); }
+::-webkit-scrollbar-thumb { background: var(--n600); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--n500); }
+.table-scroll { overflow-x: auto; }
+
+@media (max-width: 768px) { .filter-grid { flex-direction: column; } }

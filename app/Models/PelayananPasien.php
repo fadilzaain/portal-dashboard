@@ -5,23 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * PelayananPasien Model
- *
- * Model ini hanya menyimpan query detail baris sensus_harian
- * (dipakai halaman detail ranap).
- *
- * Semua aggregasi & logika bisnis → App\Services\PelayananPasienService
- */
 class PelayananPasien extends Model
 {
     protected $connection = 'erm_rs';
-    protected $table      = 'sensus_harian';  // ← sesuaikan jika nama tabel berbeda
+    protected $table      = 'sensus_harian';
     public    $timestamps = false;
-
-    // =========================================================
-    // DETAIL RANAP — query baris per baris (untuk tabel detail)
-    // =========================================================
 
     /**
      * Ambil data harian sensus_harian untuk halaman detail ranap.

@@ -14,16 +14,19 @@ class PelayananPasienController extends Controller
 
     public function index(Request $request)
     {
-        $dari   = $request->get('dari',   Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $sampai = $request->get('sampai', Carbon::now()->format('Y-m-d'));
-        $tahun  = (int) $request->get('tahun', Carbon::now()->year);
+        $bulan  = (int) $request->get('bulan',  Carbon::now()->month);
+        $tahun  = (int) $request->get('tahun',  Carbon::now()->year);
 
-        // ── Data dari Google Sheets (sudah aktif) ──
+        // Hitung dari/sampai otomatis dari bulan+tahun
+        $dari   = Carbon::create($tahun, $bulan, 1)->format('Y-m-d');
+        $sampai = Carbon::create($tahun, $bulan, 1)->endOfMonth()->format('Y-m-d');
+
+        // ── Data dari Google Sheets ──
         $chartBOR   = $this->service->getChartBORBulanan($tahun);
         $chartAvlos = $this->service->getChartAvlosBulanan($tahun);
         $indikator  = $this->service->getIndikatorMutu($tahun, $dari, $sampai);
 
-        // ── Data yang endpointnya belum tersedia (return kosong) ──
+        // ── Data yang endpointnya belum tersedia ──
         $ringkasanRanap = $this->service->getRingkasanRanap($dari, $sampai);
         $ringkasanRajal = $this->service->getRingkasanRajal($dari, $sampai);
         $ringkasanIGD   = $this->service->getRingkasanIGD($dari, $sampai);
@@ -47,6 +50,7 @@ class PelayananPasienController extends Controller
 
             'tanggalMulai'   => $dari,
             'tanggalSelesai' => $sampai,
+            'bulan'          => $bulan,
             'tahun'          => $tahun,
 
             'standar' => [
@@ -69,5 +73,18 @@ class PelayananPasienController extends Controller
         return view('portal.pelayananpasien-ranap', compact(
             'dataRanap', 'dari', 'sampai', 'tahun'
         ));
+    }
+
+    public function borProxy(Request $request, $kode, $dari, $sampai)
+    {
+        $baseUrl = env('BOR_API_URL', 'http://192.168.10.8:8082');
+        $url     = "{$baseUrl}/getborlostoi/{$kode}/{$dari}/{$sampai}";
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(10)->get($url);
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['succes' => false, 'rows' => [], 'msg' => $e->getMessage()], 500);
+        }
     }
 }
