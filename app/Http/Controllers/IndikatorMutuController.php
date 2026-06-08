@@ -59,31 +59,32 @@ class IndikatorMutuController extends Controller
     }
 
     /**
-     * data NDR per ruangan
+     * data NDR dan GDR 
      */
-    public function getNdr(Request $request): JsonResponse
+    public function getGdrNdr(Request $request): JsonResponse
     {
         $request->validate([
             'triwulan' => 'nullable|integer|min:1|max:4',
             'tahun'    => 'nullable|integer|min:2000|max:2099',
         ]);
 
-        $triwulan = $request->input('triwulan', 1);
-        $tahun    = $request->input('tahun', date('Y'));
+        $triwulan = (int) $request->input('triwulan', 1);
+        $tahun    = (int) $request->input('tahun', date('Y'));
 
         try {
-            $ndrRaw  = $this->service->fetchNdr($triwulan, $tahun);
-            $grafik  = $this->service->formatNdrGrafik($ndrRaw, $triwulan);
+            $borData = $this->service->fetchBorLosToi($triwulan, $tahun);
 
             return response()->json([
                 'success' => true,
-                'grafik'  => $grafik,
-                'ruangan' => collect($ndrRaw)->pluck('RUANGAN')->filter()->values(),
+                'grafik'  => [
+                    'gdr' => $this->service->formatGdrGrafik($borData, $triwulan),
+                    'ndr' => $this->service->formatNdrGrafikBor($borData, $triwulan),
+                ],
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data NDR: ' . $e->getMessage(),
+                'message' => 'Gagal mengambil data GDR/NDR: ' . $e->getMessage(),
             ], 500);
         }
     }

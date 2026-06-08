@@ -368,7 +368,7 @@
     </div>
 
     <div class="app-grid">
-        <x-portal.card-pelayanan :pelayanan="$pelayanan" :bulanLabel="$bulanLabelPelayanan ?? 'jan-jun'" :tahun="$tahun ?? now()->year" />
+        <x-portal.card-pelayanan :pelayanan="$pelayanan" :bulanLabel="$bulanLabelPelayanan" :tahun="$tahunPelayanan" />
         <x-portal.card-keuangan  :keuangan="$keuangan"   :bulanLabel="$bulanLabel ?? 'Mei'" :tahun="$tahun ?? now()->year" />
         <x-portal.card-sdm       :sdm="$sdm"             :tahun="$tahun ?? now()->year" />
         <x-portal.card-mutu      :mutu="$mutu"            :bulanLabel="$bulanLabel ?? 'Mei'" :tahun="$tahun ?? now()->year" />

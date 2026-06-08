@@ -32,7 +32,7 @@
                 <div class="app-sub">Ringkasan Pelayanan Pasien</div>
             </div>
         </div>
-        <span class="card-month-badge month-blue">{{ $bulanLabel }} {{ $tahun }}</span>
+            <span class="card-month-badge month-blue">{{ $bulanLabel }} {{ $tahun }}</span>
     </div>
 
     <div class="card-stats">

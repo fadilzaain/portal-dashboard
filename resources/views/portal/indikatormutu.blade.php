@@ -47,12 +47,12 @@
     {{-- Charts --}}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
 
-        {{-- Tren Capaian --}}
+        {{-- GDR --}}
         <div class="chart-wrap">
             <div class="chart-header">
                 <div class="chart-title">
                     <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="var(--ab)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                    Tren Capaian Rata-rata
+                    Gross Death rate (GDR)
                 </div>
                 <div class="tw-tabs" id="tw-tabs-grafik">
                     @foreach([1,2,3,4] as $tw)
@@ -95,7 +95,7 @@
             </div>
             <div style="padding:.5rem 1.25rem;border-top:1px solid rgba(56,189,248,.08);">
                 <div style="font-size:.67rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tm);margin-bottom:.4rem;">Tampilkan ruangan:</div>
-                <div id="ndr-ruangan-toggles" style="display:flex;flex-wrap:wrap;gap:.4rem;"></div>
+                <!-- <div id="ndr-ruangan-toggles" style="display:flex;flex-wrap:wrap;gap:.4rem;"></div> -->
             </div>
             <div class="insight-bar insight-ndr">
                 <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--ar)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
@@ -182,13 +182,13 @@
 @push('scripts')
     {{-- Inject config PHP → JS, HARUS sebelum vite script --}}
     <script>
-        window.IM_CONFIG = {
-            routes: {
-                data: "{{ route('portal.indikatormutu.data') }}",
-                ndr:  "{{ route('portal.indikatormutu.ndr') }}"
-            },
-            filters: @json($filters)
-        };
+       window.IM_CONFIG = {
+        routes: {
+            data:   "{{ route('portal.indikatormutu.data') }}",
+            gdrndr: "{{ route('portal.indikatormutu.gdrndr') }}"
+        },
+        filters: @json($filters)
+    };
     </script>
     @vite('resources/js/portal/indikator-mutu.js')
 @endpush

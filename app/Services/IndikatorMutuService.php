@@ -10,9 +10,14 @@ class IndikatorMutuService
 {
     // ─── Endpoint external API ────────────────────────────────────────────────
     private const URL_PMKP = 'http://192.168.10.8/sikawan-api/public/api/v1/pmkp';
-    private const URL_NDR  = 'https://script.google.com/macros/s/AKfycbwiAdTXwqMRslCm7WV64koyzvq2yDZTK3_hFOxLt1PQc4x1ApqD6WAoxq_lNgJkm1Tr/exec';
+    // private const URL_NDR  = 'https://script.google.com/macros/s/AKfycbwiAdTXwqMRslCm7WV64koyzvq2yDZTK3_hFOxLt1PQc4x1ApqD6WAoxq_lNgJkm1Tr/exec';
     // Cache TTL dalam detik (10 menit)
     private const TTL = 600;
+
+    private function getBorApiUrl(): string
+    {
+        return rtrim(config('services.bor_api.url', env('BOR_API_URL', 'http://192.168.10.8:8082')), '/');  
+    }
 
     /**
      * Update ini jika sudah ada sumber data yang proper
@@ -69,33 +74,51 @@ class IndikatorMutuService
     /**
      * Ambil data NDR 
      */
-    public function fetchNdr(?int $triwulan = 1, int $tahun = 0): array
+    public function fetchBorLosToi(?int $triwulan = 1, int $tahun = 0): array
     {
-        $tahun    = $tahun ?: (int) date('Y');
-        $cacheKey = "ndr_gas_{$tahun}";
+        $tahun      = $tahun ?: (int) date('Y');
+        $cacheKey   = "borlostoi_tw{$triwulan}_{$tahun}";
+        $bulanRange = $this->getBulanRange($triwulan);
 
-        return Cache::remember($cacheKey, self::TTL, function () use ($tahun) {
-            $response = Http::timeout(20)
-                ->withoutVerifying()
-                ->withOptions(['allow_redirects' => true])
-                ->get(self::URL_NDR, [
-                    'aksi'  => 'ndr',
-                    'tahun' => $tahun,
-                ]);
+        return Cache::remember($cacheKey, self::TTL, function () use ($bulanRange, $tahun) {
+            $results = [];
 
-            if (!$response->successful()) {
-                throw new \RuntimeException("API NDR tidak dapat diakses (HTTP {$response->status()})");
+            foreach ($bulanRange as $bulan) {
+                // Ambil hari terakhir bulan itu
+                $start = sprintf('%04d-%02d-01', $tahun, $bulan);
+                $stop  = date('Y-m-t', strtotime($start)); // YYYY-MM-28/29/30/31
+
+                $url      = $this->getBorApiUrl() . "/getborlostoi/all/{$start}/{$stop}";
+                $response = Http::timeout(15)->get($url);
+
+                if (!$response->successful()) {
+                    throw new \RuntimeException("BOR API error (HTTP {$response->status()}) — {$url}");
+                }
+
+                $body = $response->json();
+
+                // API pakai typo "succes" (satu s) — handle keduanya
+                if (!($body['succes'] ?? $body['success'] ?? false) || empty($body['rows'])) {
+                    throw new \RuntimeException('Respons BOR API tidak valid untuk bulan ' . $bulan);
+                }
+
+                $row = $body['rows'][0]; // selalu "all" → satu baris
+
+                $results[] = [
+                    'bulan' => $bulan,
+                    'gdr'   => isset($row['gdr'])  ? round((float) $row['gdr'],  4) : null,
+                    'ndr'   => isset($row['ndr'])  ? round((float) $row['ndr'],  4) : null,
+                    'bor'   => isset($row['bor'])  ? round((float) $row['bor'],  2) : null,
+                    'avlos' => isset($row['avlos']) ? round((float) $row['avlos'], 2) : null,
+                    'toi'   => isset($row['toi'])  ? round((float) $row['toi'],  2) : null,
+                    'bto'   => isset($row['bto'])  ? round((float) $row['bto'],  2) : null,
+                ];
             }
 
-            $body = $response->json();
-
-            if (!($body['success'] ?? false) || !isset($body['rows'])) {
-                throw new \RuntimeException('Respons API NDR tidak valid: ' . ($body['msg'] ?? 'unknown'));
-            }
-
-            return $body['rows'];
+            return $results;
         });
     }
+    
 
     // ─── Format Tabel ─────────────────────────────────────────────────────────
 
@@ -185,9 +208,89 @@ class IndikatorMutuService
                     'pointBackgroundColor' => '#38bdf8',
                     'spanGaps'             => true,
                 ],
+                // [
+                //     'label'       => 'Target (%)',
+                //     'data'        => array_fill(0, count($labels), $avgTarget),
+                //     'borderColor' => '#34d399',
+                //     'borderDash'  => [6, 4],
+                //     'borderWidth' => 1.5,
+                //     'pointRadius' => 0,
+                //     'fill'        => false,
+                // ],
+            ],
+        ];
+    }
+
+    //Format Grafik GDR fetchBorLosToi
+    public function formatGdrGrafik(array $borData, ?int $triwulan = 1): array
+    {
+        $labels = collect($borData)->map(fn($d) => $this->namaBulanShort($d['bulan']))->toArray();
+
+        // GDR
+        $values = collect($borData)->map(fn($d) => $d['gdr'] !== null
+            ? round($d['gdr'], 2)
+            : null
+        )->toArray();
+
+        return [
+            'labels'   => $labels,
+            'datasets' => [
                 [
-                    'label'       => 'Target (%)',
-                    'data'        => array_fill(0, count($labels), $avgTarget),
+                    'label'                => 'GDR (‰)',
+                    'data'                 => $values,
+                    'borderColor'          => '#f59e0b',
+                    'backgroundColor'      => 'rgba(245,158,11,.08)',
+                    'borderWidth'          => 2,
+                    'fill'                 => true,
+                    'tension'              => 0.4,
+                    'pointRadius'          => 5,
+                    'pointHoverRadius'     => 7,
+                    'pointBackgroundColor' => '#f59e0b',
+                    'spanGaps'             => true,
+                ],
+                // [
+                //     'label'       => 'Target (< 45‰)',
+                //     'data'        => array_fill(0, count($labels), 45),
+                //     'borderColor' => '#34d399',
+                //     'borderDash'  => [6, 4],
+                //     'borderWidth' => 1.5,
+                //     'pointRadius' => 0,
+                //     'fill'        => false,
+                // ],
+            ],
+        ];
+    }
+
+    // ─── Format Grafik NDR ────────────────────────────────────────────────────
+    public function formatNdrGrafikBor(array $borData, ?int $triwulan = 1): array
+    {
+        $labels = collect($borData)->map(fn($d) => $this->namaBulanShort($d['bulan']))->toArray();
+
+        // NDR
+        $values = collect($borData)->map(fn($d) => $d['ndr'] !== null
+            ? round($d['ndr'], 2)
+            : null
+        )->toArray();
+
+        return [
+            'labels'   => $labels,
+            'datasets' => [
+                [
+                    'label'                => 'NDR (‰)',
+                    'data'                 => $values,
+                    'borderColor'          => '#f87171',
+                    'backgroundColor'      => 'rgba(248,113,113,.08)',
+                    'borderWidth'          => 2,
+                    'fill'                 => true,
+                    'tension'              => 0.4,
+                    'pointRadius'          => 5,
+                    'pointHoverRadius'     => 7,
+                    'pointBackgroundColor' => '#f87171',
+                    'spanGaps'             => true,
+                ],
+                [
+                    'label'       => 'Target (< 25‰)',
+                    'data'        => array_fill(0, count($labels), 25),
                     'borderColor' => '#34d399',
                     'borderDash'  => [6, 4],
                     'borderWidth' => 1.5,
@@ -195,80 +298,6 @@ class IndikatorMutuService
                     'fill'        => false,
                 ],
             ],
-        ];
-    }
-
-    // ─── Format Grafik NDR ────────────────────────────────────────────────────
-    public function formatNdrGrafik(array $ndrRaw, ?int $triwulan = 1): array
-    {
-        $bulanRange = $this->getBulanRange($triwulan);
-        $labels     = collect($bulanRange)->map(fn($b) => $this->namaBulanShort($b))->toArray();
-
-        $bulanKeys  = collect($bulanRange)->map(fn($b) => $this->bulanToGasKey($b))->toArray();
-
-        $colors = ['#f87171','#38bdf8','#34d399','#f59e0b','#a78bfa','#fb923c','#22d3ee','#e879f9','#4ade80'];
-
-        $totalPerBulan = collect($bulanKeys)->map(function ($bk) use ($ndrRaw) {
-            $sumD   = collect($ndrRaw)->sum("{$bk}_d");
-            $sumKrs = collect($ndrRaw)->sum("{$bk}_krs");
-            return $sumKrs > 0 ? round(($sumD / $sumKrs) * 1000, 2) : 0;
-        })->toArray();
-
-        $datasets = [
-            [
-                'label'                => 'Total RS',
-                'data'                 => $totalPerBulan,
-                'borderColor'          => '#f87171',
-                'backgroundColor'      => 'rgba(248,113,113,.1)',
-                'borderWidth'          => 2.5,
-                'fill'                 => true,
-                'tension'              => 0.4,
-                'pointRadius'          => 5,
-                'pointHoverRadius'     => 7,
-                'pointBackgroundColor' => '#f87171',
-                'hidden'               => false,
-            ],
-            [
-                'label'       => 'Target (< 1.5‰)',
-                'data'        => array_fill(0, count($labels), 1.5),
-                'borderColor' => '#f59e0b',
-                'borderDash'  => [6, 4],
-                'borderWidth' => 1.5,
-                'pointRadius' => 0,
-                'fill'        => false,
-                'hidden'      => false,
-            ],
-        ];
-
-        foreach ($ndrRaw as $i => $row) {
-            $ruangan = $row['RUANGAN'] ?? "Ruangan " . ($i + 1);
-            $color   = $colors[$i % count($colors)];
-
-            $dataPerBulan = collect($bulanKeys)->map(function ($bk) use ($row) {
-                $val = $row["{$bk}_ndr"] ?? null;
-                // PERUBAHAN: GAS sudah kirim nilai ×1000, jadi bagi 1000 (bukan 100)
-                return $val !== null ? round((float) $val / 1000, 4) : null;
-            })->toArray();
-
-            $datasets[] = [
-                'label'                => $ruangan,
-                'data'                 => $dataPerBulan,
-                'borderColor'          => $color,
-                'backgroundColor'      => 'transparent',
-                'borderWidth'          => 1.5,
-                'fill'                 => false,
-                'tension'              => 0.4,
-                'pointRadius'          => 3,
-                'pointHoverRadius'     => 5,
-                'pointBackgroundColor' => $color,
-                'hidden'               => true,
-            ];
-        }
-
-        return [
-            'labels'       => $labels,
-            'datasets'     => $datasets,
-            'ruangan_list' => collect($ndrRaw)->pluck('RUANGAN')->filter()->values()->toArray(),
         ];
     }
     // ─── Tahun Tersedia ───────────────────────────────────────────────────────

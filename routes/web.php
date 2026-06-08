@@ -92,7 +92,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/portal/indikator-mutu/data', [IndikatorMutuController::class, 'getData'])
         ->name('portal.indikatormutu.data');
     Route::get('/portal/indikator-mutu/ndr',  [IndikatorMutuController::class, 'getNdr'])  
-        ->name('portal.indikatormutu.ndr');
+    ->name('portal.indikatormutu.ndr');
+    Route::get('/portal/indikator-mutu/gdr-ndr', [IndikatorMutuController::class, 'getGdrNdr'])
+        ->name('portal.indikatormutu.gdrndr');
+
  
 
     // Dashboard Klaim BPJS

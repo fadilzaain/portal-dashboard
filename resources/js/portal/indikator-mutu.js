@@ -1,18 +1,11 @@
-/* ============================================================
-   resources/js/indikator-mutu.js
-   ============================================================ */
-
 import Chart from 'chart.js/auto';
 
-// ── Config dari blade ──────────────────────────────────────
 const ROUTES          = window.IM_CONFIG.routes;
 const DEFAULT_FILTERS = window.IM_CONFIG.filters;
 
-// ── State ──────────────────────────────────────────────────
 let grafikInstance = null;
 let ndrInstance    = null;
 
-// ── Helpers ────────────────────────────────────────────────
 const $          = id => document.getElementById(id);
 const getTw      = () => parseInt($('filter-triwulan').value) || 1;
 const getTahun   = () => $('filter-tahun').value;
@@ -20,9 +13,9 @@ const getJenis   = () => $('filter-jenis').value;
 const toRoman    = n => ['I', 'II', 'III', 'IV'][n - 1] ?? n;
 const setLoading = show => $('loading-tabel').classList.toggle('active', show);
 
-// ── Entry Point ────────────────────────────────────────────
+// panggil loadGdrNdr
 async function loadAll() {
-    await Promise.all([loadData(), loadNDR()]);
+    await Promise.all([loadData(), loadGdrNdr()]);
 }
 
 async function fetchJson(url) {
@@ -32,7 +25,6 @@ async function fetchJson(url) {
     return json;
 }
 
-// ── Data Tabel + Grafik Capaian ────────────────────────────
 async function loadData() {
     const params = new URLSearchParams({
         jenis_mutu: getJenis(),
@@ -45,7 +37,6 @@ async function loadData() {
         const json = await fetchJson(`${ROUTES.data}?${params}`);
         renderMeta(json.meta, json.filters);
         renderTabel(json.tabel, json.filters);
-        renderGrafikCapaian(json.grafik);
     } catch (e) {
         $('tbody-indikator').innerHTML =
             `<tr><td colspan="7" style="text-align:center;color:var(--ar);padding:2rem;">Gagal memuat data: ${e.message}</td></tr>`;
@@ -54,35 +45,32 @@ async function loadData() {
     }
 }
 
-// ── NDR ────────────────────────────────────────────────────
-async function loadNDR() {
+async function loadGdrNdr() {
     const params = new URLSearchParams({ triwulan: getTw(), tahun: getTahun() });
     try {
-        const json = await fetchJson(`${ROUTES.ndr}?${params}`);
-        renderNDR(json.grafik);
-        buildRuanganToggles(json.grafik.ruangan_list, json.grafik.datasets);
+        const json = await fetchJson(`${ROUTES.gdrndr}?${params}`);
+        renderGDR(json.grafik.gdr);
+        renderNDR(json.grafik.ndr);
     } catch (e) {
-        $('insight-ndr-text').textContent = 'Gagal memuat NDR: ' + e.message;
+        $('insight-capaian-text').textContent = 'Gagal memuat GDR/NDR: ' + e.message;
     }
 }
 
-// ── Render Meta / Summary Cards ────────────────────────────
 function renderMeta(meta, filters) {
     $('meta-total').textContent    = meta.total_indikator ?? 0;
     $('meta-tercapai').textContent = meta.tercapai        ?? 0;
     $('meta-belum').textContent    = meta.belum_tercapai  ?? 0;
 
     const label = `TW ${toRoman(filters.triwulan)} / ${filters.tahun}`;
-    $('meta-periode').textContent   = label;
-    $('periode-label').textContent  = label;
+    $('meta-periode').textContent  = label;
+    $('periode-label').textContent = label;
 }
 
-// ── Chart Options Factory ──────────────────────────────────
 function makeChartOptions(color, unitSuffix) {
     return {
-        responsive:        true,
+        responsive:          true,
         maintainAspectRatio: false,
-        interaction:       { mode: 'index', intersect: false },
+        interaction:         { mode: 'index', intersect: false },
         plugins: {
             legend: { display: false },
             tooltip: {
@@ -104,13 +92,12 @@ function makeChartOptions(color, unitSuffix) {
     };
 }
 
-// ── Grafik Capaian ─────────────────────────────────────────
-function renderGrafikCapaian(g) {
+// render GDR
+function renderGDR(g) {
     if (grafikInstance) grafikInstance.destroy();
 
-    const opts          = makeChartOptions('#38bdf8', '%');
-    opts.scales.y.max   = 105;
-    opts.scales.y.ticks.callback = v => v + '%';
+    const opts = makeChartOptions('#f59e0b', '‰');
+    opts.scales.y.ticks.callback = v => v.toFixed(1) + '‰';
 
     grafikInstance = new Chart($('grafikIndikator').getContext('2d'), {
         type: 'line',
@@ -120,17 +107,17 @@ function renderGrafikCapaian(g) {
 
     const vals = (g.datasets[0]?.data ?? []).filter(v => v !== null);
     if (vals.length >= 2) {
-        const diff  = vals.at(-1) - vals[0];
-        const sign  = diff >= 0 ? '+' : '';
-        const color = diff >= 0 ? '#34d399' : '#f87171';
+        const diff = vals.at(-1) - vals[0];
+        const sign = diff >= 0 ? '+' : '';
+        const color = diff >= 0 ? '#f87171' : '#34d399';
         $('insight-capaian-text').innerHTML =
-            `Rata-rata capaian ${diff >= 0 ? 'naik' : 'turun'} <span style="color:${color};font-weight:700;">${sign}${diff.toFixed(1)}%</span> dari ${g.labels[0]} ke ${g.labels[vals.length - 1]}.`;
+            `GDR ${diff >= 0 ? 'naik' : 'turun'} <span style="color:${color};font-weight:700;">${sign}${diff.toFixed(2)}‰</span> dari ${g.labels[0]} ke ${g.labels.at(-1)}.`;
     } else {
         $('insight-capaian-text').textContent = 'Belum cukup data untuk analisis tren.';
     }
 }
 
-// ── Grafik NDR ─────────────────────────────────────────────
+// render NDR
 function renderNDR(g) {
     if (ndrInstance) ndrInstance.destroy();
 
@@ -143,38 +130,18 @@ function renderNDR(g) {
         options: opts,
     });
 
-    const above = (g.datasets[0]?.data ?? []).filter(v => v !== null && v > 1.5).length;
-    $('insight-ndr-text').innerHTML = above > 0
-        ? `NDR total RS masih di atas target (&lt;1.5‰) pada <span style="color:#f87171;font-weight:700;">${above} bulan</span>.`
-        : `NDR total RS sudah di bawah target selama semua bulan. <span style="color:#34d399;font-weight:700;">Pertahankan!</span>`;
+    const vals = (g.datasets[0]?.data ?? []).filter(v => v !== null);
+    if (vals.length >= 2) {
+        const diff = vals.at(-1) - vals[0];
+        const sign = diff >= 0 ? '+' : '';
+        const color = diff >= 0 ? '#f87171' : '#34d399';
+        $('insight-ndr-text').innerHTML =
+            `NDR ${diff >= 0 ? 'naik' : 'turun'} <span style="color:${color};font-weight:700;">${sign}${diff.toFixed(2)}‰</span> dari ${g.labels[0]} ke ${g.labels.at(-1)}.`;
+    } else {
+        $('insight-ndr-text').textContent = 'Belum cukup data untuk analisis tren.';
+    }
 }
 
-// ── NDR Ruangan Toggles ────────────────────────────────────
-function buildRuanganToggles(ruanganList, datasets) {
-    const container = $('ndr-ruangan-toggles');
-    container.innerHTML = '';
-
-    const makeBtn = (idx, label, active) => {
-        const btn       = document.createElement('button');
-        btn.className   = 'ndr-toggle-btn' + (active ? ' active' : '');
-        btn.dataset.idx = idx;
-        btn.textContent = label;
-        btn.onclick     = () => {
-            if (!ndrInstance) return;
-            const ds  = ndrInstance.data.datasets[idx];
-            if (!ds) return;
-            ds.hidden = !ds.hidden;
-            btn.classList.toggle('active', !ds.hidden);
-            ndrInstance.update();
-        };
-        container.appendChild(btn);
-    };
-
-    makeBtn(0, 'Total RS', true);
-    ruanganList.forEach((nama, i) => makeBtn(i + 2, nama, false));
-}
-
-// ── Render Tabel ───────────────────────────────────────────
 function renderTabel(tabel, filters) {
     if (!tabel.length) {
         $('tbody-indikator').innerHTML =
@@ -197,10 +164,10 @@ function renderTabel(tabel, filters) {
             </td>`;
         }).join('');
 
-        const twOk     = ind.triwulan !== null && ind.target_num !== null
+        const twOk   = ind.triwulan !== null && ind.target_num !== null
             ? (ind.is_lower ? ind.triwulan <= ind.target_num : ind.triwulan >= ind.target_num)
             : null;
-        const twHtml   = ind.triwulan !== null
+        const twHtml = ind.triwulan !== null
             ? `<div class="${twOk === true ? 'capaian-ok' : twOk === false ? 'capaian-fail' : ''}">${ind.triwulan}%</div>`
             : '<span class="capaian-null">–</span>';
         const statusHtml = ind.status
@@ -220,12 +187,11 @@ function renderTabel(tabel, filters) {
     }).join('');
 }
 
-// ── Tab Switcher ───────────────────────────────────────────
 function switchTw(type, tw) {
     document.querySelectorAll(`#tw-tabs-${type} .tw-tab`)
         .forEach(b => b.classList.toggle('active', parseInt(b.dataset.tw) === tw));
     $('filter-triwulan').value = tw;
-    type === 'grafik' ? loadData() : loadNDR();
+    type === 'grafik' ? loadGdrNdr() : loadGdrNdr(); // keduanya panggil loadGdrNdr
 }
 
 function syncTwTabs(tw) {
@@ -234,7 +200,6 @@ function syncTwTabs(tw) {
         .forEach(b => b.classList.toggle('active', parseInt(b.dataset.tw) === n));
 }
 
-// ── Reset Filter ───────────────────────────────────────────
 function resetFilter() {
     $('filter-jenis').value    = '';
     $('filter-triwulan').value = '1';
@@ -243,11 +208,9 @@ function resetFilter() {
     loadAll();
 }
 
-// ── Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', loadAll);
 
-// Expose ke HTML (onclick attributes di blade)
-window.loadAll      = loadAll;
-window.switchTw     = switchTw;
-window.syncTwTabs   = syncTwTabs;
-window.resetFilter  = resetFilter;
+window.loadAll     = loadAll;
+window.switchTw    = switchTw;
+window.syncTwTabs  = syncTwTabs;
+window.resetFilter = resetFilter;

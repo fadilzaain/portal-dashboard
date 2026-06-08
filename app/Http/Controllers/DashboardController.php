@@ -30,51 +30,88 @@ class DashboardController extends Controller
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
 
-        $bulanLabel = self::BULAN_NAMES[$bulan] ?? self::BULAN_NAMES[now()->month];
-        $bulanLabelPelayanan = 'Jan – ' . (self::BULAN_NAMES[$bulan] ?? '');
+        $bulanLabel     = self::BULAN_NAMES[$bulan] ?? self::BULAN_NAMES[now()->month];
         $bulanLabelData = self::BULAN_NAMES[$bulan] ?? $bulanLabel;
 
-        $pelayanan = $this->getPelayananSummary($tahun, $bulan);
-        $keuangan = $this->getKeuanganSummary($tahun);
-        $sdm = $this->getSdmSummary();
-        $mutu = $this->getMutuSummary($tahun, $bulan);
-        $bpjs = $this->getBpjsSummary($tahun, $bulan);
-        $apps = config('portal.apps');
+        // ── Hitung rentang untuk card pelayanan ──────────────────
+        $namaBulanPendek = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+        $tahunSekarang   = Carbon::now()->year;
+
+        $bulanTerakhirDB = DB::connection('dashi')
+            ->table('borlosttoiall_thn')
+            ->where('tahun', $tahunSekarang)
+            ->where('bor', '>', 0)
+            ->max('bulan');
+
+        if (!$bulanTerakhirDB) {
+            $tahunPelayanan      = $tahunSekarang - 1;
+            $bulanLabelPelayanan = 'Jan – Des';
+        } else {
+            $tahunPelayanan      = $tahunSekarang;
+            $bulanLabelPelayanan = 'Jan – ' . $namaBulanPendek[$bulanTerakhirDB];
+        }
+        // ─────────────────────────────────────────────────────────
+
+        $pelayanan = $this->getPelayananSummary();   
+        $keuangan  = $this->getKeuanganSummary($tahun);
+        $sdm       = $this->getSdmSummary();
+        $mutu      = $this->getMutuSummary($tahun, $bulan);
+        $bpjs      = $this->getBpjsSummary($tahun, $bulan);
+        $apps      = config('portal.apps');
 
         return view('dashboard.index', compact(
             'apps',
             'bulan', 'tahun', 'bulanLabel',
             'bulanLabelData',
             'bulanLabelPelayanan',
+            'tahunPelayanan',
             'pelayanan', 'keuangan', 'sdm', 'mutu', 'bpjs'
         ));
     }
 
-    private function getPelayananSummary(int $tahun, int $bulan): array
+   private function getPelayananSummary(): array
     {
         try {
-            $dari   = Carbon::create($tahun, 1, 1)->format('Y-m-d');
-            $sampai = Carbon::create($tahun, $bulan, 1)->endOfMonth()->format('Y-m-d');
+            $tahunSekarang = Carbon::now()->year;
 
-            $baseUrl  = env('BOR_API_URL', 'http://192.168.10.8:8082');
-            $response = Http::timeout(10)->get("{$baseUrl}/getborlostoi/all/{$dari}/{$sampai}");
+            $bulanTerakhir = DB::connection('dashi')
+                ->table('borlosttoiall_thn')
+                ->where('tahun', $tahunSekarang)
+                ->where('bor', '>', 0)
+                ->max('bulan');
 
-            if (!$response->successful()) return $this->emptyPelayanan();
+            // Kalau tahun ini belum ada data sama sekali, fallback ke tahun lalu
+            if (!$bulanTerakhir) {
+                $queryTahun  = $tahunSekarang - 1;
+                $sampaibulan = DB::connection('dashi')
+                    ->table('borlosttoiall_thn')
+                    ->where('tahun', $queryTahun)
+                    ->where('bor', '>', 0)
+                    ->max('bulan') ?? 12;
+            } else {
+                $queryTahun  = $tahunSekarang;
+                $sampaibulan = $bulanTerakhir;
+            }
 
-            $row = $response->json()['rows'][0] ?? null;
-            if (!$row) return $this->emptyPelayanan();
+            $data = DB::connection('dashi')
+                ->table('borlosttoiall_thn')
+                ->where('tahun', $queryTahun)
+                ->whereBetween('bulan', [1, $sampaibulan])
+                ->where('bor', '>', 0)
+                ->get();
+
+            if ($data->isEmpty()) return $this->emptyPelayanan();
 
             return [
-                'bor' => round($row['bor']   ?? 0, 1),
-                'los' => round($row['avlos'] ?? 0, 1),
-                'toi' => round($row['toi']   ?? 0, 1),
-                'bto' => round($row['bto']   ?? 0, 1),
+                'bor' => round($data->avg('bor'), 1),
+                'los' => round($data->avg('los'), 1),
+                'toi' => round($data->avg('toi'), 1),
+                'bto' => round($data->avg('bto'), 1),
             ];
         } catch (\Exception $e) {
             return $this->emptyPelayanan();
         }
     }
-
     private function emptyPelayanan(): array
     {
         return ['bor' => 0, 'los' => 0, 'toi' => 0, 'bto' => 0];

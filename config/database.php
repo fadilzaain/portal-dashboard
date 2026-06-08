@@ -142,6 +142,20 @@ return [
             'strict'   => false,
         ],
 
+        // Db BorLosToiBto baru
+        'dashi' => [
+            'driver'    => 'mysql',
+            'host'      => env('DB_DASHI_HOST', '192.168.10.8'),
+            'port'      => env('DB_DASHI_PORT', '3306'),
+            'database'  => env('DB_DASHI_DATABASE', 'dashi'),
+            'username'  => env('DB_DASHI_USERNAME', 'sawit'),
+            'password'  => env('DB_DASHI_PASSWORD', 'nyawitye'),
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix'    => '',
+            'strict'    => false,
+        ],
+
         
 
         'mariadb' => [

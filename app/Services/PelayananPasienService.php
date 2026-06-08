@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\PelayananPasien;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -13,64 +14,47 @@ class PelayananPasienService
         9  => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des',
     ];
 
-    public function __construct(
-        protected GoogleSheetApiService $api
-    ) {}
-
     // =========================================================
     // INDIKATOR MUTU 
     // =========================================================
     public function getIndikatorMutu(int $tahun, string $dari, string $sampai): array
     {
-        $rateTahun  = $this->api->getRateTahun($tahun);
         $bulanDalam = $this->getBulanDalamRentang($dari, $sampai);
 
-        $filtered = $rateTahun->filter(
-            fn($r) => in_array($r->bulan, $bulanDalam) && $r->bor > 0
-        );
-
-        $data = $filtered;
+        $data = PelayananPasien::getByRentang($tahun, $bulanDalam)
+            ->filter(fn($r) => ($r->bor ?? 0) > 0);
 
         if ($data->isEmpty()) {
-            return ['bor' => 0.0, 'los' => 0.0, 'toi' => 0.0, 'bto' => 0.0];
+            return $this->emptyIndikator();
         }
 
         return [
-            'bor' => round($data->avg('bor'),        2),
-            'los' => round($data->avg('avlos'),       2),
-            'toi' => round($data->avg('toi'),         2),
-            'bto' => round($data->avg('bto'),    2),
+            'bor' => round($data->avg('bor'), 2),
+            'los' => round($data->avg('los'), 2),
+            'toi' => round($data->avg('toi'), 2),
+            'bto' => round($data->avg('bto'), 2),
         ];
     }
 
     // =========================================================
-    // INDIKATOR MUTU YTD — dari API 8082
+    // INDIKATOR MUTU YTD — rata-rata Jan s/d bulan sekarang
     // =========================================================
     public function getIndikatorMutuYTD(int $tahun): array
     {
-        $dari   = Carbon::create($tahun, 1, 1)->format('Y-m-d');
-        $sampai = Carbon::now()->endOfMonth()->format('Y-m-d');
+        $sampaibulan = Carbon::now()->month;
 
-        try {
-            $response = \Illuminate\Support\Facades\Http::timeout(10)
-                ->get(env('BOR_API_URL', 'http://192.168.10.8:8082') . "/getborlostoi/all/{$dari}/{$sampai}");
+        $data = PelayananPasien::getYTD($tahun, $sampaibulan);
 
-            if (!$response->successful()) return $this->emptyIndikator();
-
-            $row = $response->json()['rows'][0] ?? null;
-            if (!$row) return $this->emptyIndikator();
-
-            return [
-                'bor' => round($row['bor']   ?? 0, 2),
-                'los' => round($row['avlos'] ?? 0, 2),
-                'toi' => round($row['toi']   ?? 0, 2),
-                'bto' => round($row['bto']   ?? 0, 2),
-            ];
-
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('getIndikatorMutuYTD error', ['msg' => $e->getMessage()]);
+        if ($data->isEmpty()) {
             return $this->emptyIndikator();
         }
+
+        return [
+            'bor' => round($data->avg('bor'), 2),
+            'los' => round($data->avg('los'), 2),
+            'toi' => round($data->avg('toi'), 2),
+            'bto' => round($data->avg('bto'), 2),
+        ];
     }
 
     private function emptyIndikator(): array
@@ -83,10 +67,10 @@ class PelayananPasienService
     // =========================================================
     public function getChartBORBulanan(int $tahun): Collection
     {
-        $rateTahun = $this->api->getRateTahun($tahun);
+        $rows = PelayananPasien::getByTahun($tahun)->keyBy('bulan');
 
-        return collect(range(1, 12))->map(function ($m) use ($rateTahun) {
-            $row = $rateTahun->firstWhere('bulan', $m);
+        return collect(range(1, 12))->map(function ($m) use ($rows) {
+            $row = $rows->get($m);
             return (object) [
                 'bulan' => self::BULAN[$m],
                 'bor'   => $row ? round($row->bor, 2) : 0,
@@ -95,20 +79,69 @@ class PelayananPasienService
     }
 
     // =========================================================
+    // INDIKATOR MUTU UNTUK CARD BERANDA
+    // Rata-rata Jan s/d (bulan sekarang - 1), tahun terbaru yang ada datanya
+    // =========================================================
+    public function getIndikatorMutuBeranda(): array
+    {
+        $tahunSekarang  = Carbon::now()->year;
+        $bulanSekarang  = Carbon::now()->month;
+
+        // Bulan berjalan dikecualikan — data belum penuh
+        // Kalau sekarang Januari (bulan 1), tidak ada bulan sebelumnya di tahun ini,
+        // maka ambil tahun lalu bulan 1–12
+        if ($bulanSekarang === 1) {
+            $tahun       = $tahunSekarang - 1;
+            $sampaibulan = 12;
+        } else {
+            $tahun       = $tahunSekarang;
+            $sampaibulan = $bulanSekarang - 1;
+        }
+
+        $data = DB::connection('dashi')
+            ->table('borlosttoiall_thn')
+            ->where('tahun', $tahun)
+            ->whereBetween('bulan', [1, $sampaibulan])
+            ->where('bor', '>', 0)
+            ->orderBy('bulan')
+            ->get();
+
+        if ($data->isEmpty()) {
+            return [
+                'bor'        => 0.0,
+                'los'        => 0.0,
+                'toi'        => 0.0,
+                'bto'        => 0.0,
+                'tahun'      => $tahun,
+                'sampaibulan'=> $sampaibulan,
+            ];
+        }
+
+        return [
+            'bor'        => round($data->avg('bor'),  2),
+            'los'        => round($data->avg('los'),  2),
+            'toi'        => round($data->avg('toi'),  2),
+            'bto'        => round($data->avg('bto'),  2),
+            'tahun'      => $tahun,
+            'sampaibulan'=> $sampaibulan,
+        ];
+    }
+
+    // =========================================================
     // CHART BARBER-JOHNSON 
     // =========================================================
     public function getChartAvlosBulanan(int $tahun): Collection
     {
-        $rateTahun = $this->api->getRateTahun($tahun);
+        $rows = PelayananPasien::getByTahun($tahun)->keyBy('bulan');
 
-        return collect(range(1, 12))->map(function ($m) use ($rateTahun, $tahun) {
-            $row = $rateTahun->firstWhere('bulan', $m);
+        return collect(range(1, 12))->map(function ($m) use ($rows, $tahun) {
+            $row = $rows->get($m);
             return (object) [
                 'bulan'   => self::BULAN[$m],
-                'avlos'   => $row ? round($row->avlos,     2) : 0,
-                'toi'     => $row ? round($row->toi,       2) : 0,
-                'bor'     => $row ? round($row->bor,       2) : 0,
-                'bto'     => $row ? round($row->bto,  2) : 0,
+                'avlos'   => $row ? round($row->los, 2) : 0,
+                'toi'     => $row ? round($row->toi, 2) : 0,
+                'bor'     => $row ? round($row->bor, 2) : 0,
+                'bto'     => $row ? round($row->bto, 2) : 0,
                 'periode' => Carbon::create($tahun, $m, 1)->daysInMonth,
             ];
         });
@@ -181,5 +214,4 @@ class PelayananPasienService
 
         return array_unique($bulan);
     }
-
 }
