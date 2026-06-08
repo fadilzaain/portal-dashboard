@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CapaianIndikator;
+use Illuminate\Support\Facades\DB; 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 
@@ -81,41 +82,25 @@ class IndikatorMutuService
         $bulanRange = $this->getBulanRange($triwulan);
 
         return Cache::remember($cacheKey, self::TTL, function () use ($bulanRange, $tahun) {
-            $results = [];
+            $rows = DB::connection('dashi')
+                ->table('borlosttoiall_thn')
+                ->where('tahun', $tahun)
+                ->whereIn('bulan', $bulanRange)
+                ->get()
+                ->keyBy('bulan');
 
-            foreach ($bulanRange as $bulan) {
-                // Ambil hari terakhir bulan itu
-                $start = sprintf('%04d-%02d-01', $tahun, $bulan);
-                $stop  = date('Y-m-t', strtotime($start)); // YYYY-MM-28/29/30/31
-
-                $url      = $this->getBorApiUrl() . "/getborlostoi/all/{$start}/{$stop}";
-                $response = Http::timeout(15)->get($url);
-
-                if (!$response->successful()) {
-                    throw new \RuntimeException("BOR API error (HTTP {$response->status()}) — {$url}");
-                }
-
-                $body = $response->json();
-
-                // API pakai typo "succes" (satu s) — handle keduanya
-                if (!($body['succes'] ?? $body['success'] ?? false) || empty($body['rows'])) {
-                    throw new \RuntimeException('Respons BOR API tidak valid untuk bulan ' . $bulan);
-                }
-
-                $row = $body['rows'][0]; // selalu "all" → satu baris
-
-                $results[] = [
+            return collect($bulanRange)->map(function ($bulan) use ($rows) {
+                $row = $rows->get($bulan);
+                return [
                     'bulan' => $bulan,
-                    'gdr'   => isset($row['gdr'])  ? round((float) $row['gdr'],  4) : null,
-                    'ndr'   => isset($row['ndr'])  ? round((float) $row['ndr'],  4) : null,
-                    'bor'   => isset($row['bor'])  ? round((float) $row['bor'],  2) : null,
-                    'avlos' => isset($row['avlos']) ? round((float) $row['avlos'], 2) : null,
-                    'toi'   => isset($row['toi'])  ? round((float) $row['toi'],  2) : null,
-                    'bto'   => isset($row['bto'])  ? round((float) $row['bto'],  2) : null,
+                    'gdr'   => $row ? round((float) $row->gdr,   4) : null,
+                    'ndr'   => $row ? round((float) $row->ndr,   4) : null,
+                    'bor'   => $row ? round((float) $row->bor,   2) : null,
+                    'avlos' => $row ? round((float) $row->los, 2) : null,
+                    'toi'   => $row ? round((float) $row->toi,   2) : null,
+                    'bto'   => $row ? round((float) $row->bto,   2) : null,
                 ];
-            }
-
-            return $results;
+            })->toArray();
         });
     }
     
