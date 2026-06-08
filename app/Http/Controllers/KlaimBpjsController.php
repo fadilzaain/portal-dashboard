@@ -24,7 +24,7 @@ class KlaimBpjsController extends Controller
      */
     private function resolveDateRange(Request $request): array
     {
-        $now = Carbon::now();
+        $now = $this->getMaxDate();
 
         if ($request->filled('from') && $request->filled('to')) {
             return [
@@ -45,7 +45,7 @@ class KlaimBpjsController extends Controller
      */
     private function resolvePrevDateRange(Request $request): array
     {
-        $now = Carbon::now();
+        $now = $this->getMaxDate();
 
         if ($request->filled('from') && $request->filled('to')) {
             $from = Carbon::parse($request->from);
@@ -83,6 +83,14 @@ class KlaimBpjsController extends Controller
     {
         if ($prev == 0) return $current > 0 ? 100.0 : 0.0;
         return round((($current - $prev) / $prev) * 100, 1);
+    }
+
+    private function getMaxDate(): Carbon
+    {
+        $maxRinap  = $this->db()->selectOne("SELECT MAX(tglPulang) AS d FROM mon_klaim_rinap");
+        $maxRjalan = $this->db()->selectOne("SELECT MAX(tglSep)    AS d FROM mon_klaim_rjalan");
+        $max = max($maxRinap->d ?? '2024-01-01', $maxRjalan->d ?? '2024-01-01');
+        return Carbon::parse($max);
     }
 
     /**

@@ -17,6 +17,8 @@ class PelayananPasienController extends Controller
         $bulan  = (int) $request->get('bulan',  Carbon::now()->month);
         $tahun  = (int) $request->get('tahun',  Carbon::now()->year);
 
+        // dd($this->service->getChartBORBulanan($tahun));
+
         // Hitung dari/sampai otomatis dari bulan+tahun
         $dari   = Carbon::create($tahun, $bulan, 1)->format('Y-m-d');
         $sampai = Carbon::create($tahun, $bulan, 1)->endOfMonth()->format('Y-m-d');

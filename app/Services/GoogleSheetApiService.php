@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -10,7 +11,7 @@ class GoogleSheetApiService
 {
     protected string $baseUrl;
     protected string $apiKey;
-    protected int    $cacheTtl; // detik
+    protected int    $cacheTtl;
 
     public function __construct()
     {
@@ -68,19 +69,41 @@ class GoogleSheetApiService
      * Response rows: [{ID, TAHUN, BULAN, BOR, AVLOST, TOI, BTO}, ...]
      * Hanya kembalikan bulan dengan data (BOR > 0)
      */
-    public function getRateTahun(int $tahun): \Illuminate\Support\Collection
+    public function getRateTahun(int $tahun): Collection
     {
-        $json = $this->fetch('rateTahun', ['tahun' => $tahun]);
+        $baseUrl  = config('services.bor_api.url');
+        $cacheKey = "bor_rate_{$tahun}";
 
-        return collect($json['rows'] ?? [])
-            ->map(fn($row) => (object) [
-                'tahun'  => (int)   $row['TAHUN'],
-                'bulan'  => (int)   $row['BULAN'],
-                'bor'    => (float) $row['BOR'],
-                'avlos'  => (float) $row['AVLOST'],   // API pakai AVLOST bukan AVLOS
-                'toi'    => (float) $row['TOI'],
-                'bto'    => (float) $row['BTO'],
-            ]);
+        return Cache::remember($cacheKey, now()->addHours(1), function () use ($tahun, $baseUrl) {
+            return collect(range(1, 12))->map(function ($bulan) use ($tahun, $baseUrl) {
+                $start = \Carbon\Carbon::create($tahun, $bulan, 1)->format('Y-m-d');
+                $stop  = \Carbon\Carbon::create($tahun, $bulan, 1)->endOfMonth()->format('Y-m-d');
+                $url   = "{$baseUrl}/getborlostoi/{$bulan}/{$start}/{$stop}";
+
+                try {
+                    $response = Http::timeout(10)->get($url);
+                    $json     = $response->json();
+
+                    if (empty($json['succes']) || empty($json['rows'])) {
+                        return null;
+                    }
+
+                    $row = $json['rows'][0];
+
+                    return (object) [
+                        'bulan' => $bulan,
+                        'bor'   => (float) ($row['bor']   ?? 0),
+                        'avlos' => (float) ($row['avlos']  ?? 0),
+                        'toi'   => (float) ($row['toi']    ?? 0),
+                        'bto'   => (float) ($row['bto']    ?? 0),
+                    ];
+
+                } catch (\Exception $e) {
+                    Log::warning("BOR API gagal bulan {$bulan}/{$tahun}: " . $e->getMessage());
+                    return null;
+                }
+            })->filter();
+        });
     }
 
     // ─── Endpoint: Rajal ───────────────────────────────────────────────────────

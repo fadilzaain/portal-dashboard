@@ -29,7 +29,7 @@
             </div>
             <div class="card-title-wrap">
                 <div class="app-name">Pelayanan Pasien</div>
-                <div class="app-sub">Indikator pelayanan pasien (sebulan)</div>
+                <div class="app-sub">Ringkasan Pelayanan Pasien</div>
             </div>
         </div>
         <span class="card-month-badge month-blue">{{ $bulanLabel }} {{ $tahun }}</span>

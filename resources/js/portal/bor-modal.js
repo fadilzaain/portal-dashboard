@@ -234,7 +234,6 @@
     }
   
   //  Normalisasi response API = Map { kode: { bor, los, toi, ... } }
-  //  Format API disesuaikan — ubah di sini jika format berbeda.
 
   function normalizeAllData(raw) {
     const map = {};

@@ -27,7 +27,7 @@
             </div>
             <div class="card-title-wrap">
                 <div class="app-name">Keuangan</div>
-                <div class="app-sub">Ringkasan pendapatan &amp; belanja</div>
+                <div class="app-sub">pendapatan &amp; belanja</div>
             </div>
         </div>
             <span class="card-month-badge month-green">{{ $labelPeriode }} {{ $tahun }}</span>

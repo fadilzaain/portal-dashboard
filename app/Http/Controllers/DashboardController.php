@@ -31,6 +31,7 @@ class DashboardController extends Controller
         $tahun = (int) $request->input('tahun', now()->year);
 
         $bulanLabel = self::BULAN_NAMES[$bulan] ?? self::BULAN_NAMES[now()->month];
+        $bulanLabelPelayanan = 'Jan – ' . (self::BULAN_NAMES[$bulan] ?? '');
         $bulanLabelData = self::BULAN_NAMES[$bulan] ?? $bulanLabel;
 
         $pelayanan = $this->getPelayananSummary($tahun, $bulan);
@@ -44,6 +45,7 @@ class DashboardController extends Controller
             'apps',
             'bulan', 'tahun', 'bulanLabel',
             'bulanLabelData',
+            'bulanLabelPelayanan',
             'pelayanan', 'keuangan', 'sdm', 'mutu', 'bpjs'
         ));
     }
@@ -51,21 +53,31 @@ class DashboardController extends Controller
     private function getPelayananSummary(int $tahun, int $bulan): array
     {
         try {
-            /** @var \App\Services\GoogleSheetApiService $gsApi */
-            $gsApi     = app(\App\Services\GoogleSheetApiService::class);
-            $rateTahun = $gsApi->getRateTahun($tahun);
+            $dari   = Carbon::create($tahun, 1, 1)->format('Y-m-d');
+            $sampai = Carbon::create($tahun, $bulan, 1)->endOfMonth()->format('Y-m-d');
 
-            $row = $rateTahun->firstWhere('bulan', $bulan);
+            $baseUrl  = env('BOR_API_URL', 'http://192.168.10.8:8082');
+            $response = Http::timeout(10)->get("{$baseUrl}/getborlostoi/all/{$dari}/{$sampai}");
+
+            if (!$response->successful()) return $this->emptyPelayanan();
+
+            $row = $response->json()['rows'][0] ?? null;
+            if (!$row) return $this->emptyPelayanan();
 
             return [
-                'bor' => $row ? round($row->bor,  1) : 0,
-                'los' => $row ? round($row->avlos, 1) : 0,
-                'toi' => $row ? round($row->toi,  1) : 0,
-                'bto' => $row ? round($row->bto * 30, 1) : 0,
+                'bor' => round($row['bor']   ?? 0, 1),
+                'los' => round($row['avlos'] ?? 0, 1),
+                'toi' => round($row['toi']   ?? 0, 1),
+                'bto' => round($row['bto']   ?? 0, 1),
             ];
         } catch (\Exception $e) {
-            return ['bor' => 0, 'los' => 0, 'toi' => 0, 'bto' => 0];
+            return $this->emptyPelayanan();
         }
+    }
+
+    private function emptyPelayanan(): array
+    {
+        return ['bor' => 0, 'los' => 0, 'toi' => 0, 'bto' => 0];
     }
 
     private function getKeuanganSummary(int $tahun): array

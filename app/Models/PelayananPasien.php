@@ -7,14 +7,15 @@ use Illuminate\Support\Facades\DB;
 
 class PelayananPasien extends Model
 {
-    protected $connection = 'erm_rs';
+    protected $connection = 'erm_rs';      //Dummy
     protected $table      = 'sensus_harian';
     public    $timestamps = false;
 
-    /**
-     * Ambil data harian sensus_harian untuk halaman detail ranap.
-     * Semua kolom indikator tersedia di sini (bor, avlos, toi, dst).
-     */
+     //============================================================
+     //Ambil data harian sensus_harian untuk halaman detail ranap.
+     //Semua kolom indikator tersedia di sini (bor, avlos, toi, dst).
+     //=============================================================
+
     public static function getDataRanap(string $dari, string $sampai)
     {
         return DB::connection('erm_rs')

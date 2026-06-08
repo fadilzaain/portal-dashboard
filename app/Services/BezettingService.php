@@ -29,10 +29,10 @@ class BezettingService
     {
         $this->url      = env('API_BEZETTING_URL', '');
         $this->timeout  = (int) env('API_BEZETTING_TIMEOUT', 15);
-        $this->cacheTtl = (int) env('API_BEZETTING_CACHE_TTL', 3600); // default cache 1 jam
+        $this->cacheTtl = (int) env('API_BEZETTING_CACHE_TTL', 3600); 
     }
 
-    //ambil data bezetting, dicache agar tidak hit API tiap request
+    //Ambil data bezetting
     public function getData(): Collection
     {
         if (empty($this->url)) {
@@ -45,7 +45,7 @@ class BezettingService
         });
     }
 
-   //fetch dari API lalu parse ke collection of objects
+    //Fetch dari API - parse ke Collection of objects
     private function fetchAndParse(): Collection
     {
         try {
@@ -89,7 +89,9 @@ class BezettingService
         }
     }
 
-   //ringkasan buat summary card
+     //=================================
+     //Ringkasan untuk summary cards
+     //================================
     public function getSummary(Collection $data): array
     {
         $kurang = $data->filter(fn($r) => $r->delta < 0);
@@ -108,13 +110,99 @@ class BezettingService
         ];
     }
 
-   //cache manual
+     //===============================================   
+     //Data monitoring hari ini untuk section Tahap 1
+     //===============================================
+    public function getMonitoring(Collection $bezData, array $shiftSummary, int $totalPegawai): array
+    {
+        // ── Ketersediaan shift ──────────────────────────────
+        $pagi  = $shiftSummary['PAGI']['total']  ?? 0;
+        $siang = $shiftSummary['SIANG']['total'] ?? 0;
+        $malam = $shiftSummary['MALAM']['total'] ?? 0;
+        $totalHadir = $pagi + $siang + $malam;
+
+        $pctHadir = $totalPegawai > 0
+            ? round($totalHadir / $totalPegawai * 100, 1)
+            : 0;
+
+        // Shift aktif berdasarkan jam sekarang
+        $jam = (int) now()->format('H');
+        if ($jam >= 7 && $jam < 14) {
+            $shiftAktifNama  = 'PAGI';
+            $shiftAktifTotal = $pagi;
+        } elseif ($jam >= 14 && $jam < 21) {
+            $shiftAktifNama  = 'SIANG';
+            $shiftAktifTotal = $siang;
+        } else {
+            $shiftAktifNama  = 'MALAM';
+            $shiftAktifTotal = $malam;
+        }
+
+        // ── Rasio global (semua jabatan, skip kebutuhan = 0) ──
+        $validData     = $bezData->filter(fn($r) => $r->kebutuhan > 0);
+        $totalKebutuhan = $validData->sum('kebutuhan');
+        $totalTersedia  = $validData->sum('tersedia');
+        $rasioGlobal    = $totalKebutuhan > 0
+            ? (int) min(round($totalTersedia / $totalKebutuhan * 100), 100)
+            : 0;
+
+        // ── Rasio per kategori ──────────────────────────────
+        $kategoriUrut = ['Dokter', 'Perawat', 'Farmasi', 'Medis Lainnya', 'Lainnya'];
+        $rasioKategori = [];
+
+        foreach ($kategoriUrut as $kat) {
+            $rows = $validData->filter(fn($r) => $r->kategori === $kat);
+            if ($rows->isEmpty()) continue;
+
+            $k = $rows->sum('kebutuhan');
+            $t = $rows->sum('tersedia');
+            $p = $k > 0 ? (int) min(round($t / $k * 100), 100) : 100;
+
+            $rasioKategori[] = [
+                'nama'      => $kat,
+                'kebutuhan' => $k,
+                'tersedia'  => $t,
+                'pct'       => $p,
+            ];
+        }
+
+        // ── Jabatan kritis (rasio < 70%, kebutuhan >= 2) ──
+        $jabatanKritis = $bezData
+            ->filter(fn($r) => $r->kebutuhan >= 2 && $r->pct < 70)
+            ->sortBy('pct')
+            ->take(9) // maks 9 item (3 kolom x 3 baris)
+            ->map(fn($r) => [
+                'jabatan'   => $r->jabatan,
+                'kategori'  => $r->kategori,
+                'kebutuhan' => $r->kebutuhan,
+                'tersedia'  => $r->tersedia,
+                'pct'       => $r->pct,
+            ])
+            ->values()
+            ->toArray();
+
+        return [
+            'totalHadir'      => $totalHadir,
+            'pctHadir'        => $pctHadir,
+            'shiftAktifNama'  => $shiftAktifNama,
+            'shiftAktifTotal' => $shiftAktifTotal,
+            'rasioGlobal'     => $rasioGlobal,
+            'rasioKategori'   => $rasioKategori,
+            'jabatanKritis'   => $jabatanKritis,
+        ];
+    }
+
+     //===========================================
+     //Flush cache manual (misal dipanggil dari artisan command atau admin action)
+     //===========================================
     public function flushCache(): void
     {
         Cache::forget('bezetting_data');
     }
 
-   //menentukan kategori berdasarkan nama jabatan
+     //===========================================
+     //Tentukan kategori berdasarkan nama jabatan
+     //===========================================
     private function resolveKategori(string $jabatan): string
     {
         $lower = strtolower($jabatan);
@@ -130,7 +218,9 @@ class BezettingService
         return 'Lainnya';
     }
 
-   //hitung presentase tersedia v kebutuhan (0-100 max 100%)
+    //=====================================================
+    //Hitung persentase tersedia vs kebutuhan (0–100, max 100%)
+    //=====================================================
     private function hitungPct(int $tersedia, int $kebutuhan): int
     {
         if ($kebutuhan <= 0) return 100;

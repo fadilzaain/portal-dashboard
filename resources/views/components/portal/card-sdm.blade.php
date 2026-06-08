@@ -28,7 +28,7 @@
             </div>
             <div class="card-title-wrap">
                 <div class="app-name">SDM</div>
-                <div class="app-sub">Total pegawai aktif</div>
+                <div class="app-sub">Ringkasan Pegawai</div>
             </div>
         </div>
         <span class="card-month-badge month-purple">{{ $tahun }}</span>

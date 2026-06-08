@@ -112,6 +112,102 @@ body { background: var(--navy-950); color: var(--text-primary); }
 .sdm-sc-val span { font-size: 13px; font-weight: 600; color: var(--text-muted); }
 .sdm-sc-pct { font-size: 11px; color: var(--text-muted); }
 
+/* ── MONITORING HARI INI ── */
+.mon-section { margin-bottom: 20px; }
+.mon-section-title {
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--accent-blue); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+}
+.mon-section-title::after {
+    content: ''; flex: 1; height: 1px;
+    background: var(--border);
+}
+
+/* Ketersediaan hari ini */
+.mon-avail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.mon-avail-card {
+    background: var(--navy-900);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+}
+.mon-avail-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.mon-avail-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 3px; }
+.mon-avail-val   { font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 2px; }
+.mon-avail-sub   { font-size: 11px; color: var(--text-muted); }
+
+/* Rasio per kategori */
+.mon-rasio-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+.mon-rasio-card {
+    background: var(--navy-900);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    transition: transform 0.15s;
+}
+.mon-rasio-card:hover { transform: translateY(-1px); }
+.mon-rasio-header {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 10px;
+}
+.mon-rasio-name { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+.mon-rasio-status {
+    font-size: 9px; font-weight: 700; padding: 2px 7px;
+    border-radius: 99px; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.status-aman   { background: rgba(52,211,153,0.15); color: var(--accent-green); }
+.status-waspada{ background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+.status-kritis { background: rgba(248,113,113,0.15); color: var(--accent-red); }
+
+.mon-rasio-nums {
+    display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;
+}
+.mon-rasio-pct  { font-size: 24px; font-weight: 800; line-height: 1; }
+.mon-rasio-unit { font-size: 11px; color: var(--text-muted); }
+
+.mon-rasio-bar  { height: 5px; background: var(--navy-700); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+.mon-rasio-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+.fill-aman    { background: var(--accent-green); }
+.fill-waspada { background: var(--accent-amber); }
+.fill-kritis  { background: var(--accent-red); }
+
+.mon-rasio-detail { font-size: 10px; color: var(--text-muted); }
+
+/* Unit kritis */
+.mon-kritis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+.mon-kritis-item {
+    background: var(--navy-900);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-left: 3px solid var(--accent-red);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.mon-kritis-name { font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+.mon-kritis-kat  { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.mon-kritis-right{ text-align: right; flex-shrink: 0; }
+.mon-kritis-pct  { font-size: 18px; font-weight: 800; color: var(--accent-red); line-height: 1; }
+.mon-kritis-sub  { font-size: 10px; color: var(--text-muted); }
+
 /* ── BAR CHART PANEL ── */
 .sdm-panel {
     background: var(--navy-900);
@@ -468,11 +564,115 @@ body { background: var(--navy-950); color: var(--text-primary); }
         </div>
     </div>
 
+    {{-- ── MONITORING HARI INI ── --}}
+    <div class="mon-section">
+
+        <!-- {{-- 1. Ketersediaan SDM Hari Ini --}}
+        <div class="mon-section-title">Ketersediaan SDM Hari Ini</div>
+        <div class="mon-avail-grid" style="margin-bottom:20px">
+
+            <div class="mon-avail-card">
+                <div class="mon-avail-icon" style="background:rgba(56,189,248,0.12)">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="mon-avail-label">Total Hadir Hari Ini</div>
+                    <div class="mon-avail-val" style="color:var(--accent-blue)">{{ number_format($monitoring['totalHadir']) }}</div>
+                    <div class="mon-avail-sub">{{ $monitoring['pctHadir'] }}% dari total pegawai</div>
+                </div>
+            </div>
+
+            <div class="mon-avail-card">
+                <div class="mon-avail-icon" style="background:rgba(245,158,11,0.12)">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="mon-avail-label">Shift Aktif Sekarang</div>
+                    <div class="mon-avail-val" style="color:var(--accent-amber)">{{ $monitoring['shiftAktifNama'] }}</div>
+                    <div class="mon-avail-sub">{{ number_format($monitoring['shiftAktifTotal']) }} orang bertugas</div>
+                </div>
+            </div>
+
+            <div class="mon-avail-card">
+                <div class="mon-avail-icon" style="background:rgba(167,139,250,0.12)">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="mon-avail-label">Rasio Kecukupan Global</div>
+                    <div class="mon-avail-val" style="color:{{ $monitoring['rasioGlobal'] >= 80 ? 'var(--accent-green)' : ($monitoring['rasioGlobal'] >= 60 ? 'var(--accent-amber)' : 'var(--accent-red)') }}">
+                        {{ $monitoring['rasioGlobal'] }}%
+                    </div>
+                    <div class="mon-avail-sub">tersedia vs kebutuhan formasi</div>
+                </div>
+            </div>
+
+        </div> -->
+
+        {{-- 2. Rasio SDM per Kategori --}}
+        <div class="mon-section-title">Rasio Kecukupan SDM per Kategori</div>
+        <div class="mon-rasio-grid" style="margin-bottom:20px">
+            @foreach ($monitoring['rasioKategori'] as $kat)
+            @php
+                $statusCls = $kat['pct'] >= 80 ? 'status-aman' : ($kat['pct'] >= 60 ? 'status-waspada' : 'status-kritis');
+                $fillCls   = $kat['pct'] >= 80 ? 'fill-aman'   : ($kat['pct'] >= 60 ? 'fill-waspada'   : 'fill-kritis');
+                $statusTxt = $kat['pct'] >= 80 ? 'Aman'        : ($kat['pct'] >= 60 ? 'Waspada'        : 'Kritis');
+            @endphp
+            <div class="mon-rasio-card">
+                <div class="mon-rasio-header">
+                    <span class="mon-rasio-name">{{ $kat['nama'] }}</span>
+                    <span class="mon-rasio-status {{ $statusCls }}">{{ $statusTxt }}</span>
+                </div>
+                <div class="mon-rasio-nums">
+                    <span class="mon-rasio-pct" style="color:{{ $kat['pct'] >= 80 ? 'var(--accent-green)' : ($kat['pct'] >= 60 ? 'var(--accent-amber)' : 'var(--accent-red)') }}">{{ $kat['pct'] }}%</span>
+                    <span class="mon-rasio-unit">terpenuhi</span>
+                </div>
+                <div class="mon-rasio-bar">
+                    <div class="mon-rasio-fill {{ $fillCls }}" style="width:{{ min($kat['pct'], 100) }}%"></div>
+                </div>
+                <div class="mon-rasio-detail">{{ number_format($kat['tersedia']) }} / {{ number_format($kat['kebutuhan']) }} orang</div>
+            </div>
+            @endforeach
+        </div>
+
+        <!-- {{-- 3. Jabatan Kritis (rasio < 70%) --}}
+        @if(count($monitoring['jabatanKritis']) > 0)
+        <div class="mon-section-title" style="color:var(--accent-red)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Jabatan Kritis (rasio &lt; 70%)
+        </div>
+        <div class="mon-kritis-grid" style="margin-bottom:20px">
+            @foreach ($monitoring['jabatanKritis'] as $item)
+            <div class="mon-kritis-item">
+                <div>
+                    <div class="mon-kritis-name">{{ $item['jabatan'] }}</div>
+                    <div class="mon-kritis-kat">{{ $item['kategori'] }}</div>
+                </div>
+                <div class="mon-kritis-right">
+                    <div class="mon-kritis-pct">{{ $item['pct'] }}%</div>
+                    <div class="mon-kritis-sub">{{ $item['tersedia'] }}/{{ $item['kebutuhan'] }}</div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif -->
+
+    </div>
+
     {{-- BEZETTING FULL WIDTH --}}
     <div class="sdm-panel sdm-bar-panel">
         <div class="sdm-panel-hd" style="margin-bottom:12px">
             <div class="sdm-panel-title">Bezetting SDM</div>
-            <span style="font-size:11px; color:var(--text-muted);">Diperbarui tiap 1 jam</span>
+            <span style="font-size:11px; color:var(--text-muted);">Cache diperbarui tiap 1 jam</span>
         </div>
 
             {{-- Summary cards --}}

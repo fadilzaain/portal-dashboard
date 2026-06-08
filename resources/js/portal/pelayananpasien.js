@@ -239,21 +239,6 @@ function emptyChart(canvasId) {
     if (!d) return;
 
     const ef = isEfisien(d);
-
-    // ─────────────────────────────────────────────────────────
-    // KOORDINAT TITIK FOCAL (titik kinerja RS pada grafik BJ)
-    // ─────────────────────────────────────────────────────────
-    //
-    // Cara baca grafik Barber-Johnson (standar Depkes RI):
-    //   1. Tarik garis horizontal dari nilai AVLOS di sumbu Y
-    //   2. Garis itu akan memotong garis BOR (diagonal dari origin)
-    //   3. Titik potong itulah titik kinerja RS = (TOI, AVLOS)
-    //   4. Dari titik itu, turun ke sumbu X → baca nilai TOI
-    //   5. Dari titik itu, lihat garis BTO yang melewatinya
-    //
-    // Kesimpulan: titik focal cukup (TOI, AVLOS) — tidak perlu kalkulasi lain.
-    // Syarat data konsisten: AVLOS ≈ (BOR / (100 - BOR)) × TOI
-
     const fx = +d.toi.toFixed(2);    // koordinat X = TOI
     const fy = +d.avlos.toFixed(2);  // koordinat Y = AVLOS
 
@@ -306,7 +291,7 @@ function emptyChart(canvasId) {
     // Legend
     const legendItems = [
       ['#06b6d4', 'dash', `BOR ${d.bor}% (aktual)`],
-      ['#efff14', 'dash', 'BOR 60%'],
+      ['#e86868', 'dash', 'BOR 75%'],
       ['#2563eb', 'dash', `Garis BTO (AVLOS+TOI=${C_BTO})`],
       ['#22c55e', 'dash', 'AVLOS & TOI'],
       [ef ? '#22c55e' : '#2563eb', 'dot', `Titik focal (TOI=${fx}, AVLOS=${fy})`],
@@ -368,8 +353,8 @@ function emptyChart(canvasId) {
         // y = slope × x, slope = BOR / (100 - BOR)
         // Garis dari origin (0,0) — titik potong dengan y=AVLOS ada di x=TOI
         const borLines = [
-          { bor: 60,    color: '#efff14', label: 'BOR 60%',        dash: [4, 3] },
-          { bor: d.bor, color: '#06b6d4', label: `BOR ${d.bor}%`, dash: [7, 3] },
+          { bor: 75,    color: '#e86868', label: 'BOR 75%',        dash: [4, 3] }, //garis bantu
+          { bor: d.bor, color: '#06b6d4', label: `BOR ${d.bor}%`, dash: [7, 3] }, //garis aktual
         ];
 
         borLines.forEach(({ bor, color, label, dash }) => {
@@ -431,7 +416,7 @@ function emptyChart(canvasId) {
         ctx.restore();
 
         // ── Garis TOI (vertikal) ──
-        // Dari titik focal turun ke sumbu X → baca nilai TOI
+        // Dari titik focal turun ke sumbu X 
         ctx.save();
         ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.4; ctx.setLineDash([3, 3]);
         ctx.beginPath();
@@ -509,7 +494,9 @@ function emptyChart(canvasId) {
     });
   }
 
-  const defaultIdx = avlosData?.findIndex(d => d.bor > 0) ?? -1;
+  const activeBulan = window.PP_DATA?.bulan ?? new Date().getMonth() + 1;
+  const defaultIdx  = activeBulan - 1; //bulan 1=januari
+  
   const sel = document.getElementById('bjBulanSelect');
   if (sel) {
     if (defaultIdx >= 0) sel.value = defaultIdx;

@@ -366,8 +366,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         $('date-from').value = dateFrom;
         $('date-to').value   = dateTo;
 
-        // ← PENTING: set custom SEBELUM loadAll()
-        currentPeriod = 'custom';
+        //
+        // currentPeriod = 'custom';
         document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
         const label = `${dateFrom} → ${dateTo}`;
         ['label-rinap', 'label-rjalan', 'label-komposisi'].forEach(id => $(id).textContent = label);
@@ -381,8 +381,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         dateTo     = `${y}-${m}-${last}`;
         $('date-from').value = dateFrom;
         $('date-to').value   = dateTo;
-        currentPeriod = 'custom'; // ← tambah ini
+        // currentPeriod = 'custom'; 
     }
 
-    loadAll(); // ← sekarang currentPeriod sudah 'custom'
+    loadAll(); 
 });
+        // ══════════════════════════════════════════════
+        //   EXPOSE GLOBAL (required for inline onclick)
+        // ══════════════════════════════════════════════
+        window.setPeriod       = setPeriod;
+        window.applyCustomRange = applyCustomRange;

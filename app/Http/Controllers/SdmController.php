@@ -24,6 +24,11 @@ class SdmController extends Controller
         // ── Bezetting ────────────────────────────────────────
         $bezData    = $this->bezetting->getData();
         $bezSummary = $this->bezetting->getSummary($bezData);
+        $monitoring = $this->bezetting->getMonitoring(
+            $bezData,
+            $sdm['shiftSummary'],
+            $sdm['totalPegawai']
+        );
 
         // ── View ─────────────────────────────────────────────
         return view('portal.sdm', [
@@ -61,6 +66,9 @@ class SdmController extends Controller
 
             // Bezetting
             'bezSummary'   => $bezSummary,
+
+            // Monitoring Hari Ini
+            'monitoring'   => $monitoring,
         ]);
     }
 }

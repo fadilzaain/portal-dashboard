@@ -320,6 +320,8 @@ window.PP_DATA = {
   avlosData  : {!! $chartAvlos->toJson()     !!},
   rajalData  : {!! $ringkasanRajal->toJson() !!},
   triageData : {!! $triageIGD->toJson()      !!},
+  bulan      : {{ $bulan }},
+  tahun      : {{ $tahun }},
 };
 </script>
 @vite(['resources/js/portal/pelayananpasien.js'])

@@ -18,7 +18,7 @@ class PelayananPasienService
     ) {}
 
     // =========================================================
-    // INDIKATOR MUTU — dari Google Sheets
+    // INDIKATOR MUTU 
     // =========================================================
     public function getIndikatorMutu(int $tahun, string $dari, string $sampai): array
     {
@@ -29,9 +29,7 @@ class PelayananPasienService
             fn($r) => in_array($r->bulan, $bulanDalam) && $r->bor > 0
         );
 
-        $data = $filtered->isNotEmpty()
-            ? $filtered
-            : $rateTahun->filter(fn($r) => $r->bor > 0);
+        $data = $filtered;
 
         if ($data->isEmpty()) {
             return ['bor' => 0.0, 'los' => 0.0, 'toi' => 0.0, 'bto' => 0.0];
@@ -41,12 +39,47 @@ class PelayananPasienService
             'bor' => round($data->avg('bor'),        2),
             'los' => round($data->avg('avlos'),       2),
             'toi' => round($data->avg('toi'),         2),
-            'bto' => round($data->avg('bto') * 30,    2),
+            'bto' => round($data->avg('bto'),    2),
         ];
     }
 
     // =========================================================
-    // CHART BOR BULANAN — dari Google Sheets
+    // INDIKATOR MUTU YTD — dari API 8082
+    // =========================================================
+    public function getIndikatorMutuYTD(int $tahun): array
+    {
+        $dari   = Carbon::create($tahun, 1, 1)->format('Y-m-d');
+        $sampai = Carbon::now()->endOfMonth()->format('Y-m-d');
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(10)
+                ->get(env('BOR_API_URL', 'http://192.168.10.8:8082') . "/getborlostoi/all/{$dari}/{$sampai}");
+
+            if (!$response->successful()) return $this->emptyIndikator();
+
+            $row = $response->json()['rows'][0] ?? null;
+            if (!$row) return $this->emptyIndikator();
+
+            return [
+                'bor' => round($row['bor']   ?? 0, 2),
+                'los' => round($row['avlos'] ?? 0, 2),
+                'toi' => round($row['toi']   ?? 0, 2),
+                'bto' => round($row['bto']   ?? 0, 2),
+            ];
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('getIndikatorMutuYTD error', ['msg' => $e->getMessage()]);
+            return $this->emptyIndikator();
+        }
+    }
+
+    private function emptyIndikator(): array
+    {
+        return ['bor' => 0.0, 'los' => 0.0, 'toi' => 0.0, 'bto' => 0.0];
+    }
+
+    // =========================================================
+    // CHART BOR BULANAN 
     // =========================================================
     public function getChartBORBulanan(int $tahun): Collection
     {
@@ -62,7 +95,7 @@ class PelayananPasienService
     }
 
     // =========================================================
-    // CHART BARBER-JOHNSON — dari Google Sheets
+    // CHART BARBER-JOHNSON 
     // =========================================================
     public function getChartAvlosBulanan(int $tahun): Collection
     {
@@ -75,7 +108,7 @@ class PelayananPasienService
                 'avlos'   => $row ? round($row->avlos,     2) : 0,
                 'toi'     => $row ? round($row->toi,       2) : 0,
                 'bor'     => $row ? round($row->bor,       2) : 0,
-                'bto'     => $row ? round($row->bto * 30,  2) : 0,
+                'bto'     => $row ? round($row->bto,  2) : 0,
                 'periode' => Carbon::create($tahun, $m, 1)->daysInMonth,
             ];
         });
@@ -148,4 +181,5 @@ class PelayananPasienService
 
         return array_unique($bulan);
     }
+
 }

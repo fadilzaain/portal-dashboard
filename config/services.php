@@ -41,4 +41,8 @@ return [
         'cache_ttl' => env('GOOGLESHEET_CACHE_TTL', 300),
     ],
 
+    'bor_api' => [
+    'url' => env('BOR_API_URL', 'http://192.168.10.8:8082'),
+    ],
+
 ];
