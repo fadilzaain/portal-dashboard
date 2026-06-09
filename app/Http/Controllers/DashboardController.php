@@ -43,16 +43,18 @@ class DashboardController extends Controller
             ->where('bor', '>', 0)
             ->max('bulan');
 
-        if (!$bulanTerakhirDB) {
+        if (!$bulanTerakhirDB || $bulanTerakhirDB <= 1) {
+            // Belum ada data tahun ini, atau hanya ada 1 bulan (berjalan) → fallback tahun lalu
             $tahunPelayanan      = $tahunSekarang - 1;
             $bulanLabelPelayanan = 'Jan – Des';
         } else {
+            // ✅ Label stop di bulan sebelum bulan terakhir (bulan berjalan di-exclude)
             $tahunPelayanan      = $tahunSekarang;
-            $bulanLabelPelayanan = 'Jan – ' . $namaBulanPendek[$bulanTerakhirDB];
+            $bulanLabelPelayanan = 'Jan – ' . $namaBulanPendek[$bulanTerakhirDB - 1];
         }
         // ─────────────────────────────────────────────────────────
 
-        $pelayanan = $this->getPelayananSummary();   
+        $pelayanan = $this->getPelayananSummary();
         $keuangan  = $this->getKeuanganSummary($tahun);
         $sdm       = $this->getSdmSummary();
         $mutu      = $this->getMutuSummary($tahun, $bulan);
@@ -80,8 +82,8 @@ class DashboardController extends Controller
                 ->where('bor', '>', 0)
                 ->max('bulan');
 
-            // Kalau tahun ini belum ada data sama sekali, fallback ke tahun lalu
-            if (!$bulanTerakhir) {
+            if (!$bulanTerakhir || $bulanTerakhir <= 1) {
+                // Fallback tahun lalu
                 $queryTahun  = $tahunSekarang - 1;
                 $sampaibulan = DB::connection('dashi')
                     ->table('borlosttoiall_thn')
@@ -90,7 +92,8 @@ class DashboardController extends Controller
                     ->max('bulan') ?? 12;
             } else {
                 $queryTahun  = $tahunSekarang;
-                $sampaibulan = $bulanTerakhir;
+                // ✅ Exclude bulan terakhir (berjalan)
+                $sampaibulan = $bulanTerakhir - 1;
             }
 
             $data = DB::connection('dashi')
@@ -112,6 +115,7 @@ class DashboardController extends Controller
             return $this->emptyPelayanan();
         }
     }
+
     private function emptyPelayanan(): array
     {
         return ['bor' => 0, 'los' => 0, 'toi' => 0, 'bto' => 0];
