@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class PelayananPasien extends Model
 {
+    //dummy
     protected $connection = 'erm_rs';
     protected $table      = 'sensus_harian';
     public    $timestamps = false;
@@ -28,7 +29,7 @@ class PelayananPasien extends Model
     }
 
     // ============================================================
-    // Query ke DB dashi — borlostoiall_thn
+    // borlostoiall_thn dashi
     // ============================================================
     public static function getByTahun(int $tahun)
     {
@@ -58,5 +59,43 @@ class PelayananPasien extends Model
             ->where('bor', '>', 0)
             ->orderBy('bulan')
             ->get();
+    }
+
+    // ============================================================
+    // Kunjungan Hari ini db dashi
+    // ============================================================
+    public static function getKunjunganHariIni(): array
+    {
+        $today = now()->format('Y-m-d');
+
+        // Coba ambil data hari ini dulu
+        $row = DB::connection('dashi')
+            ->table('borlosttoiall')
+            ->whereDate('tanggalAll', $today)
+            ->first();
+
+        // Kalau belum ada (data belum di-input hari ini), ambil tanggal terakhir
+        if (!$row) {
+            $row = DB::connection('dashi')
+                ->table('borlosttoiall')
+                ->orderByDesc('tanggalAll')
+                ->first();
+        }
+
+        if (!$row) {
+            return ['total' => 0, 'krs_hidup' => 0, 'mati' => 0, 'krs_mrs' => 0, 'tanggal' => null];
+        }
+
+        $krsHidup = (int) ($row->pasien_krs_hidul ?? 0);
+        $mati     = (int) ($row->pasien_mati_tot  ?? 0);
+        $krsMrs   = (int) ($row->pasien_krs_mrs   ?? 0);
+
+        return [
+            'total'     => $krsHidup + $mati + $krsMrs,
+            'krs_hidup' => $krsHidup,
+            'mati'      => $mati,
+            'krs_mrs'   => $krsMrs,
+            'tanggal'   => $row->tanggalAll,
+        ];
     }
 }

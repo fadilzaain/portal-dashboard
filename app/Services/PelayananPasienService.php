@@ -63,6 +63,14 @@ class PelayananPasienService
     }
 
     // =========================================================
+    // PELAYANAN PASIEN
+    // =========================================================vice.php
+    public function getKunjunganHariIni(): array
+    {
+        return \App\Models\PelayananPasien::getKunjunganHariIni();
+    }
+
+    // =========================================================
     // CHART BOR BULANAN 
     // =========================================================
     public function getChartBORBulanan(int $tahun): Collection
@@ -87,7 +95,7 @@ class PelayananPasienService
         $tahunSekarang  = Carbon::now()->year;
         $bulanSekarang  = Carbon::now()->month;
 
-        // Bulan berjalan dikecualikan — data belum penuh
+        // Bulan berjalan dikecualikan
         // Kalau sekarang Januari (bulan 1), tidak ada bulan sebelumnya di tahun ini,
         // maka ambil tahun lalu bulan 1–12
         if ($bulanSekarang === 1) {

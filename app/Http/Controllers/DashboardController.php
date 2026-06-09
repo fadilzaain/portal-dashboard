@@ -83,7 +83,7 @@ class DashboardController extends Controller
                 ->max('bulan');
 
             if (!$bulanTerakhir || $bulanTerakhir <= 1) {
-                // Fallback tahun lalu
+                // Fallback utk tahun lalu
                 $queryTahun  = $tahunSekarang - 1;
                 $sampaibulan = DB::connection('dashi')
                     ->table('borlosttoiall_thn')
@@ -92,7 +92,7 @@ class DashboardController extends Controller
                     ->max('bulan') ?? 12;
             } else {
                 $queryTahun  = $tahunSekarang;
-                // ✅ Exclude bulan terakhir (berjalan)
+                //Exclude bulan terakhir
                 $sampaibulan = $bulanTerakhir - 1;
             }
 

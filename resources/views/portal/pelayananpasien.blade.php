@@ -51,7 +51,7 @@
     <button type="submit" class="pp-btn">Tampilkan</button>
     <a href="{{ route('portal.pelayananpasien') }}" class="pp-btn-ghost">Reset</a>
   </form>
-
+  
   {{-- ═══════════════════════════════════════════
        TOP 4 KPI CARDS
   ════════════════════════════════════════════ --}}
@@ -95,14 +95,20 @@
       ],
       [
         'label'       => 'Kunjungan Hari Ini',
-        'nilai'       => $ringkasanRajal->sum('total_kunjungan'),
+        'nilai'       => $kunjunganHariIni['total'],
         'unit'        => '',
-        'standar'     => 'Total semua poli rawat jalan',
+        'standar'     =>
+                        ($kunjunganHariIni['tanggal']
+                            ? ' · ' . \Carbon\Carbon::parse($kunjunganHariIni['tanggal'])->format('d M Y')
+                            : ''),
         'color'       => '#06b6d4',
         'icon_bg'     => 'rgba(6,182,212,0.15)',
         'is_kunjungan'=> true,
+        'krs_hidup'   => $kunjunganHariIni['krs_hidup'],
+        'mati'        => $kunjunganHariIni['mati'],
+        'krs_mrs'     => $kunjunganHariIni['krs_mrs'],
         'icon'        => '<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>',
-      ],
+    ],
     ];
   @endphp
 
@@ -128,7 +134,17 @@
           </div>
           <span class="tc-badge badge-{{ $tc['status'] }}">{{ $tc['label_s'] }}</span>
         @else
-          <div class="tc-delta delta-up">▲ semua poli aktif</div>
+          <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+            <span style="font-size:10px;background:rgba(6,182,212,0.1);color:#06b6d4;padding:2px 8px;border-radius:4px">
+              KRS hidup: {{ $tc['krs_hidup'] }}
+            </span>
+            <span style="font-size:10px;background:rgba(239,68,68,0.1);color:#ef4444;padding:2px 8px;border-radius:4px">
+              Mati: {{ $tc['mati'] }}
+            </span>
+            <span style="font-size:10px;background:rgba(245,158,11,0.1);color:#f59e0b;padding:2px 8px;border-radius:4px">
+              KRS MRS: {{ $tc['krs_mrs'] }}
+            </span>
+          </div>
         @endif
       @else
         {{-- Belum ada data --}}
@@ -136,6 +152,7 @@
         <div class="tc-standar">{{ $tc['standar'] }}</div>
         <span class="tc-badge" style="background:rgba(125,133,144,0.12);color:var(--pp-muted)">Belum ada data</span>
       @endif
+
     </div>
     @endforeach
   </div>

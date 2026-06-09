@@ -17,9 +17,6 @@ class PelayananPasienController extends Controller
         $bulan  = (int) $request->get('bulan',  Carbon::now()->month);
         $tahun  = (int) $request->get('tahun',  Carbon::now()->year);
 
-        // dd($this->service->getChartBORBulanan($tahun));
-
-        // Hitung dari/sampai otomatis dari bulan+tahun
         $dari   = Carbon::create($tahun, $bulan, 1)->format('Y-m-d');
         $sampai = Carbon::create($tahun, $bulan, 1)->endOfMonth()->format('Y-m-d');
 
@@ -28,12 +25,14 @@ class PelayananPasienController extends Controller
         $chartAvlos = $this->service->getChartAvlosBulanan($tahun);
         $indikator  = $this->service->getIndikatorMutu($tahun, $dari, $sampai);
 
-        // ── Data yang endpointnya belum tersedia ──
+        // ── Data endpoint ada yang blm tersedia ──
         $ringkasanRanap = $this->service->getRingkasanRanap($dari, $sampai);
         $ringkasanRajal = $this->service->getRingkasanRajal($dari, $sampai);
         $ringkasanIGD   = $this->service->getRingkasanIGD($dari, $sampai);
         $trendHarian    = $this->service->getTrendHarian($dari, $sampai);
         $triageIGD      = $this->service->getIGDPerTriage($dari, $sampai);
+
+        $kunjunganHariIni = $this->service->getKunjunganHariIni(); 
 
         return view('portal.pelayananpasien', [
             'bor' => $indikator['bor'],
@@ -44,11 +43,13 @@ class PelayananPasienController extends Controller
             'chartBOR'   => $chartBOR,
             'chartAvlos' => $chartAvlos,
 
-            'ringkasanRanap' => $ringkasanRanap,
-            'ringkasanRajal' => $ringkasanRajal,
-            'ringkasanIGD'   => $ringkasanIGD,
-            'trendHarian'    => $trendHarian,
-            'triageIGD'      => $triageIGD,
+            'ringkasanRanap'   => $ringkasanRanap,
+            'ringkasanRajal'   => $ringkasanRajal,
+            'ringkasanIGD'     => $ringkasanIGD,
+            'trendHarian'      => $trendHarian,
+            'triageIGD'        => $triageIGD,
+
+            'kunjunganHariIni' => $kunjunganHariIni, // ← tambah ini
 
             'tanggalMulai'   => $dari,
             'tanggalSelesai' => $sampai,
