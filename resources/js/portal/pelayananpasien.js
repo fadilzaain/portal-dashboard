@@ -554,7 +554,7 @@ function emptyChart(canvasId) {
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(9);
       pdf.setTextColor(125, 133, 144);
-      pdf.text(`${bulanLabel} ${tahun}  ·  RS Portal`, 14, 17);
+      pdf.text(`${bulanLabel} ${tahun}  ·  RSUD Jombang`, 14, 17);
 
       // Tanggal cetak
       const tgl = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
@@ -614,7 +614,7 @@ function emptyChart(canvasId) {
       pdf.setTextColor(125, 133, 144);
       pdf.setFontSize(7);
       pdf.setFont('helvetica', 'normal');
-      pdf.text('Portal Pelayanan Pasien  ·  Data bersumber dari sistem informasi RS', pw / 2, ph - 3, { align: 'center' });
+      pdf.text('SIMRS  ·  Data Rekam Medis RSUD Jombang', pw / 2, ph - 3, { align: 'center' });
 
       // ── Save ──
       pdf.save(`Barber-Johnson_${bulanLabel}_${tahun}.pdf`);
