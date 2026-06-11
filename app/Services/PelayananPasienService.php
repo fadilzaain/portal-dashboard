@@ -70,6 +70,14 @@ class PelayananPasienService
         return \App\Models\PelayananPasien::getKunjunganHariIni();
     }
 
+    //============================================================
+    // Monitoring IGD / Triage
+    //============================================================
+    public function getMonitoringIGD(): array
+    {
+        return \App\Models\PelayananPasien::getMonitoringIGD();
+    }
+
     // =========================================================
     // CHART BOR BULANAN 
     // =========================================================

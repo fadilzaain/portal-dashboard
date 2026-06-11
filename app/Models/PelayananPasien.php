@@ -98,4 +98,61 @@ class PelayananPasien extends Model
             'tanggal'   => $row->tanggalAll,
         ];
     }
+
+    //==============================================
+    // Monitoring IGD 
+    // Todo : ganti query dummy dengan tabel IGD yang sudah terintegrasi
+    //==============================================
+    public static function getMonitoringIGD(): array
+    {
+        try {
+            // persiapan struktur:
+        //
+        // $today = now()->format('Y-m-d');
+        // $rows  = DB::connection('dashi')
+        //     ->table('igd_kunjungan')
+        //     ->whereDate('tgl_masuk', $today)
+        //     ->get();
+        //
+        // $triage = $rows->whereNotNull('kode_triage')->groupBy('kode_triage')
+        //     ->map(fn($g) => $g->count());
+        //
+        // return [
+        //     'terisi'  => $rows->whereIn('status', ['aktif','observasi'])->count(),
+        //     'antri'   => $rows->where('kode_triage', null)->count(),
+        //     'masuk'   => $rows->count(),
+        //     'triage'  => [
+        //         'p1' => $triage['P1'] ?? 0,
+        //         'p2' => $triage['P2'] ?? 0,
+        //         'p3' => $triage['P3'] ?? 0,
+        //         'p4' => $triage['P4'] ?? 0,
+        //         'p5' => $triage['P5'] ?? 0,
+        //     ],
+        //     'pasien'  => $rows->map(fn($r) => [
+        //         'nama'      => $r->nama_pasien,
+        //         'jam_masuk' => \Carbon\Carbon::parse($r->tgl_masuk)->format('H:i'),
+        //         'triage'    => $r->kode_triage ?? 'Antri',
+        //         'status'    => $r->status_pasien,
+        //         'outcome'   => $r->outcome ?? 'Proses',
+        //     ])->values()->toArray(),
+        // ];
+
+        //Data dummy sementara
+        return [
+            'terisi'    => 0,
+            'antri'     => 0,
+            'masuk'     => 0,
+            'triage'    => ['p1' => 0, 'p2' => 0, 'p3' => 0, 'p4' => 0, 'p5' => 0,],
+            'pasien'    => [],
+        ];
+        } catch (\Exception $e) {
+            return [
+                'terisi' => 0,
+                'antri'  => 0,
+                'masuk'  => 0,
+                'triage' => ['p1' => 0, 'p2' => 0, 'p3' => 0, 'p4' => 0, 'p5' => 0],
+                'pasien' => [],
+            ];
+        }
+    }
 }

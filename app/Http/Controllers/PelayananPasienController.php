@@ -33,6 +33,7 @@ class PelayananPasienController extends Controller
         $triageIGD      = $this->service->getIGDPerTriage($dari, $sampai);
 
         $kunjunganHariIni = $this->service->getKunjunganHariIni(); 
+        $monitoringIGD    = $this->service->getMonitoringIGD();
 
         return view('portal.pelayananpasien', [
             'bor' => $indikator['bor'],
@@ -49,7 +50,8 @@ class PelayananPasienController extends Controller
             'trendHarian'      => $trendHarian,
             'triageIGD'        => $triageIGD,
 
-            'kunjunganHariIni' => $kunjunganHariIni, // ← tambah ini
+            'kunjunganHariIni' => $kunjunganHariIni, 
+            'monitoringIGD'    => $monitoringIGD,
 
             'tanggalMulai'   => $dari,
             'tanggalSelesai' => $sampai,

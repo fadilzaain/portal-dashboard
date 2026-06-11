@@ -11,47 +11,59 @@
 @section('content')
 <div class="pp-wrap">
 
-  {{-- Header --}}
-  <div class="pp-header">
-    <div style="display:flex;align-items:center;gap:12px">
-      <a href="{{ route('dashboard') }}" class="pp-btn-ghost" style="padding:6px 10px" title="Kembali ke Home">
-        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
-      </a>
-      <h1>Portal Pelayanan Pasien</h1>
-      <span class="pp-badge-live">Live Data</span>
+  {{-- ═══════════════════════════════════════════
+       NAVBAR — Opsi A: Borderless + Breadcrumb
+  ════════════════════════════════════════════ --}}
+  <nav class="pp-navbar">
+    <div class="pp-navbar-inner">
+
+      {{-- Kiri: back + breadcrumb --}}
+      <div class="pp-navbar-left">
+        <a href="{{ route('dashboard') }}" class="pp-nav-back" title="Kembali ke Dashboard">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <div class="pp-breadcrumb">
+          <a href="{{ route('dashboard') }}" class="pp-breadcrumb-link">Dashboard</a>
+          <span class="pp-breadcrumb-sep">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/>
+            </svg>
+          </span>
+          <span class="pp-breadcrumb-current">Portal Pelayanan Pasien</span>
+        </div>
+      </div>
+
+      {{-- Kanan: filter pill + live badge --}}
+      <div class="pp-navbar-right">
+        <form method="GET" action="{{ route('portal.pelayananpasien') }}" id="filterForm">
+          @php $namaBulanNav = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des']; @endphp
+          <div class="pp-filter-pill">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" class="pp-filter-icon">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <select name="bulan" onchange="document.getElementById('filterForm').submit()" class="pp-nav-select">
+              @foreach($namaBulanNav as $i => $nb)
+                <option value="{{ $i + 1 }}" @selected(($i + 1) == $bulan)>{{ $nb }}</option>
+              @endforeach
+            </select>
+            <span class="pp-filter-sep"></span>
+            <select name="tahun" onchange="document.getElementById('filterForm').submit()" class="pp-nav-select">
+              @for($y = now()->year; $y >= now()->year - 4; $y--)
+                <option value="{{ $y }}" @selected($y == $tahun)>{{ $y }}</option>
+              @endfor
+            </select>
+          </div>
+        </form>
+        <span class="pp-badge-live">Live</span>
+      </div>
+
     </div>
-  </div>
+  </nav>
 
-  {{-- Filter --}}
-  <form method="GET" action="{{ route('portal.pelayananpasien') }}" class="pp-filter-bar">
-    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--pp-muted);flex-shrink:0">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-      <line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8"  y1="2" x2="8"  y2="6"/>
-      <line x1="3"  y1="10" x2="21" y2="10"/>
-    </svg>
-
-    <label>Bulan</label>
-    <select name="bulan">
-      @php $namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']; @endphp
-      @foreach($namaBulan as $i => $nb)
-        <option value="{{ $i + 1 }}" @selected(($i + 1) == $bulan)>{{ $nb }}</option>
-      @endforeach
-    </select>
-
-    <label>Tahun</label>
-    <select name="tahun">
-      @for($y = now()->year; $y >= now()->year - 4; $y--)
-        <option value="{{ $y }}" @selected($y == $tahun)>{{ $y }}</option>
-      @endfor
-    </select>
-
-    <button type="submit" class="pp-btn">Tampilkan</button>
-    <a href="{{ route('portal.pelayananpasien') }}" class="pp-btn-ghost">Reset</a>
-  </form>
-  
   {{-- ═══════════════════════════════════════════
        TOP 4 KPI CARDS
   ════════════════════════════════════════════ --}}
@@ -94,21 +106,17 @@
         'icon'     => '<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>',
       ],
       [
-        'label'       => 'Kunjungan Hari Ini',
-        'nilai'       => $kunjunganHariIni['total'],
-        'unit'        => '',
-        'standar'     =>
-                        ($kunjunganHariIni['tanggal']
-                            ? ' · ' . \Carbon\Carbon::parse($kunjunganHariIni['tanggal'])->format('d M Y')
-                            : ''),
-        'color'       => '#06b6d4',
-        'icon_bg'     => 'rgba(6,182,212,0.15)',
-        'is_kunjungan'=> true,
-        'krs_hidup'   => $kunjunganHariIni['krs_hidup'],
-        'mati'        => $kunjunganHariIni['mati'],
-        'krs_mrs'     => $kunjunganHariIni['krs_mrs'],
-        'icon'        => '<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>',
-    ],
+        'label'   => 'BTO (Bed Turn Over)',
+        'nilai'   => $bto,
+        'unit'    => 'kali',
+        'standar' => 'Standar 40 – 50 kali/tahun',
+        'color'   => '#06b6d4',
+        'icon_bg' => 'rgba(6,182,212,0.15)',
+        'pct'     => min(round(($bto / 60) * 100), 100),
+        'status'  => ($bto >= 40 && $bto <= 50) ? 'ideal' : 'warn',
+        'label_s' => ($bto >= 40 && $bto <= 50) ? '✓ Ideal' : '⚠ Periksa',
+        'icon'    => '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>',
+      ],
     ];
   @endphp
 
@@ -124,35 +132,19 @@
 
       @if($tc['nilai'] > 0)
         <div class="tc-value" style="color:{{ $tc['color'] }}">
-          {{ is_float($tc['nilai']) ? number_format($tc['nilai'], 1) : number_format($tc['nilai']) }}
+          {{ is_float($tc['nilai']) ? number_format($tc['nilai'], 2) : number_format($tc['nilai']) }}
           @if($tc['unit'])<span class="tc-unit">{{ $tc['unit'] }}</span>@endif
         </div>
         <div class="tc-standar">{{ $tc['standar'] }}</div>
-        @if(!isset($tc['is_kunjungan']))
-          <div class="tc-progress">
-            <div class="tc-progress-fill" style="width:{{ $tc['pct'] }}%;background:{{ $tc['color'] }}"></div>
-          </div>
-          <span class="tc-badge badge-{{ $tc['status'] }}">{{ $tc['label_s'] }}</span>
-        @else
-          <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
-            <span style="font-size:10px;background:rgba(6,182,212,0.1);color:#06b6d4;padding:2px 8px;border-radius:4px">
-              KRS hidup: {{ $tc['krs_hidup'] }}
-            </span>
-            <span style="font-size:10px;background:rgba(239,68,68,0.1);color:#ef4444;padding:2px 8px;border-radius:4px">
-              Mati: {{ $tc['mati'] }}
-            </span>
-            <span style="font-size:10px;background:rgba(245,158,11,0.1);color:#f59e0b;padding:2px 8px;border-radius:4px">
-              KRS MRS: {{ $tc['krs_mrs'] }}
-            </span>
-          </div>
-        @endif
+        <div class="tc-progress">
+          <div class="tc-progress-fill" style="width:{{ $tc['pct'] }}%;background:{{ $tc['color'] }}"></div>
+        </div>
+        <span class="tc-badge badge-{{ $tc['status'] }}">{{ $tc['label_s'] }}</span>
       @else
-        {{-- Belum ada data --}}
         <div class="tc-value" style="color:var(--pp-muted);font-size:24px">—</div>
         <div class="tc-standar">{{ $tc['standar'] }}</div>
         <span class="tc-badge" style="background:rgba(125,133,144,0.12);color:var(--pp-muted)">Belum ada data</span>
       @endif
-
     </div>
     @endforeach
   </div>
@@ -164,12 +156,11 @@
     <div class="pp-card-header">
       <div>
         <div class="pp-card-title">Grafik Barber-Johnson {{ $tahun }}</div>
-        <div class="pp-card-subtitle"> Standar Depkes RI</div>
+        <div class="pp-card-subtitle">Standar Depkes RI</div>
       </div>
       <span class="src-badge src-api">✓ API</span>
     </div>
 
-    {{-- Filter bulan --}}
     <div class="bj-filter">
       <label>Pilih Bulan:</label>
       <select id="bjBulanSelect">
@@ -181,7 +172,6 @@
       <span id="bjStatusBadge"></span>
     </div>
 
-    {{-- KPI row --}}
     <div class="bj-kpi-row">
       @foreach([['BOR','%'],['BTO',''],['AVLOS','hr'],['TOI','hr']] as [$lbl,$unit])
       <div class="bj-kpi-card">
@@ -192,12 +182,10 @@
       @endforeach
     </div>
 
-    {{-- Chart --}}
     <div style="position:relative;height:460px;width:100%">
       <canvas id="chartBJ" role="img" aria-label="Grafik Barber-Johnson bulanan">Grafik Barber-Johnson.</canvas>
     </div>
 
-    {{-- Legend --}}
     <div class="bj-legend" id="bjLegendBar" style="margin-top:12px;padding:9px 14px;background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.2);border-radius:8px"></div>
   </div>
 
@@ -225,7 +213,6 @@
       <div class="pp-card-header">
         <div>
           <div class="pp-card-title">BOR Bulanan {{ $tahun }}</div>
-          <!-- <div class="pp-card-subtitle">Target 60 – 85%</div> -->
         </div>
         <span class="src-badge src-api">✓ API</span>
       </div>
@@ -236,86 +223,158 @@
   </div>
 
   {{-- ═══════════════════════════════════════════
-       ROW: Poli + Triage + Tabel Rajal
+       Monitoring IGD / triage
   ════════════════════════════════════════════ --}}
-  <div class="pp-chart-row3">
+  @php
+    $igd         = $monitoringIGD;
+    $igdTotalBed = 30;
+    $igdKosong   = max($igdTotalBed - $igd['terisi'] - $igd['antri'], 0);
+    $igdPct      = $igdTotalBed > 0 ? round(($igd['terisi'] / $igdTotalBed) * 100) : 0;
 
-    {{-- Kunjungan per Poli --}}
-    <div class="pp-card">
-      <div class="pp-card-header">
-        <div>
-          <div class="pp-card-title">Kunjungan per Poli</div>
-          <div class="pp-card-subtitle">Top poli rawat jalan</div>
-        </div>
-        <span class="src-badge src-live">● Live</span>
+    $igdStatus   = $igdPct >= 90
+        ? ['label' => '⚠ IGD penuh',        'cls' => 'igd-status-penuh']
+        : ($igdPct >= 70
+            ? ['label' => '◑ Kapasitas siaga', 'cls' => 'igd-status-siaga']
+            : ['label' => '✓ Kapasitas aman',  'cls' => 'igd-status-aman']);
+
+    $igdBarColor = $igdPct >= 90 ? '#ef4444' : ($igdPct >= 70 ? '#f59e0b' : '#22c55e');
+    $igdBadgeCls = $igdPct >= 90 ? 'badge-over' : ($igdPct >= 70 ? 'badge-warn' : 'badge-ideal');
+  @endphp
+
+  <div class="pp-card" style="margin-bottom:20px">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="color:var(--pp-red)">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        </svg>
+        <span style="font-size:14px;font-weight:600;color:var(--pp-text)">Monitoring IGD</span>
+        <!-- <span class="pp-badge-live" style="font-size:10px">Live</span> -->
       </div>
-      <div class="chart-wrap-sm">
-        <canvas id="chartRajal"></canvas>
+      <span class="pp-igd-status-badge {{ $igdStatus['cls'] }}">{{ $igdStatus['label'] }}</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div class="pp-igd-kpi-card">
+        <div class="igd-kpi-lbl">Bed terisi</div>
+        <div class="igd-kpi-val" style="color:var(--pp-red)">{{ $igd['terisi'] }}</div>
+        <div class="igd-kpi-sub">dari {{ $igdTotalBed }} bed</div>
+      </div>
+      <div class="pp-igd-kpi-card">
+        <div class="igd-kpi-lbl">Bed kosong</div>
+        <div class="igd-kpi-val" style="color:var(--pp-green)">{{ $igdKosong }}</div>
+        <div class="igd-kpi-sub">tersedia</div>
+      </div>
+      <div class="pp-igd-kpi-card">
+        <div class="igd-kpi-lbl">Masuk hari ini</div>
+        <div class="igd-kpi-val" style="color:var(--pp-text)">{{ $igd['masuk'] }}</div>
+        <div class="igd-kpi-sub">total kunjungan</div>
+      </div>
+      <div class="pp-igd-kpi-card">
+        <div class="igd-kpi-lbl">Menunggu triage</div>
+        <div class="igd-kpi-val" style="color:var(--pp-yellow)">{{ $igd['antri'] }}</div>
+        <div class="igd-kpi-sub">belum diperiksa</div>
       </div>
     </div>
 
-    {{-- IGD per Triage --}}
-    <div class="pp-card">
-      <div class="pp-card-header">
-        <div>
-          <div class="pp-card-title">IGD per Triage</div>
-          <div class="pp-card-subtitle">Distribusi kategori</div>
-        </div>
-        <span class="src-badge src-live">● Live</span>
+    <div style="height:1px;background:var(--pp-border);margin-bottom:16px"></div>
+
+    <div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:600;color:var(--pp-text)">Kapasitas bed IGD</span>
+        <span class="tc-badge {{ $igdBadgeCls }}">{{ $igdPct }}%</span>
       </div>
-      <div class="chart-wrap-sm" style="position:relative">
-        <canvas id="chartTriage"></canvas>
-        <div id="triage-center" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);text-align:center;pointer-events:none">
-          <div id="triage-total" style="font-size:22px;font-weight:700;font-family:var(--pp-mono);color:var(--pp-text)">–</div>
-          <div style="font-size:10px;color:var(--pp-muted);font-weight:600">Pasien</div>
-        </div>
+      <div class="pp-igd-bar-track">
+        <div class="pp-igd-bar-fill" style="width:{{ $igdPct }}%;background:{{ $igdBarColor }}"></div>
+      </div>
+      <div class="pp-igd-bar-labels">
+        <span>0</span><span>15</span><span>{{ $igdTotalBed }} bed</span>
       </div>
     </div>
 
-    {{-- Tabel Rawat Jalan --}}
-    <div class="pp-card">
-      <div class="pp-card-header">
+    <div style="height:1px;background:var(--pp-border);margin-bottom:16px"></div>
+
+    <div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:12px;font-weight:600;color:var(--pp-text)">Status triage</span>
+        <span class="src-badge src-live">● Live</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+        @foreach([
+          ['p1','P1 · Kritis',      'igd-t-p1'],
+          ['p2','P2 · Gawat',       'igd-t-p2'],
+          ['p3','P3 · Darurat',     'igd-t-p3'],
+          ['p4','P4 · Non-darurat', 'igd-t-p4'],
+          ['p5','P5 · Meninggal',   'igd-t-p5'],
+        ] as [$key, $lbl, $cls])
+        <div class="pp-igd-triage-card {{ $cls }}">
+          <div class="igd-t-lbl">{{ $lbl }}</div>
+          <div class="igd-t-val">{{ $igd['triage'][$key] ?? 0 }}</div>
+        </div>
+        @endforeach
+      </div>
+    </div>
+
+    <div style="height:1px;background:var(--pp-border);margin-bottom:16px"></div>
+
+    <div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
         <div>
-          <div class="pp-card-title">Tabel Rawat Jalan</div>
-          <div class="pp-card-subtitle">Semua poli</div>
+          <div style="font-size:12px;font-weight:600;color:var(--pp-text)">Pasien IGD aktif</div>
+          <div style="font-size:11px;color:var(--pp-muted);margin-top:2px">{{ count($igd['pasien']) }} pasien terdaftar hari ini</div>
         </div>
         <span class="src-badge src-live">● Live</span>
       </div>
-      @if($ringkasanRajal->isEmpty())
-        <div class="pp-empty" style="height:200px">
-          <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-3-3v6M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+
+      @if(empty($igd['pasien']))
+        <div class="pp-empty" style="height:120px">
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
-          <span>Belum ada data kunjungan</span>
+          <span>Belum ada pasien IGD hari ini</span>
         </div>
       @else
-        <div style="overflow-x:auto;overflow-y:auto;max-height:230px">
+        <div style="overflow-x:auto;max-height:320px;overflow-y:auto">
           <table class="pp-tbl">
             <thead>
               <tr>
-                <th>Poli</th>
-                <th style="text-align:right">Kunjungan</th>
-                <th>Proporsi</th>
+                <th>#</th>
+                <th>Nama pasien</th>
+                <th>Jam masuk</th>
+                <th>Triage</th>
+                <th>Status</th>
+                <th>Outcome</th>
               </tr>
             </thead>
             <tbody>
-              @php $totalRajal = $ringkasanRajal->sum('total_kunjungan') ?: 1 @endphp
-              @foreach($ringkasanRajal as $poli)
-                @php $pct = round(($poli->total_kunjungan / $totalRajal) * 100, 1) @endphp
-                <tr>
-                  <td>{{ $poli->nama_poli }}</td>
-                  <td style="text-align:right;font-family:var(--pp-mono);font-weight:600">
-                    {{ number_format($poli->total_kunjungan) }}
-                  </td>
-                  <td>
-                    <div class="pp-bar-wrap">
-                      <div class="pp-bar">
-                        <div class="pp-bar-fill" style="width:{{ $pct }}%"></div>
-                      </div>
-                      <span style="font-size:10px;color:var(--pp-muted);white-space:nowrap">{{ $pct }}%</span>
-                    </div>
-                  </td>
-                </tr>
+              @foreach($igd['pasien'] as $i => $p)
+              @php
+                $tr     = $p['triage']  ?? 'Antri';
+                $out    = $p['outcome'] ?? 'Proses';
+                $trCls  = match(strtoupper($tr)) {
+                  'P1'    => 'igd-pill-p1',
+                  'P2'    => 'igd-pill-p2',
+                  'P3'    => 'igd-pill-p3',
+                  'P4'    => 'igd-pill-p4',
+                  'P5'    => 'igd-pill-p5',
+                  default => 'igd-pill-antri',
+                };
+                $outCls = match(strtolower($out)) {
+                  'ranap'     => 'igd-pill-out-ranap',
+                  'pulang'    => 'igd-pill-out-pulang',
+                  'rujuk'     => 'igd-pill-out-rujuk',
+                  'meninggal' => 'igd-pill-out-mati',
+                  default     => 'igd-pill-out-proses',
+                };
+              @endphp
+              <tr>
+                <td style="color:var(--pp-muted);font-size:11px">{{ $i + 1 }}</td>
+                <td style="font-weight:600">{{ $p['nama'] ?? '—' }}</td>
+                <td style="font-family:var(--pp-mono);font-size:11px">{{ $p['jam_masuk'] ?? '—' }}</td>
+                <td><span class="igd-pill {{ $trCls }}">{{ $tr }}</span></td>
+                <td style="font-size:11px;color:var(--pp-muted)">{{ $p['status'] ?? '—' }}</td>
+                <td><span class="igd-pill {{ $outCls }}">{{ ucfirst(strtolower($out)) }}</span></td>
+              </tr>
               @endforeach
             </tbody>
           </table>
@@ -323,11 +382,9 @@
       @endif
     </div>
 
-  </div>{{-- end pp-chart-row3 --}}
-
-</div>{{-- end pp-wrap --}}
+  </div>{{-- pp-card IGD --}}
+</div>{{-- pp-wrap --}}
 @endsection
-
 
 @push('scripts')
 <script>
