@@ -1,5 +1,12 @@
 import Chart from 'chart.js/auto';
 
+(function loadJsPDF() {
+  if (window.jspdf) return;
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  document.head.appendChild(s);
+})();
+
 // ── Ambil data inject dari blade ──────────────────────
 const {
   trendData,
@@ -503,4 +510,119 @@ function emptyChart(canvasId) {
     sel.addEventListener('change', () => renderBJ(parseInt(sel.value)));
   }
   renderBJ(defaultIdx >= 0 ? defaultIdx : 0);
+
+  // ── Download PDF ──────────────────────────────────────────
+  document.getElementById('bjDownloadBtn')?.addEventListener('click', function () {
+    const btn = this;
+    btn.textContent = 'Menyiapkan...';
+    btn.disabled    = true;
+
+    // load PDF
+    const tryExport = () => {
+      if (!window.jspdf?.jsPDF) {
+        setTimeout(tryExport, 200);
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+
+      // Ambil data bulan yang dipilih
+      const selEl     = document.getElementById('bjBulanSelect');
+      const bulanIdx  = parseInt(selEl?.value ?? 0);
+      const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni',
+                         'Juli','Agustus','September','Oktober','November','Desember'];
+      const bulanLabel = namaBulan[bulanIdx] ?? '';
+      const tahun      = window.PP_DATA?.tahun ?? new Date().getFullYear();
+
+      const d    = avlosData?.[bulanIdx];
+      const canvas = document.getElementById('chartBJ');
+
+      // A4 landscape
+      const pdf  = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const pw   = pdf.internal.pageSize.getWidth();   // 297
+      const ph   = pdf.internal.pageSize.getHeight();  // 210
+
+      // ── Header ──
+      pdf.setFillColor(22, 27, 34); //pp-surface
+      pdf.rect(0, 0, pw, 22, 'F');
+
+      pdf.setTextColor(230, 237, 243);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(13);
+      pdf.text('Grafik Barber-Johnson', 14, 10);
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(125, 133, 144);
+      pdf.text(`${bulanLabel} ${tahun}  ·  RS Portal`, 14, 17);
+
+      // Tanggal cetak
+      const tgl = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
+      pdf.text(`Dicetak: ${tgl}`, pw - 14, 17, { align: 'right' });
+
+      // ── Grafik dari canvas ──
+      const imgData  = canvas.toDataURL('image/png', 1.0);
+      const chartW   = pw - 28;
+      const chartH   = chartW * (canvas.height / canvas.width);
+      const chartY   = 26;
+      pdf.addImage(imgData, 'PNG', 14, chartY, chartW, Math.min(chartH, ph - chartY - 40));
+
+      // ── Tabel KPI di bawah grafik ──
+      if (d) {
+        const tableY = Math.min(chartY + chartH + 6, ph - 36);
+
+        const kpiCols = ['Indikator', 'Nilai', 'Satuan', 'Keterangan'];
+        const kpiRows = [
+          ['BOR (Bed Occupancy Rate)', d.bor ?? '—', '%',   d.bor >= 60 && d.bor <= 85 ? 'Ideal (60-85%)' : d.bor < 60 ? 'Di bawah standar' : 'Di atas standar'],
+          ['AVLOS (Avg Length of Stay)', d.avlos ?? '—', 'hari', d.avlos >= 3 && d.avlos <= 12 ? 'Ideal (3-12 hr)' : 'Di luar standar'],
+          ['TOI (Turn Over Interval)',   d.toi   ?? '—', 'hari', d.toi >= 1 && d.toi <= 3 ? 'Ideal (1-3 hr)' : 'Di luar standar'],
+          ['BTO (Bed Turn Over)',        d.bto   ?? '—', 'kali', '—'],
+        ];
+
+        // Header tabel
+        pdf.setFillColor(37, 99, 235);
+        pdf.rect(14, tableY, pw - 28, 7, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(8);
+        const colW = [(pw - 28) * 0.38, (pw - 28) * 0.15, (pw - 28) * 0.12, (pw - 28) * 0.35];
+        let cx = 14;
+        kpiCols.forEach((col, i) => {
+          pdf.text(col, cx + 3, tableY + 5);
+          cx += colW[i];
+        });
+
+        // Baris tabel
+        kpiRows.forEach((row, ri) => {
+          const rowY = tableY + 7 + ri * 7;
+          pdf.setFillColor(ri % 2 === 0 ? 28 : 22, ri % 2 === 0 ? 35 : 27, ri % 2 === 0 ? 48 : 34);
+          pdf.rect(14, rowY, pw - 28, 7, 'F');
+          pdf.setTextColor(230, 237, 243);
+          pdf.setFont('helvetica', ri === 0 ? 'bold' : 'normal');
+          pdf.setFontSize(8);
+          let cx2 = 14;
+          row.forEach((cell, ci) => {
+            pdf.text(String(cell), cx2 + 3, rowY + 5);
+            cx2 += colW[ci];
+          });
+        });
+      }
+
+      // ── Footer ──
+      pdf.setFillColor(22, 27, 34);
+      pdf.rect(0, ph - 8, pw, 8, 'F');
+      pdf.setTextColor(125, 133, 144);
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Portal Pelayanan Pasien  ·  Data bersumber dari sistem informasi RS', pw / 2, ph - 3, { align: 'center' });
+
+      // ── Save ──
+      pdf.save(`Barber-Johnson_${bulanLabel}_${tahun}.pdf`);
+
+      btn.innerHTML = `<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Download PDF`;
+      btn.disabled = false;
+    };
+
+    tryExport();
+  });
 })();

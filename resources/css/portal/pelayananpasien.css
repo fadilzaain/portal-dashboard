@@ -67,11 +67,9 @@
   color: var(--pp-text);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   NAVBAR — Opsi A: Borderless + Breadcrumb
-   Tidak punya background sendiri, menyatu dengan parent layout.
-   Hanya border-bottom tipis sebagai pemisah.
-══════════════════════════════════════════════════════════════ */
+/* ══════════════════════
+   NAVBAR
+══════════════════════════ */
 .pp-navbar {
   border-bottom: 1.5px solid #e5e7eb;
   margin-bottom: 20px;
@@ -129,7 +127,7 @@
 .dark .pp-nav-back:hover,
 [data-theme="dark"] .pp-nav-back:hover         { background: #1c2330; color: #e6edf3; }
 
-/* Breadcrumb — pakai warna sistem bukan --pp-* supaya adaptif light/dark */
+/* Breadcrumb */
 .pp-breadcrumb {
   display: flex;
   align-items: center;
@@ -139,7 +137,7 @@
 }
 
 .pp-breadcrumb-link {
-  color: #6b7280;
+  color: var(--topbar-muted);
   text-decoration: none;
   font-weight: 500;
   white-space: nowrap;
@@ -147,18 +145,18 @@
 }
 
 .pp-breadcrumb-link:hover {
-  color: #111827;
+  color: var(--topbar-text);
 }
 
 .pp-breadcrumb-sep {
-  color: #9ca3af;
+  color: var(--topbar-muted);
   flex-shrink: 0;
   display: flex;
   align-items: center;
 }
 
 .pp-breadcrumb-current {
-  color: #111827;
+  color: var(--topbar-text);
   font-weight: 700;
   font-size: 14px;
   white-space: nowrap;
@@ -167,21 +165,21 @@
 }
 
 /* Dark mode override untuk breadcrumb */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   .pp-breadcrumb-link         { color: #9ca3af; }
   .pp-breadcrumb-link:hover   { color: #f9fafb; }
   .pp-breadcrumb-sep          { color: #6b7280; }
   .pp-breadcrumb-current      { color: #f9fafb; }
-}
+} */
 
-.dark .pp-breadcrumb-link,
+/* .dark .pp-breadcrumb-link,
 [data-theme="dark"] .pp-breadcrumb-link         { color: #9ca3af; }
 .dark .pp-breadcrumb-link:hover,
 [data-theme="dark"] .pp-breadcrumb-link:hover   { color: #f9fafb; }
 .dark .pp-breadcrumb-sep,
 [data-theme="dark"] .pp-breadcrumb-sep          { color: #6b7280; }
 .dark .pp-breadcrumb-current,
-[data-theme="dark"] .pp-breadcrumb-current      { color: #f9fafb; }
+[data-theme="dark"] .pp-breadcrumb-current      { color: #f9fafb; } */
 
 /* Kanan: filter pill + live */
 .pp-navbar-right {
@@ -283,7 +281,7 @@
   50%       { opacity: 0.3; }
 }
 
-/* ── Filter bar (legacy, tidak dipakai di navbar baru) ──────── */
+/* ── Filter bar ──────── */
 .pp-filter-bar {
   display: flex;
   align-items: center;

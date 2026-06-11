@@ -169,7 +169,13 @@
           <option value="{{ $i }}">{{ $nb }}</option>
         @endforeach
       </select>
-      <span id="bjStatusBadge"></span>
+      <span id="bjStatusBadge"></span> 
+      <button id="bjDownloadBtn" class="pp-btn-ghost" style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;padding:5px 12px">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Download PDF
+      </button>
     </div>
 
     <div class="bj-kpi-row">
