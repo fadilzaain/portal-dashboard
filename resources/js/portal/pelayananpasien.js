@@ -47,33 +47,163 @@ function emptyChart(canvasId) {
 }
 
 // ── Tren Kunjungan Harian ──────────────────────────────────
-(function initTrendHarian() {
+(function initTrendKunjungan() {
   const canvas = document.getElementById('chartTrendHarian');
   if (!canvas) return;
-
-  if (!trendData?.length) { emptyChart('chartTrendHarian'); return; }
-
+ 
+  const data = window.PP_DATA?.trendKunjungan ?? [];
+ 
+  if (!data.length) { emptyChart('chartTrendHarian'); return; }
+ 
+  // Pisah data per series
+  const labels       = data.map(d => d.bulan);
+  const kunjungan    = data.map(d => d.jml_kunjungan);
+  const rataRata     = data.map(d => d.jml_rata_rata);
+  const presentase   = data.map(d => d.presentase);
+  const jmlHari      = data.map(d => d.jml_hari);
+ 
+  // Warna per bar berdasarkan nilai kunjungan 
+  const maxVal = Math.max(...kunjungan, 1);
+  const barColors = kunjungan.map(v => {
+    const alpha = 0.35 + (v / maxVal) * 0.55;
+    return `rgba(37,99,235,${alpha.toFixed(2)})`;
+  });
+ 
   new Chart(canvas, {
-    type: 'line',
+    type: 'bar',
     data: {
-      labels: trendData.map(d => d.tanggal),
+      labels,
       datasets: [
-        { label: 'Ranap', data: trendData.map(d => d.ranap), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.08)' },
-        { label: 'Rajal', data: trendData.map(d => d.rajal), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.08)' },
-        { label: 'IGD',   data: trendData.map(d => d.igd),   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.06)' },
-      ].map(ds => ({ ...DATASET_DEFAULTS, ...ds })),
+        // ── Bar: Jumlah Kunjungan ──────────────────────────
+        {
+          type            : 'bar',
+          label           : 'Jml Kunjungan',
+          data            : kunjungan,
+          backgroundColor : barColors,
+          borderRadius    : 5,
+          borderSkipped   : false,
+          yAxisID         : 'yKunjungan',
+          order           : 2,
+        },
+        // ── Line: Rata-rata Harian ─────────────────────────
+        {
+          type            : 'line',
+          label           : 'Rata-rata/hari',
+          data            : rataRata,
+          borderColor     : '#a78bfa',
+          backgroundColor : 'rgba(167,139,250,0.08)',
+          borderWidth     : 2,
+          tension         : 0.4,
+          fill            : true,
+          pointRadius     : 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#a78bfa',
+          yAxisID         : 'yRata',
+          order           : 1,
+        },
+        // ── Line: Presentase ──────────────────────────────
+        {
+          type            : 'line',
+          label           : 'Presentase (%)',
+          data            : presentase,
+          borderColor     : '#06b6d4',
+          backgroundColor : 'transparent',
+          borderWidth     : 1.8,
+          borderDash      : [5, 4],
+          tension         : 0.4,
+          fill            : false,
+          pointRadius     : 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#06b6d4',
+          yAxisID         : 'yPresentase',
+          order           : 1,
+        },
+      ],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      responsive          : true,
+      maintainAspectRatio : false,
+      interaction         : { mode: 'index', intersect: false },
+ 
       plugins: {
-        legend: { display: true, position: 'top', labels: { boxWidth: 8, padding: 16, usePointStyle: true } },
-        tooltip: TOOLTIP,
+        legend: {
+          display  : true,
+          position : 'top',
+          labels   : {
+            boxWidth      : 10,
+            padding       : 16,
+            usePointStyle : true,
+            font          : { size: 11 },
+          },
+        },
+        tooltip: {
+          ...TOOLTIP,
+          callbacks: {
+            afterBody(items) {
+              const idx = items[0]?.dataIndex;
+              if (idx === undefined) return '';
+              return `Hari aktif: ${jmlHari[idx]} hari`;
+            },
+            label(ctx) {
+              if (ctx.dataset.label === 'Jml Kunjungan')
+                return ` Kunjungan: ${ctx.raw.toLocaleString('id-ID')}`;
+              if (ctx.dataset.label === 'Rata-rata/hari')
+                return ` Rata-rata: ${ctx.raw}/hari`;
+              if (ctx.dataset.label === 'Presentase (%)')
+                return ` Presentase: ${ctx.raw}%`;
+              return ctx.formattedValue;
+            },
+          },
+        },
       },
+ 
       scales: {
-        x: { grid: GRID, ticks: { maxTicksLimit: 8 } },
-        y: { grid: GRID, beginAtZero: true },
+        x: {
+          grid : { display: false },
+          ticks: { font: { size: 11 } },
+        },
+        // Sumbu kiri: jumlah kunjungan (angka besar)
+        yKunjungan: {
+          type     : 'linear',
+          position : 'left',
+          grid     : GRID,
+          beginAtZero: true,
+          ticks    : {
+            callback : v => v.toLocaleString('id-ID'),
+            font     : { size: 10 },
+            color    : '#2563eb',
+          },
+          title: {
+            display : true,
+            text    : 'Jumlah Kunjungan',
+            color   : '#2563eb',
+            font    : { size: 10 },
+          },
+        },
+        // Sumbu kanan atas: rata-rata harian
+        yRata: {
+          type     : 'linear',
+          position : 'right',
+          grid     : { display: false },
+          beginAtZero: true,
+          ticks    : {
+            font  : { size: 10 },
+            color : '#a78bfa',
+          },
+          title: {
+            display : true,
+            text    : 'Rata-rata/hari',
+            color   : '#a78bfa',
+            font    : { size: 10 },
+          },
+        },
+        // Sumbu presentase 
+        yPresentase: {
+          type    : 'linear',
+          display : false,
+          min     : 0,
+          max     : 100,
+        },
       },
     },
   });
@@ -612,4 +742,87 @@ function emptyChart(canvasId) {
     btn.disabled = false;
   }
 });
+
+//IGD
+(function initIGDPolling() {
+  const card = document.getElementById('igdMonitoringCard');
+    if (!card) return;
+
+  const url         = card.dataset.igdUrl;
+    const INTERVAL_MS = 30 * 60 * 1000; // 30 menit
+      const IGD_TOTAL_BED = 30;            // kapasitas bisa berubah
+
+  // Semua elemen yang bisa diupdate, dipetakan ke key dari response JSON
+  // Format: 'data-igd value' = fungsi transform (opsional)
+  const FIELD_MAP = {
+    'terisi'      : v => v,
+      'masuk'       : v => v,
+        'antri'       : v => v,
+          'pasien_count': (_, data) => data.pasien?.length ?? 0,
+            'triage_p1'   : (_, data) => data.triage?.p1 ?? data.p1 ?? 0,
+              'triage_p2'   : (_, data) => data.triage?.p2 ?? data.p2 ?? 0,
+            'triage_p3'   : (_, data) => data.triage?.p3 ?? data.p3 ?? 0,
+          'triage_p4'   : (_, data) => data.triage?.p4 ?? 0,
+        'triage_p5'   : (_, data) => data.triage?.p5 ?? 0,
+      'kosong'      : (_, data) => Math.max(IGD_TOTAL_BED - data.terisi - data.antri, 0),
+    'pct'         : (_, data) => {
+      const pct = Math.round((data.terisi / IGD_TOTAL_BED) * 100);
+      return pct + '%';
+    },
+  };
+
+  function updateDOM(data) {
+    // Update semua field via data-igd selector
+    Object.entries(FIELD_MAP).forEach(([key, fn]) => {
+      const el = card.querySelector(`[data-igd="${key}"]`);
+        if (el) el.textContent = fn(data[key], data);
+    });
+
+    // Update bar kapasitas
+    const pct       = Math.round((data.terisi / IGD_TOTAL_BED) * 100);
+      const barColor  = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#22c55e';
+        const bar       = card.querySelector('[data-igd="bar"]');
+    if (bar) { bar.style.width = pct + '%'; bar.style.background = barColor; }
+
+    // Update timestamp
+    updateTimestamp(data.diperbarui, false);
+  }
+
+  function updateTimestamp(diperbarui, isError = false) {
+    const el = document.getElementById('igdLastUpdate');
+      if (!el) return;
+
+    if (isError) {
+      el.innerHTML = `🕐 <span style="color:#ef4444">Gagal memperbarui</span>`;
+    return;
+    }
+
+    if (!diperbarui) { el.textContent = '🕐 Belum ada data'; return; }
+
+    const d   = new Date(diperbarui);
+      const fmt = d.toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit',
+    });
+    el.textContent = `🕐 Data per: ${fmt}`;
+  }
+
+  async function fetchIGD() {
+    try {
+      const res = await fetch(url, {
+        headers : { 'X-Requested-With': 'XMLHttpRequest' },
+        signal  : AbortSignal.timeout(10000),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+      updateDOM(data);
+    } catch (err) {
+        console.warn('[IGD Polling] Gagal fetch:', err.message);
+      updateTimestamp(null, true); // 
+    }
+  }
+
+  fetchIGD();                       
+  setInterval(fetchIGD, INTERVAL_MS);
+})();
 })();

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\PelayananPasien;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PelayananPasienService
 {
@@ -14,9 +15,17 @@ class PelayananPasienService
         9  => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des',
     ];
 
+    public const STANDAR = [
+        'bor' => ['min' => 60,  'max' => 85],
+        'los' => ['min' => 3,   'max' => 12],
+        'toi' => ['min' => 1,   'max' => 3],
+        'bto' => ['min' => 40,  'max' => 50],
+    ];
+
     // =========================================================
-    // INDIKATOR MUTU 
+    // INDIKATOR MUTU (BOR, LOS, TOI, BTO)
     // =========================================================
+
     public function getIndikatorMutu(int $tahun, string $dari, string $sampai): array
     {
         $bulanDalam = $this->getBulanDalamRentang($dari, $sampai);
@@ -24,31 +33,135 @@ class PelayananPasienService
         $data = PelayananPasien::getByRentang($tahun, $bulanDalam)
             ->filter(fn($r) => ($r->bor ?? 0) > 0);
 
-        if ($data->isEmpty()) {
-            return $this->emptyIndikator();
-        }
+        return $data->isEmpty()
+            ? $this->emptyIndikator()
+            : $this->hitungRataIndikator($data);
+    }
 
-        return [
-            'bor' => round($data->avg('bor'), 2),
-            'los' => round($data->avg('los'), 2),
-            'toi' => round($data->avg('toi'), 2),
-            'bto' => round($data->avg('bto'), 2),
-        ];
+    public function getIndikatorMutuYTD(int $tahun): array
+    {
+        $data = PelayananPasien::getYTD($tahun, Carbon::now()->month);
+
+        return $data->isEmpty()
+            ? $this->emptyIndikator()
+            : $this->hitungRataIndikator($data);
+    }
+
+    public function getIndikatorMutuBeranda(): array
+    {
+        [$tahun, $sampaibulan] = $this->tahunDanBulanLalu();
+
+        $data = DB::connection('dashi')
+            ->table('borlosttoiall_thn')
+            ->where('tahun', $tahun)
+            ->whereBetween('bulan', [1, $sampaibulan])
+            ->where('bor', '>', 0)
+            ->orderBy('bulan')
+            ->get();
+
+        $indikator = $data->isEmpty()
+            ? $this->emptyIndikator()
+            : $this->hitungRataIndikator($data);
+
+        return array_merge($indikator, [
+            'tahun'       => $tahun,
+            'sampaibulan' => $sampaibulan,
+        ]);
     }
 
     // =========================================================
-    // INDIKATOR MUTU YTD — rata-rata Jan s/d bulan sekarang
+    // CHART DATA
     // =========================================================
-    public function getIndikatorMutuYTD(int $tahun): array
+
+    public function getChartBORBulanan(int $tahun): Collection
     {
-        $sampaibulan = Carbon::now()->month;
+        $rows = PelayananPasien::getByTahun($tahun)->keyBy('bulan');
 
-        $data = PelayananPasien::getYTD($tahun, $sampaibulan);
+        return collect(range(1, 12))->map(fn($m) => (object) [
+            'bulan' => self::BULAN[$m],
+            'bor'   => round($rows->get($m)?->bor ?? 0, 2),
+        ]);
+    }
 
-        if ($data->isEmpty()) {
-            return $this->emptyIndikator();
-        }
+    public function getChartAvlosBulanan(int $tahun): Collection
+    {
+        $rows = PelayananPasien::getByTahun($tahun)->keyBy('bulan');
 
+        return collect(range(1, 12))->map(fn($m) => (object) [
+            'bulan'   => self::BULAN[$m],
+            'avlos'   => round($rows->get($m)?->los ?? 0, 2),
+            'toi'     => round($rows->get($m)?->toi ?? 0, 2),
+            'bor'     => round($rows->get($m)?->bor ?? 0, 2),
+            'bto'     => round($rows->get($m)?->bto ?? 0, 2),
+            'periode' => Carbon::create($tahun, $m, 1)->daysInMonth,
+        ]);
+    }
+
+    // =========================================================
+    // TREN KUNJUNGAN — kunjungan_rekap (dashi)
+    // =========================================================
+
+    public function getTrendKunjungan(int $tahun): Collection
+    {
+        $rows = PelayananPasien::getKunjunganRekap($tahun)->keyBy('bulan');
+
+        return collect(range(1, 12))->map(fn($m) => (object) [
+            'bulan'         => self::BULAN[$m],
+            'jml_kunjungan' => (int)   ($rows->get($m)?->jml_kunjungan ?? 0),
+            'presentase'    => (float) ($rows->get($m)?->presentase     ?? 0),
+            'jml_hari'      => (int)   ($rows->get($m)?->jml_hari       ?? 0),
+            'jml_rata_rata' => (int)   ($rows->get($m)?->jml_rata_rata  ?? 0),
+        ]);
+    }
+
+    // =========================================================
+    // LIVE — IGD & Kunjungan hari ini
+    // =========================================================
+
+    public function getKunjunganHariIni(): array
+    {
+        return PelayananPasien::getKunjunganHariIni();
+    }
+
+    public function getMonitoringIGD(): array
+    {
+        return PelayananPasien::getMonitoringIGD();
+    }
+
+    // =========================================================
+    // STUB — endpoint belum tersedia
+    // =========================================================
+
+    /** @stub Rawat jalan per poli */
+    public function getRingkasanRajal(string $dari, string $sampai): Collection
+    {
+        return collect();
+    }
+
+    /** @stub Ringkasan IGD */
+    public function getRingkasanIGD(string $dari, string $sampai): array
+    {
+        return ['total' => 0, 'pulang' => 0, 'rawat_inap' => 0, 'meninggal' => 0, 'avg_waktu_tunggu' => 0];
+    }
+
+    /** @stub Ringkasan rawat inap */
+    public function getRingkasanRanap(string $dari, string $sampai): array
+    {
+        return ['total_masuk' => 0, 'total_keluar' => 0, 'masih_dirawat' => 0, 'total_meninggal' => 0];
+    }
+
+    /** @stub IGD per kategori triage */
+    public function getIGDPerTriage(string $dari, string $sampai): Collection
+    {
+        return collect();
+    }
+
+    // =========================================================
+    // HELPER PRIVATE
+    // =========================================================
+
+    private function hitungRataIndikator($data): array
+    {
         return [
             'bor' => round($data->avg('bor'), 2),
             'los' => round($data->avg('los'), 2),
@@ -62,161 +175,14 @@ class PelayananPasienService
         return ['bor' => 0.0, 'los' => 0.0, 'toi' => 0.0, 'bto' => 0.0];
     }
 
-    // =========================================================
-    // PELAYANAN PASIEN
-    // =========================================================vice.php
-    public function getKunjunganHariIni(): array
+    private function tahunDanBulanLalu(): array
     {
-        return \App\Models\PelayananPasien::getKunjunganHariIni();
+        $now = Carbon::now();
+        return $now->month === 1
+            ? [$now->year - 1, 12]
+            : [$now->year, $now->month - 1];
     }
 
-    //============================================================
-    // Monitoring IGD / Triage
-    //============================================================
-    public function getMonitoringIGD(): array
-    {
-        return \App\Models\PelayananPasien::getMonitoringIGD();
-    }
-
-    // =========================================================
-    // CHART BOR BULANAN 
-    // =========================================================
-    public function getChartBORBulanan(int $tahun): Collection
-    {
-        $rows = PelayananPasien::getByTahun($tahun)->keyBy('bulan');
-
-        return collect(range(1, 12))->map(function ($m) use ($rows) {
-            $row = $rows->get($m);
-            return (object) [
-                'bulan' => self::BULAN[$m],
-                'bor'   => $row ? round($row->bor, 2) : 0,
-            ];
-        });
-    }
-
-    // =========================================================
-    // INDIKATOR MUTU UNTUK CARD BERANDA
-    // Rata-rata Jan s/d (bulan sekarang - 1), tahun terbaru yang ada datanya
-    // =========================================================
-    public function getIndikatorMutuBeranda(): array
-    {
-        $tahunSekarang  = Carbon::now()->year;
-        $bulanSekarang  = Carbon::now()->month;
-
-        // Bulan berjalan dikecualikan
-        // Kalau sekarang Januari (bulan 1), tidak ada bulan sebelumnya di tahun ini,
-        // maka ambil tahun lalu bulan 1–12
-        if ($bulanSekarang === 1) {
-            $tahun       = $tahunSekarang - 1;
-            $sampaibulan = 12;
-        } else {
-            $tahun       = $tahunSekarang;
-            $sampaibulan = $bulanSekarang - 1;
-        }
-
-        $data = DB::connection('dashi')
-            ->table('borlosttoiall_thn')
-            ->where('tahun', $tahun)
-            ->whereBetween('bulan', [1, $sampaibulan])
-            ->where('bor', '>', 0)
-            ->orderBy('bulan')
-            ->get();
-
-        if ($data->isEmpty()) {
-            return [
-                'bor'        => 0.0,
-                'los'        => 0.0,
-                'toi'        => 0.0,
-                'bto'        => 0.0,
-                'tahun'      => $tahun,
-                'sampaibulan'=> $sampaibulan,
-            ];
-        }
-
-        return [
-            'bor'        => round($data->avg('bor'),  2),
-            'los'        => round($data->avg('los'),  2),
-            'toi'        => round($data->avg('toi'),  2),
-            'bto'        => round($data->avg('bto'),  2),
-            'tahun'      => $tahun,
-            'sampaibulan'=> $sampaibulan,
-        ];
-    }
-
-    // =========================================================
-    // CHART BARBER-JOHNSON 
-    // =========================================================
-    public function getChartAvlosBulanan(int $tahun): Collection
-    {
-        $rows = PelayananPasien::getByTahun($tahun)->keyBy('bulan');
-
-        return collect(range(1, 12))->map(function ($m) use ($rows, $tahun) {
-            $row = $rows->get($m);
-            return (object) [
-                'bulan'   => self::BULAN[$m],
-                'avlos'   => $row ? round($row->los, 2) : 0,
-                'toi'     => $row ? round($row->toi, 2) : 0,
-                'bor'     => $row ? round($row->bor, 2) : 0,
-                'bto'     => $row ? round($row->bto, 2) : 0,
-                'periode' => Carbon::create($tahun, $m, 1)->daysInMonth,
-            ];
-        });
-    }
-
-    // =========================================================
-    // RAWAT JALAN — belum ada endpoint
-    // =========================================================
-    public function getRingkasanRajal(string $dari, string $sampai): Collection
-    {
-        return collect();
-    }
-
-    // =========================================================
-    // IGD — belum ada endpoint
-    // =========================================================
-    public function getRingkasanIGD(string $dari, string $sampai): array
-    {
-        return [
-            'total'            => 0,
-            'pulang'           => 0,
-            'rawat_inap'       => 0,
-            'meninggal'        => 0,
-            'avg_waktu_tunggu' => 0,
-        ];
-    }
-
-    // =========================================================
-    // RAWAT INAP — belum ada endpoint
-    // =========================================================
-    public function getRingkasanRanap(string $dari, string $sampai): array
-    {
-        return [
-            'total_masuk'     => 0,
-            'total_keluar'    => 0,
-            'masih_dirawat'   => 0,
-            'total_meninggal' => 0,
-        ];
-    }
-
-    // =========================================================
-    // TREN HARIAN — belum ada endpoint
-    // =========================================================
-    public function getTrendHarian(string $dari, string $sampai): Collection
-    {
-        return collect();
-    }
-
-    // =========================================================
-    // TRIAGE IGD — belum ada endpoint
-    // =========================================================
-    public function getIGDPerTriage(string $dari, string $sampai): Collection
-    {
-        return collect();
-    }
-
-    // =========================================================
-    // HELPER
-    // =========================================================
     public function getBulanDalamRentang(string $dari, string $sampai): array
     {
         $start = Carbon::parse($dari);

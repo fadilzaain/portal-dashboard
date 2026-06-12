@@ -81,6 +81,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/portal/pelayananpasien/ranap', [PelayananPasienController::class, 'detailRanap'])
         ->name('portal.pelayananpasien.ranap');
 
+    Route::get('/portal/pelayananpasien/igd-live', [PelayananPasienController::class, 'igdLive'])
+        ->name('portal.pelayananpasien.igd_live');
+
     // Dashboard SDM
     Route::prefix('sdm')->name('sdm.')->middleware(['auth'])->group(function () {
         Route::get('/portal/sdm', [SdmController::class, 'index'])->name('portal.sdm');
