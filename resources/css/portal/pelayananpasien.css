@@ -413,18 +413,30 @@
   grid-template-columns: 3fr 2fr;
   gap: 14px;
   margin-bottom: 20px;
+  width: 100%;
+  min-width: 0;
+}
+
+.pp-chart-row > * {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .pp-chart-row3 {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   margin-bottom: 20px;
+  min-width: 0;
 }
 
-@media (max-width: 900px)  { .pp-chart-row  { grid-template-columns: 1fr; } }
-@media (max-width: 1100px) { .pp-chart-row3 { grid-template-columns: 1fr 1fr; } }
+.pp-chart-row3 > * { min-width: 0; }
+
+
+@media (max-width: 1100px) { .pp-chart-row3 { grid-template-columns: repeat(2, 1fr); } }@media (max-width: 1100px) { .pp-chart-row3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 1024px) { .pp-chart-row  { grid-template-columns: 1fr; } }
 @media (max-width: 700px)  { .pp-chart-row3 { grid-template-columns: 1fr; } }
+@media (max-width: 768px)  { .pp-chart-row  { gap: 10px; } }
 
 /* ── Card ────────────────────────────────────────────────────── */
 .pp-card {

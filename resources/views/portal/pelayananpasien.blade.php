@@ -294,7 +294,7 @@
 ════════════════════════════════════════════ --}}
 @php
     $igd         = $monitoringIGD;
-    $igdTotalBed = 30;
+    $igdTotalBed = 60;
     $igdTerisi   = $igd['terisi'];
     $igdKosong   = max($igdTotalBed - $igdTerisi - $igd['antri'], 0);
     $igdPct      = $igdTotalBed > 0 ? round(($igdTerisi / $igdTotalBed) * 100) : 0;
@@ -403,7 +403,7 @@
       <div class="pp-igd-bar-fill" data-igd="bar" style="width:{{ $igdPct }}%;background:{{ $igdPct >= 90 ? 'var(--pp-red)' : ($igdPct >= 70 ? 'var(--pp-yellow)' : 'var(--pp-green)') }}"></div>
     </div>
     <div class="pp-igd-bar-labels">
-      <span>0</span><span>15</span><span>{{ $igdTotalBed }} bed</span>
+      <span>0</span><span>30</span><span>{{ $igdTotalBed }} bed</span>
     </div>
   </div>
 

@@ -15,20 +15,24 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // Validasi input
         $credentials = $request->validate([
             'email'    => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        // Coba login
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+
+            if (Auth::user()->isDirektur()) {
+                $user = Auth::user();
+                $user->setRememberToken(\Illuminate\Support\Str::random(60));
+                $user->save();
+                Auth::login($user, remember: true);
+            }
 
             return redirect()->intended(route('dashboard'));
         }
 
-        // Gagal login
         return back()
             ->withInput($request->only('email'))
             ->withErrors([

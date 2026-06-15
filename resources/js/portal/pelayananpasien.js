@@ -750,7 +750,7 @@ function emptyChart(canvasId) {
 
   const url           = card.dataset.igdUrl;
   const INTERVAL_MS   = 30 * 60 * 1000;
-  const IGD_TOTAL_BED = 30;
+  const IGD_TOTAL_BED = 60;
 
   const FIELD_MAP = {
     'terisi'    : v => v,
