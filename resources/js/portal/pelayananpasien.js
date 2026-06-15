@@ -746,63 +746,87 @@ function emptyChart(canvasId) {
 //IGD
 (function initIGDPolling() {
   const card = document.getElementById('igdMonitoringCard');
-    if (!card) return;
+  if (!card) return;
 
-  const url         = card.dataset.igdUrl;
-    const INTERVAL_MS = 30 * 60 * 1000; // 30 menit
-      const IGD_TOTAL_BED = 30;            // kapasitas bisa berubah
+  const url           = card.dataset.igdUrl;
+  const INTERVAL_MS   = 30 * 60 * 1000;
+  const IGD_TOTAL_BED = 30;
 
-  // Semua elemen yang bisa diupdate, dipetakan ke key dari response JSON
-  // Format: 'data-igd value' = fungsi transform (opsional)
   const FIELD_MAP = {
-    'terisi'      : v => v,
-      'masuk'       : v => v,
-        'antri'       : v => v,
-          'pasien_count': (_, data) => data.pasien?.length ?? 0,
-            'triage_p1'   : (_, data) => data.triage?.p1 ?? data.p1 ?? 0,
-              'triage_p2'   : (_, data) => data.triage?.p2 ?? data.p2 ?? 0,
-            'triage_p3'   : (_, data) => data.triage?.p3 ?? data.p3 ?? 0,
-          'triage_p4'   : (_, data) => data.triage?.p4 ?? 0,
-        'triage_p5'   : (_, data) => data.triage?.p5 ?? 0,
-      'kosong'      : (_, data) => Math.max(IGD_TOTAL_BED - data.terisi - data.antri, 0),
-    'pct'         : (_, data) => {
-      const pct = Math.round((data.terisi / IGD_TOTAL_BED) * 100);
-      return pct + '%';
+    'terisi'    : v => v,
+    'masuk'     : v => v,
+    'antri'     : v => v,
+    'triage_p1' : (_, data) => data.triage?.p1 ?? 0,
+    'triage_p2' : (_, data) => data.triage?.p2 ?? 0,
+    'triage_p3' : (_, data) => data.triage?.p3 ?? 0,
+    'kosong'    : (_, data) => {
+      const t = data.triage ?? {};
+      return Math.max(IGD_TOTAL_BED - (t.p1 + t.p2 + t.p3) - data.antri, 0);
+    },
+    'pct' : (_, data) => {
+      const t = data.triage ?? {};
+      return Math.round(((t.p1 + t.p2 + t.p3) / IGD_TOTAL_BED) * 100) + '%';
     },
   };
 
   function updateDOM(data) {
-    // Update semua field via data-igd selector
     Object.entries(FIELD_MAP).forEach(([key, fn]) => {
       const el = card.querySelector(`[data-igd="${key}"]`);
-        if (el) el.textContent = fn(data[key], data);
+      if (el) el.textContent = fn(data[key], data);
     });
 
     // Update bar kapasitas
-    const pct       = Math.round((data.terisi / IGD_TOTAL_BED) * 100);
-      const barColor  = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#22c55e';
-        const bar       = card.querySelector('[data-igd="bar"]');
+    const t        = data.triage ?? {};
+    const terisi   = (t.p1 ?? 0) + (t.p2 ?? 0) + (t.p3 ?? 0);
+    const pct      = Math.round((terisi / IGD_TOTAL_BED) * 100);
+    const barColor = pct >= 90 ? 'var(--pp-red)' : pct >= 70 ? 'var(--pp-yellow)' : 'var(--pp-green)';
+    const bar      = card.querySelector('[data-igd="bar"]');
     if (bar) { bar.style.width = pct + '%'; bar.style.background = barColor; }
 
-    // Update timestamp
+    // Show/hide banner antri
+    const banner = document.getElementById('igdAntriBanner');
+    if (banner) banner.style.display = data.antri > 0 ? 'flex' : 'none';
+
     updateTimestamp(data.diperbarui, false);
+  }
+
+  function updateRingkasanTbl(data) {
+    const tbl = document.getElementById('igdRingkasanTbl');
+    if (!tbl || !data.triage) return;
+
+    const total = (data.triage.p1 ?? 0) + (data.triage.p2 ?? 0) + (data.triage.p3 ?? 0);
+    if (total === 0) return;
+
+    const keys = ['p1', 'p2', 'p3'];
+    const rows = tbl.querySelectorAll('tbody tr');
+
+    keys.forEach((key, i) => {
+      const row = rows[i];
+      if (!row) return;
+      const jml = data.triage[key] ?? 0;
+      const pct = total > 0 ? Math.round((jml / total) * 100) : 0;
+      row.cells[2].textContent = jml;
+      row.cells[3].textContent = pct + '%';
+      const barEl = row.cells[4].querySelector('.pp-bar-fill');
+      if (barEl) barEl.style.width = pct + '%';
+    });
   }
 
   function updateTimestamp(diperbarui, isError = false) {
     const el = document.getElementById('igdLastUpdate');
-      if (!el) return;
+    if (!el) return;
 
     if (isError) {
       el.innerHTML = `🕐 <span style="color:#ef4444">Gagal memperbarui</span>`;
-    return;
+      return;
     }
 
     if (!diperbarui) { el.textContent = '🕐 Belum ada data'; return; }
 
     const d   = new Date(diperbarui);
-      const fmt = d.toLocaleString('id-ID', {
-        day: '2-digit', month: 'short', year: 'numeric',
-          hour: '2-digit', minute: '2-digit',
+    const fmt = d.toLocaleString('id-ID', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
     });
     el.textContent = `🕐 Data per: ${fmt}`;
   }
@@ -814,15 +838,16 @@ function emptyChart(canvasId) {
         signal  : AbortSignal.timeout(10000),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+      const data = await res.json();
       updateDOM(data);
+      updateRingkasanTbl(data);
     } catch (err) {
-        console.warn('[IGD Polling] Gagal fetch:', err.message);
-      updateTimestamp(null, true); // 
+      console.warn('[IGD Polling] Gagal fetch:', err.message);
+      updateTimestamp(null, true);
     }
   }
 
-  fetchIGD();                       
+  fetchIGD();
   setInterval(fetchIGD, INTERVAL_MS);
 })();
 })();

@@ -289,16 +289,17 @@
 
   </div>
 
-  {{-- ═══════════════════════════════════════════
-        MONITORING IGD
+{{-- ═══════════════════════════════════════════
+     MONITORING IGD
 ════════════════════════════════════════════ --}}
 @php
     $igd         = $monitoringIGD;
     $igdTotalBed = 30;
-    $igdKosong   = max($igdTotalBed - $igd['terisi'] - $igd['antri'], 0);
-    $igdPct      = $igdTotalBed > 0 ? round(($igd['terisi'] / $igdTotalBed) * 100) : 0;
-    $igdBarColor = $igdPct >= 90 ? '#ef4444' : ($igdPct >= 70 ? '#f59e0b' : '#22c55e');
-    $igdBadgeCls = $igdPct >= 90 ? 'badge-over' : ($igdPct >= 70 ? 'badge-warn' : 'badge-ideal');
+    $igdTerisi   = $igd['terisi'];
+    $igdKosong   = max($igdTotalBed - $igdTerisi - $igd['antri'], 0);
+    $igdPct      = $igdTotalBed > 0 ? round(($igdTerisi / $igdTotalBed) * 100) : 0;
+    $igdBarColor = $igdPct >= 90 ? 'cap-danger' : ($igdPct >= 70 ? 'cap-warn' : 'cap-aman');
+    $igdBadgeCls = $igdPct >= 90 ? 'badge-over' : ($igdPct >= 70 ? 'badge-warn' : 'badge-aman');
     $igdStatus   = $igdPct >= 90
         ? ['label' => '⚠ IGD penuh',        'cls' => 'igd-status-penuh']
         : ($igdPct >= 70
@@ -307,10 +308,15 @@
     $igdDiperbarui = $igd['diperbarui']
         ? \Carbon\Carbon::parse($igd['diperbarui'])->format('d M Y, H:i')
         : null;
+
+    $triageRows = [
+        ['key' => 'p1', 'label' => 'Kritis',  'cls' => 'igd-pill-p1'],
+        ['key' => 'p2', 'label' => 'Gawat',   'cls' => 'igd-pill-p2'],
+        ['key' => 'p3', 'label' => 'Darurat', 'cls' => 'igd-pill-p3'],
+    ];
 @endphp
 
-{{-- data-igd-url: dipakai JS polling, bukan hardcode --}}
-<div class="pp-card" style="margin-bottom:20px"
+  <div class="pp-card" style="margin-bottom:20px"
      id="igdMonitoringCard"
      data-igd-url="{{ route('portal.pelayananpasien.igd_live') }}">
 
@@ -324,42 +330,77 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <span class="pp-igd-status-badge {{ $igdStatus['cls'] }}">{{ $igdStatus['label'] }}</span>
-      {{-- Timestamp — diupdate JS setelah polling --}}
-      <span id="igdLastUpdate" style="font-size:10px;color:var(--pp-muted)">
+      <span id="igdLastUpdate" style="font-size:11px;color:var(--pp-muted)">
         {{ $igdDiperbarui ? 'Data per: ' . $igdDiperbarui : 'Belum ada data' }}
       </span>
     </div>
   </div>
 
+  {{-- Banner menunggu triage --}}
+    <div class="igd-antri-banner" id="igdAntriBanner"
+        style="{{ $igd['antri'] === 0 ? 'display:none;' : '' }}display:flex;align-items:center;justify-content:space-between;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:14px 20px;margin-bottom:14px;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;color:var(--pp-yellow);flex-shrink:0">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--pp-yellow)">Menunggu triage</div>
+          <div style="font-size:11px;color:var(--pp-muted);margin-top:2px">Pasien belum dikategorikan</div>
+        </div>
+      </div>
+      <div style="font-size:48px;font-weight:700;font-family:var(--pp-mono);color:var(--pp-yellow);line-height:1;letter-spacing:-2px"
+          data-igd="antri">{{ $igd['antri'] }}</div>
+    </div>
+
   {{-- KPI Cards --}}
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
-    <div class="pp-igd-kpi-card">
-      <div class="igd-kpi-lbl">Bed terisi</div>
-      <div class="igd-kpi-val" style="color:var(--pp-red)" data-igd="terisi">{{ $igd['terisi'] }}</div>
-      <div class="igd-kpi-sub">dari {{ $igdTotalBed }} bed</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+      <div class="pp-igd-kpi-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="igd-kpi-lbl">Bed terisi</div>
+            <div style="width:28px;height:28px;border-radius:7px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;color:var(--pp-red)">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </div>
     </div>
+      <div class="igd-kpi-val" style="color:var(--pp-red)" data-igd="terisi">{{ $igdTerisi }}</div>
+        <div class="igd-kpi-sub">dari {{ $igdTotalBed }} bed total</div>
+      <div class="pp-igd-kpi-bar"><div class="pp-igd-kpi-bar-fill" style="width:{{ $igdPct }}%;background:var(--pp-red)"></div></div>
+    </div>
+
     <div class="pp-igd-kpi-card">
-      <div class="igd-kpi-lbl">Bed kosong</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="igd-kpi-lbl">Bed kosong</div>
+        <div style="width:28px;height:28px;border-radius:7px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;color:var(--pp-green)">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </div>
+      </div>
       <div class="igd-kpi-val" style="color:var(--pp-green)" data-igd="kosong">{{ $igdKosong }}</div>
-      <div class="igd-kpi-sub">tersedia</div>
+      <div class="igd-kpi-sub">tersedia sekarang</div>
+      <div class="pp-igd-kpi-bar"><div class="pp-igd-kpi-bar-fill" style="width:{{ 100 - $igdPct }}%;background:var(--pp-green)"></div></div>
     </div>
+
     <div class="pp-igd-kpi-card">
-      <div class="igd-kpi-lbl">Masuk hari ini</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="igd-kpi-lbl">Masuk hari ini</div>
+        <div style="width:28px;height:28px;border-radius:7px;background:rgba(37,99,235,0.12);display:flex;align-items:center;justify-content:center;color:var(--pp-accent)">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+      </div>
       <div class="igd-kpi-val" style="color:var(--pp-text)" data-igd="masuk">{{ $igd['masuk'] }}</div>
       <div class="igd-kpi-sub">total kunjungan</div>
+      <div class="pp-igd-kpi-bar" style="opacity:0"></div>
     </div>
   </div>
 
-  <div style="height:1px;background:var(--pp-border);margin-bottom:16px"></div>
-
-  {{-- Bar kapasitas --}}
+  {{-- Kapasitas bar --}}
   <div style="margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <span style="font-size:12px;font-weight:600;color:var(--pp-text)">Kapasitas bed IGD</span>
       <span class="tc-badge {{ $igdBadgeCls }}" data-igd="pct">{{ $igdPct }}%</span>
     </div>
     <div class="pp-igd-bar-track">
-      <div class="pp-igd-bar-fill" data-igd="bar" style="width:{{ $igdPct }}%;background:{{ $igdBarColor }}"></div>
+      <div class="pp-igd-bar-fill" data-igd="bar" style="width:{{ $igdPct }}%;background:{{ $igdPct >= 90 ? 'var(--pp-red)' : ($igdPct >= 70 ? 'var(--pp-yellow)' : 'var(--pp-green)') }}"></div>
     </div>
     <div class="pp-igd-bar-labels">
       <span>0</span><span>15</span><span>{{ $igdTotalBed }} bed</span>
@@ -368,39 +409,19 @@
 
   <div style="height:1px;background:var(--pp-border);margin-bottom:16px"></div>
 
-  {{-- Triage --}}
+  {{-- Triage cards --}}
   <div style="margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <span style="font-size:12px;font-weight:600;color:var(--pp-text)">Status triage</span>
       <span class="src-badge src-live">● Live</span>
     </div>
-
-    {{-- Menunggu triage --}}
-    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:8px 14px;margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--pp-yellow);flex-shrink:0">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <span style="font-size:11px;font-weight:600;color:var(--pp-yellow)">Menunggu triage</span>
-        <span style="font-size:10px;color:var(--pp-muted)"></span>
-      </div>
-      <span style="font-size:22px;font-weight:700;font-family:var(--pp-mono);color:var(--pp-yellow)"
-            data-igd="antri">{{ $igd['antri'] }}</span>
-    </div>
-
-    {{-- P1–P5 --}}
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
-      @foreach([
-        ['p1','P1 · Kritis',      'igd-t-p1'],
-        ['p2','P2 · Gawat',       'igd-t-p2'],
-        ['p3','P3 · Darurat',     'igd-t-p3'],
-        ['p4','P4 · Non-darurat', 'igd-t-p4'],
-        ['p5','P5 · Meninggal',   'igd-t-p5'],
-      ] as [$key, $lbl, $cls])
-      <div class="pp-igd-triage-card {{ $cls }}">
-        <div class="igd-t-lbl">{{ $lbl }}</div>
-        {{-- data-igd="triage_p1" dst — dipakai JS untuk update tanpa index --}}
-        <div class="igd-t-val" data-igd="triage_{{ $key }}">{{ $igd['triage'][$key] ?? 0 }}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      @foreach($triageRows as $tr)
+      <div class="pp-igd-triage-card igd-t-{{ $tr['key'] }}">
+        <div class="igd-t-lbl">{{ $tr['label'] }}</div>
+        <div class="igd-t-code">{{ strtoupper($tr['key']) }}</div>
+        <div class="igd-t-val" data-igd="triage_{{ $tr['key'] }}">{{ $igd['triage'][$tr['key']] ?? 0 }}</div>
+        <div class="igd-t-dot igd-dot-{{ $tr['key'] }}"></div>
       </div>
       @endforeach
     </div>
@@ -408,65 +429,60 @@
 
   <div style="height:1px;background:var(--pp-border);margin-bottom:16px"></div>
 
-  {{-- Tabel pasien --}}
+  {{-- Tabel ringkasan masuk hari ini --}}
   <div>
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div>
-        <div style="font-size:12px;font-weight:600;color:var(--pp-text)">Pasien IGD aktif</div>
+        <div style="font-size:12px;font-weight:600;color:var(--pp-text)">Ringkasan masuk hari ini</div>
         <div style="font-size:11px;color:var(--pp-muted);margin-top:2px">
-          <span data-igd="pasien_count">{{ count($igd['pasien']) }}</span> pasien terdaftar hari ini
+          Total <span data-igd="masuk">{{ $igd['masuk'] }}</span> pasien per kategori triage
         </div>
       </div>
       <span class="src-badge src-live">● Live</span>
     </div>
 
-    @if(empty($igd['pasien']))
-      <div class="pp-empty" style="height:120px">
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+    @if($igd['masuk'] === 0)
+      <div class="pp-empty" style="height:100px">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
         </svg>
-        <span>Belum ada pasien IGD hari ini</span>
+        <span>Belum ada kunjungan IGD hari ini</span>
       </div>
     @else
-      <div style="overflow-x:auto;max-height:320px;overflow-y:auto">
-        <table class="pp-tbl">
-          <thead>
-            <tr>
-              <th>#</th><th>Nama pasien</th><th>Jam masuk</th>
-              <th>Triage</th><th>Status</th><th>Outcome</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach($igd['pasien'] as $i => $p)
-            @php
-              $tr     = $p['triage']  ?? 'Antri';
-              $out    = $p['outcome'] ?? 'Proses';
-              $trCls  = match(strtoupper($tr)) {
-                'P1' => 'igd-pill-p1', 'P2' => 'igd-pill-p2', 'P3' => 'igd-pill-p3',
-                'P4' => 'igd-pill-p4', 'P5' => 'igd-pill-p5', default => 'igd-pill-antri',
-              };
-              $outCls = match(strtolower($out)) {
-                'ranap' => 'igd-pill-out-ranap', 'pulang' => 'igd-pill-out-pulang',
-                'rujuk' => 'igd-pill-out-rujuk', 'meninggal' => 'igd-pill-out-mati',
-                default => 'igd-pill-out-proses',
-              };
-            @endphp
-            <tr>
-              <td style="color:var(--pp-muted);font-size:11px">{{ $i + 1 }}</td>
-              <td style="font-weight:600">{{ $p['nama'] ?? '—' }}</td>
-              <td style="font-family:var(--pp-mono);font-size:11px">{{ $p['jam_masuk'] ?? '—' }}</td>
-              <td><span class="igd-pill {{ $trCls }}">{{ $tr }}</span></td>
-              <td style="font-size:11px;color:var(--pp-muted)">{{ $p['status'] ?? '—' }}</td>
-              <td><span class="igd-pill {{ $outCls }}">{{ ucfirst(strtolower($out)) }}</span></td>
-            </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
+      <table class="pp-tbl" id="igdRingkasanTbl">
+        <thead>
+          <tr>
+            <th>Triage</th>
+            <th>Kategori</th>
+            <th style="text-align:right">Jumlah</th>
+            <th style="text-align:right">Proporsi</th>
+            <th>Bar</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach($triageRows as $tr)
+          @php
+            $jml = $igd['triage'][$tr['key']] ?? 0;
+            $pct = $igd['masuk'] > 0 ? round(($jml / $igd['masuk']) * 100) : 0;
+          @endphp
+          <tr>
+            <td><span class="igd-pill {{ $tr['cls'] }}">{{ strtoupper($tr['key']) }}</span></td>
+            <td style="font-size:12px;color:var(--pp-text)">{{ $tr['label'] }}</td>
+            <td style="text-align:right;font-family:var(--pp-mono);font-weight:600;font-size:14px">{{ $jml }}</td>
+            <td style="text-align:right;font-size:11px;color:var(--pp-muted)">{{ $pct }}%</td>
+            <td style="width:80px">
+              <div class="pp-bar">
+                <div class="pp-bar-fill" style="width:{{ $pct }}%;background:{{ $tr['key'] === 'p1' ? 'var(--pp-red)' : ($tr['key'] === 'p2' ? 'var(--pp-yellow)' : 'var(--pp-green)') }}"></div>
+              </div>
+            </td>
+          </tr>
+          @endforeach
+        </tbody>
+      </table>
     @endif
   </div>
 
-</div>  {{-- pp-card IGD --}}
+</div>{{-- end pp-card IGD --}}
 @endsection
 
 @push('scripts')

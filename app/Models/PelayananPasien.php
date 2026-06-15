@@ -135,18 +135,20 @@ class PelayananPasien extends Model
 
             if (!$row) return self::emptyIGD();
 
+            $p1     = (int) ($row->p1 ?? 0);
+            $p2     = (int) ($row->p2 ?? 0);
+            $p3     = (int) ($row->p3 ?? 0);
+            $terisi = $p1 + $p2 + $p3;
+
             return [
-                'terisi'     => 0,   
-                'masuk'      => 0,   
-                'antri'      => (int) ($row->triage ?? 0),  
+                'terisi'     => $terisi,
+                'masuk'      => $terisi,
+                'antri'      => (int) ($row->triage ?? 0),
                 'triage'     => [
-                    'p1' => (int) ($row->p1 ?? 0),
-                    'p2' => (int) ($row->p2 ?? 0),
-                    'p3' => (int) ($row->p3 ?? 0),
-                    'p4' => 0,  
-                    'p5' => 0,  
+                    'p1' => $p1,
+                    'p2' => $p2,
+                    'p3' => $p3,
                 ],
-                'pasien'     => [],  
                 'diperbarui' => $row->tanggal ?? null,
             ];
 
@@ -162,8 +164,7 @@ class PelayananPasien extends Model
             'terisi'     => 0,
             'masuk'      => 0,
             'antri'      => 0,
-            'triage'     => ['p1' => 0, 'p2' => 0, 'p3' => 0, 'p4' => 0, 'p5' => 0],
-            'pasien'     => [],
+            'triage'     => ['p1' => 0, 'p2' => 0, 'p3' => 0],
             'diperbarui' => null,
         ];
     }
