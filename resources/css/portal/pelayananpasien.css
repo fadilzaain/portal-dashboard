@@ -780,3 +780,38 @@ canvas { max-height: 100% !important; }
 .igd-dot-p1 { background: var(--pp-red); }
 .igd-dot-p2 { background: var(--pp-yellow); }
 .igd-dot-p3 { background: var(--pp-green); }
+
+
+/* ── BOR Chart responsive ─────────────────────────────────── */  ← tambah mulai sini
+#chartBOR {
+  width: 100% !important;
+}
+
+@media (max-width: 768px) {
+  .pp-chart-row {
+    grid-template-columns: 1fr;
+  }
+
+  .pp-chart-row .chart-wrap {
+    height: 200px;
+  }
+
+  #borGridEl {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .pp-chart-row .chart-wrap {
+    height: 180px;
+  }
+
+  #borGridEl {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  #borLegendEl {
+    gap: 6px !important;
+    font-size: 9px !important;
+  }
+}

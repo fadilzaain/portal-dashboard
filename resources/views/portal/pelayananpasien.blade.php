@@ -131,9 +131,12 @@
       </div>
 
       @if($tc['nilai'] > 0)
-        <div class="tc-value" style="color:{{ $tc['color'] }}">
-          {{ is_float($tc['nilai']) ? number_format($tc['nilai'], 2) : number_format($tc['nilai']) }}
-          @if($tc['unit'])<span class="tc-unit">{{ $tc['unit'] }}</span>@endif
+        <div class="tc-value" style="color:{{ $tc['color'] }}"
+              data-count-target="{{ $tc['nilai'] }}"
+                data-count-decimal="{{ is_float($tc['nilai']) ? 2 : 0 }}">
+          <span class="count-num">{{ is_float($tc['nilai']) ? number_format($tc['nilai'], 2) : number_format($tc['nilai']) }}</span>
+          @if($tc['unit'])
+          <span class="tc-unit">{{ $tc['unit'] }}</span>@endif
         </div>
         <div class="tc-standar">{{ $tc['standar'] }}</div>
         <div class="tc-progress">
@@ -215,42 +218,53 @@
       <div>
         <div class="pp-card-title">Tren Kunjungan {{ $tahun }}</div>
         <div class="pp-card-subtitle">
-           data s/d
+          data s/d
           {{ \Carbon\Carbon::create($tahun, $trendKunjungan->where('jml_kunjungan', '>', 0)->keys()->last() + 1 ?? now()->month, 1)->format('M Y') }}
         </div>
       </div>
       <span class="src-badge src-api">✓ API</span>
     </div>
 
-    {{-- Summary cards ──────────────────────────────────────── --}}
+    {{-- Summary cards: 4 card TERPISAH --}}
     <div class="trend-summary-grid">
+
       <div class="trend-summary-card">
         <div class="trend-sum-lbl">Total Kunjungan</div>
-        <div class="trend-sum-val trend-sum-kunjungan">
-          {{ number_format($totalKunjungan, 0, ',', '.') }}
+        <div class="trend-sum-val trend-sum-kunjungan"
+            data-count-target="{{ $totalKunjungan }}" data-count-decimal="0">
+          <span class="count-num">{{ number_format($totalKunjungan, 0, ',', '.') }}</span>
         </div>
-        <div class="trend-sum-sub"></div>
+        <div class="trend-sum-sub">pasien tahun ini</div>
       </div>
+
       <div class="trend-summary-card">
         <div class="trend-sum-lbl">Rata-rata/hari</div>
-        <div class="trend-sum-val trend-sum-rata">
-          {{ number_format($rataKunjungan, 0, ',', '.') }}
+        <div class="trend-sum-val trend-sum-rata"
+            data-count-target="{{ $rataKunjungan }}" data-count-decimal="0">
+          <span class="count-num">{{ number_format($rataKunjungan, 0, ',', '.') }}</span>
         </div>
         <div class="trend-sum-sub">pasien per hari</div>
       </div>
+
       <div class="trend-summary-card">
         <div class="trend-sum-lbl">Presentase</div>
-        <div class="trend-sum-val trend-sum-presentase">
-          {{ number_format($presentaseRerata, 1, ',', '.') }}<span style="font-size:13px;font-weight:500;color:var(--pp-muted)">%</span>
+        <div class="trend-sum-val trend-sum-presentase"
+            data-count-target="{{ $presentaseRerata }}" data-count-decimal="1">
+          <span class="count-num">{{ number_format($presentaseRerata, 1, ',', '.') }}</span><span style="font-size:13px;font-weight:500;color:var(--pp-muted)">%</span>
         </div>
         <div class="trend-sum-sub">rata-rata bulanan</div>
       </div>
+
       <div class="trend-summary-card">
-          <div class="trend-sum-lbl">Hari Aktif</div>
-          <div class="trend-sum-val trend-sum-hari">{{ $totalHari }}</div>
-          <div class="trend-sum-sub">hari dari {{ $bulanAktif }} bulan</div>
+        <div class="trend-sum-lbl">Hari Aktif</div>
+        <div class="trend-sum-val trend-sum-hari"
+            data-count-target="{{ $totalHari }}" data-count-decimal="0">
+          <span class="count-num">{{ $totalHari }}</span>
         </div>
+        <div class="trend-sum-sub">hari dari {{ $bulanAktif }} bulan</div>
       </div>
+
+    </div>
 
     {{-- Chart ──────────────────────────────────────────────── --}}
     <div class="chart-wrap" style="height:260px">
@@ -259,20 +273,21 @@
 
     {{-- Legend ─────────────────────────────────────────────── --}}
     <div class="trend-legend">
-        <div class="trend-legend-item">
-          <span class="trend-legend-bar" style="background:rgba(37,99,235,0.75)"></span>
-          Jumlah Kunjungan
-        </div>
-        <div class="trend-legend-item">
-          <span class="trend-legend-dot" style="background:#a78bfa"></span>
-          Rata-rata/hari
-        </div>
-        <div class="trend-legend-item">
-          <span class="trend-legend-dash" style="border-color:#06b6d4"></span>
-          Presentase (%)
-        </div>
+      <div class="trend-legend-item">
+        <span class="trend-legend-bar" style="background:rgba(37,99,235,0.75)"></span>
+        Jumlah Kunjungan
+      </div>
+      <div class="trend-legend-item">
+        <span class="trend-legend-dot" style="background:#a78bfa"></span>
+        Rata-rata/hari
+      </div>
+      <div class="trend-legend-item">
+        <span class="trend-legend-dash" style="border-color:#06b6d4"></span>
+        Presentase (%)
       </div>
     </div>
+
+  </div>
 
   {{-- BOR Bulanan ─────────────────────────────────────────── --}}
   <div class="pp-card">
@@ -282,7 +297,7 @@
         </div>
         <span class="src-badge src-api">✓ API</span>
       </div>
-      <div class="chart-wrap">
+      <div class="chart-wrap" style="overflow:visible">
         <canvas id="chartBOR"></canvas>
       </div>
     </div>
@@ -338,7 +353,7 @@
 
   {{-- Banner menunggu triage --}}
     <div class="igd-antri-banner" id="igdAntriBanner"
-        style="{{ $igd['antri'] === 0 ? 'display:none;' : '' }}display:flex;align-items:center;justify-content:space-between;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:14px 20px;margin-bottom:14px;gap:12px">
+      style="display:flex;align-items:center;justify-content:space-between;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:14px 20px;margin-bottom:14px;gap:12px">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;color:var(--pp-yellow);flex-shrink:0">
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -356,56 +371,70 @@
 
   {{-- KPI Cards --}}
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+
       <div class="pp-igd-kpi-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div class="igd-kpi-lbl">Bed terisi</div>
-            <div style="width:28px;height:28px;border-radius:7px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;color:var(--pp-red)">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M3 6h18M3 18h18"/></svg>
+          <div style="width:28px;height:28px;border-radius:7px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;color:var(--pp-red)">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+          </div>
+        </div>
+        <div class="igd-kpi-val" style="color:var(--pp-red)" data-igd="terisi"
+            data-count-target="{{ $igdTerisi }}" data-count-decimal="0">
+          <span class="count-num">{{ $igdTerisi }}</span>
+        </div>
+        <div class="igd-kpi-sub">dari {{ $igdTotalBed }} bed</div>
       </div>
-    </div>
-      <div class="igd-kpi-val" style="color:var(--pp-red)" data-igd="terisi">{{ $igdTerisi }}</div>
-        <div class="igd-kpi-sub">dari {{ $igdTotalBed }} bed total</div>
-      <div class="pp-igd-kpi-bar"><div class="pp-igd-kpi-bar-fill" style="width:{{ $igdPct }}%;background:var(--pp-red)"></div></div>
+
+      <div class="pp-igd-kpi-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="igd-kpi-lbl">Bed kosong</div>
+          <div style="width:28px;height:28px;border-radius:7px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;color:var(--pp-green)">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+        </div>
+        <div class="igd-kpi-val" style="color:var(--pp-green)" data-igd="kosong"
+            data-count-target="{{ $igdKosong }}" data-count-decimal="0">
+          <span class="count-num">{{ $igdKosong }}</span>
+        </div>
+        <div class="igd-kpi-sub">tersedia</div>
+      </div>
+
+      <div class="pp-igd-kpi-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="igd-kpi-lbl">Masuk hari ini</div>
+          <div style="width:28px;height:28px;border-radius:7px;background:rgba(37,99,235,0.12);display:flex;align-items:center;justify-content:center;color:var(--pp-accent)">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="igd-kpi-val" style="color:var(--pp-text)" data-igd="masuk"
+            data-count-target="{{ $igd['masuk'] }}" data-count-decimal="0">
+          <span class="count-num">{{ $igd['masuk'] }}</span>
+        </div>
+        <div class="igd-kpi-sub">pasien</div>
+      </div>
+
     </div>
 
-    <div class="pp-igd-kpi-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="igd-kpi-lbl">Bed kosong</div>
-        <div style="width:28px;height:28px;border-radius:7px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;color:var(--pp-green)">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      {{-- Kapasitas bar --}}
+      <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:600;color:var(--pp-text)">Kapasitas bed IGD</span>
+          <span class="tc-badge {{ $igdBadgeCls }}" data-igd="pct">{{ $igdPct }}%</span>
+        </div>
+        <div class="pp-igd-bar-track">
+          <div class="pp-igd-bar-fill" data-igd="bar" style="width:{{ $igdPct }}%;background:{{ $igdPct >= 90 ? 'var(--pp-red)' : ($igdPct >= 70 ? 'var(--pp-yellow)' : 'var(--pp-green)') }}"></div>
+        </div>
+        <div class="pp-igd-bar-labels">
+          <span>0</span><span>30</span><span>{{ $igdTotalBed }} bed</span>
         </div>
       </div>
-      <div class="igd-kpi-val" style="color:var(--pp-green)" data-igd="kosong">{{ $igdKosong }}</div>
-      <div class="igd-kpi-sub">tersedia sekarang</div>
-      <div class="pp-igd-kpi-bar"><div class="pp-igd-kpi-bar-fill" style="width:{{ 100 - $igdPct }}%;background:var(--pp-green)"></div></div>
-    </div>
-
-    <div class="pp-igd-kpi-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="igd-kpi-lbl">Masuk hari ini</div>
-        <div style="width:28px;height:28px;border-radius:7px;background:rgba(37,99,235,0.12);display:flex;align-items:center;justify-content:center;color:var(--pp-accent)">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        </div>
-      </div>
-      <div class="igd-kpi-val" style="color:var(--pp-text)" data-igd="masuk">{{ $igd['masuk'] }}</div>
-      <div class="igd-kpi-sub">total kunjungan</div>
-      <div class="pp-igd-kpi-bar" style="opacity:0"></div>
-    </div>
-  </div>
-
-  {{-- Kapasitas bar --}}
-  <div style="margin-bottom:16px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span style="font-size:12px;font-weight:600;color:var(--pp-text)">Kapasitas bed IGD</span>
-      <span class="tc-badge {{ $igdBadgeCls }}" data-igd="pct">{{ $igdPct }}%</span>
-    </div>
-    <div class="pp-igd-bar-track">
-      <div class="pp-igd-bar-fill" data-igd="bar" style="width:{{ $igdPct }}%;background:{{ $igdPct >= 90 ? 'var(--pp-red)' : ($igdPct >= 70 ? 'var(--pp-yellow)' : 'var(--pp-green)') }}"></div>
-    </div>
-    <div class="pp-igd-bar-labels">
-      <span>0</span><span>30</span><span>{{ $igdTotalBed }} bed</span>
-    </div>
-  </div>
 
   <div style="height:1px;background:var(--pp-border);margin-bottom:16px"></div>
 
@@ -420,7 +449,10 @@
       <div class="pp-igd-triage-card igd-t-{{ $tr['key'] }}">
         <div class="igd-t-lbl">{{ $tr['label'] }}</div>
         <div class="igd-t-code">{{ strtoupper($tr['key']) }}</div>
-        <div class="igd-t-val" data-igd="triage_{{ $tr['key'] }}">{{ $igd['triage'][$tr['key']] ?? 0 }}</div>
+        <div class="igd-t-val" data-igd="triage_{{ $tr['key'] }}"
+            data-count-target="{{ $igd['triage'][$tr['key']] ?? 0 }}" data-count-decimal="0">
+          <span class="count-num">{{ $igd['triage'][$tr['key']] ?? 0 }}</span>
+        </div>        
         <div class="igd-t-dot igd-dot-{{ $tr['key'] }}"></div>
       </div>
       @endforeach
@@ -441,14 +473,14 @@
       <span class="src-badge src-live">● Live</span>
     </div>
 
-    @if($igd['masuk'] === 0)
+    <!-- @if($igd['masuk'] === 0)
       <div class="pp-empty" style="height:100px">
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
         </svg>
         <span>Belum ada kunjungan IGD hari ini</span>
       </div>
-    @else
+    @else -->
       <table class="pp-tbl" id="igdRingkasanTbl">
         <thead>
           <tr>
