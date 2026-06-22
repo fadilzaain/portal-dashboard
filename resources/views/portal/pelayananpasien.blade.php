@@ -105,17 +105,15 @@
         'label_s'  => ($toi >= 1 && $toi <= 3) ? '✓ Ideal' : '⚠ Periksa',
         'icon'     => '<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>',
       ],
-      [
-        'label'   => 'BTO (Bed Turn Over)',
-        'nilai'   => $bto,
-        'unit'    => 'kali',
-        'standar' => 'Standar 40 – 50 kali/tahun',
-        'color'   => '#06b6d4',
-        'icon_bg' => 'rgba(6,182,212,0.15)',
-        'pct'     => min(round(($bto / 60) * 100), 100),
-        'status'  => ($bto >= 40 && $bto <= 50) ? 'ideal' : 'warn',
-        'label_s' => ($bto >= 40 && $bto <= 50) ? '✓ Ideal' : '⚠ Periksa',
-        'icon'    => '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>',
+     [
+          'label'   => 'BTO (Bed Turn Over)',
+          'nilai'   => $bto,
+          'unit'    => 'kali/bln',
+          'standar' => '',
+          'color'   => '#06b6d4',
+          'icon_bg' => 'rgba(6,182,212,0.15)',
+          'pct'     => min(round(($bto / 60) * 100), 100),
+          'icon'    => '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>',
       ],
     ];
   @endphp
@@ -142,7 +140,9 @@
         <div class="tc-progress">
           <div class="tc-progress-fill" style="width:{{ $tc['pct'] }}%;background:{{ $tc['color'] }}"></div>
         </div>
-        <span class="tc-badge badge-{{ $tc['status'] }}">{{ $tc['label_s'] }}</span>
+         @if($loop->index !== 3)
+            <span class="tc-badge badge-{{ $tc['status'] }}">{{ $tc['label_s'] }}</span>
+        @endif
       @else
         <div class="tc-value" style="color:var(--pp-muted);font-size:24px">—</div>
         <div class="tc-standar">{{ $tc['standar'] }}</div>

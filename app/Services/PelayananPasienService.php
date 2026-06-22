@@ -16,10 +16,10 @@ class PelayananPasienService
     ];
 
     public const STANDAR = [
-        'bor' => ['min' => 60,  'max' => 85],
-        'los' => ['min' => 3,   'max' => 12],
-        'toi' => ['min' => 1,   'max' => 3],
-        'bto' => ['min' => 40,  'max' => 50],
+        'bor'       => ['min' => 60,  'max' => 85],
+        'los'       => ['min' => 3,   'max' => 12],
+        'toi'       => ['min' => 1,   'max' => 3],
+        'bto_bulan' => ['min' => 40,  'max' => 50],
     ];
 
     // =========================================================

@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => countUpAll());
     <span style="width:8px;height:8px;border-radius:50%;background:${c};flex-shrink:0"></span>${l}
   </span>`).join('');
 
-  // Append ke card langsung, bukan ke dalam chart-wrap
+  // Append ke card langsung
   card.appendChild(gridEl);
   card.appendChild(legendEl);
 

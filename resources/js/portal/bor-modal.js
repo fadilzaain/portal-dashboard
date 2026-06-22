@@ -412,7 +412,6 @@
 
   /* ══════════════════════════════════════════════
     Detail Pasien
-    ganti fetchPatient() dengan query real ke endpoint pasien ketika DB sudah siap.
   ══════════════════════════════════════════════ */
   function openLevel3(bed) {
     state.selectedBed = bed;
@@ -491,7 +490,7 @@
 
   /* ══════════════════════════════════════════════
      DUMMY DATA GENERATOR
-     – Dihapus / diganti fetchBeds() kalau DB bed sudah siap
+     note: iganti fetchBeds() kalau DB bed sudah siap
   ══════════════════════════════════════════════ */
   function generateDummyBeds(ruangan) {
     const STATUS_POOL  = ['terisi', 'terisi', 'terisi', 'kosong', 'kosong', 'sudah-bayar', 'dok-selesai'];

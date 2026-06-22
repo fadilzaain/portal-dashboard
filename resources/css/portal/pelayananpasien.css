@@ -749,7 +749,7 @@ canvas { max-height: 100% !important; }
   }
 }
 
-/* ── IGD redesign tambahan ───────────────────────────────── */
+/* ── IGD redesign  ───────────────────────────────── */
 .pp-igd-kpi-bar {
   height: 3px;
   background: rgba(125,133,144,0.15);
@@ -782,7 +782,7 @@ canvas { max-height: 100% !important; }
 .igd-dot-p3 { background: var(--pp-green); }
 
 
-/* ── BOR Chart responsive ─────────────────────────────────── */  ← tambah mulai sini
+/* ── BOR Chart responsive ─────────────────────────────────── */  
 #chartBOR {
   width: 100% !important;
 }
