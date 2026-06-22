@@ -108,8 +108,8 @@
      [
           'label'   => 'BTO (Bed Turn Over)',
           'nilai'   => $bto,
-          'unit'    => 'kali/bln',
-          'standar' => '',
+          'unit'    => 'kali',
+          'standar' => '3-5 kali per Bulan',
           'color'   => '#06b6d4',
           'icon_bg' => 'rgba(6,182,212,0.15)',
           'pct'     => min(round(($bto / 60) * 100), 100),
