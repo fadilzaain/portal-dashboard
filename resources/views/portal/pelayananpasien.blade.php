@@ -203,7 +203,7 @@
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <button onclick="BORModal.open()"
-          style="font-size:11px;font-weight:600;color:var(--pp-accent);background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);border-radius:6px;padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:5px">
+          style="font-size:11px;font-weight:600;color:#fff;background:#2563eb;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:5px;animation:glowFlicker 2s ease-in-out infinite">
           <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
           </svg>

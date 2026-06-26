@@ -815,3 +815,9 @@ canvas { max-height: 100% !important; }
     font-size: 9px !important;
   }
 }
+
+/* glow flicker monitoring igd info tt */
+@keyframe glowFlicker {
+  0%, 100% { box-shadow: 0 0 6px 1px rgba(37, 99, 235, 0.5);}
+            { box-shadow: 0 0 14px 4px rgba(37, 99, 235, 0.85);}
+}
