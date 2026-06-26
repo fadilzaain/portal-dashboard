@@ -41,13 +41,13 @@ function emptyChart(canvasId) {
 
 /**
  * Animate count-up on a single element.
- * @param {HTMLElement} el      - elemen target (harus punya .count-num di dalam, atau langsung)
- * @param {number}      target  - nilai akhir
+ * @param {HTMLElement} el      
+ * @param {number}      target  
  * @param {object}      opts
- *   @param {number}  opts.duration  - ms, default 900
- *   @param {number}  opts.decimal   - jumlah desimal, default 0
- *   @param {number}  opts.from      - nilai awal, default 0
- *   @param {string}  opts.locale    - default 'id-ID'
+ *   @param {number}  opts.duration  
+ *   @param {number}  opts.decimal   
+ *   @param {number}  opts.from      
+ *   @param {string}  opts.locale    
  */
 function countUp(el, target, { duration = 900, decimal = 0, from = 0, locale = 'id-ID' } = {}) {
   if (!el || isNaN(target)) return;
@@ -55,7 +55,7 @@ function countUp(el, target, { duration = 900, decimal = 0, from = 0, locale = '
   const start = performance.now();
   function frame(now) {
     const p    = Math.min((now - start) / duration, 1);
-    const ease = 1 - Math.pow(1 - p, 3); // easeOutCubic
+    const ease = 1 - Math.pow(1 - p, 3); 
     const val  = from + (target - from) * ease;
     numEl.textContent = val.toLocaleString(locale, {
       minimumFractionDigits: decimal,
@@ -69,7 +69,7 @@ function countUp(el, target, { duration = 900, decimal = 0, from = 0, locale = '
 /**
  * Scan semua [data-count-target] dan jalankan count-up.
  * Bisa dipanggil ulang (misal setelah IGD poll).
- * @param {HTMLElement} root - scope pencarian, default document
+ * @param {HTMLElement} root 
  */
 function countUpAll(root = document) {
   root.querySelectorAll('[data-count-target]').forEach((el, i) => {
@@ -650,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => countUpAll());
 
   const url           = card.dataset.igdUrl;
   const INTERVAL_MS   = 30 * 60 * 1000;
-  const IGD_TOTAL_BED = 60;
+  const IGD_TOTAL_BED = 100;
 
   const FIELD_MAP = {
     'terisi'    : v => v,
@@ -659,13 +659,13 @@ document.addEventListener('DOMContentLoaded', () => countUpAll());
     'triage_p1' : (_, data) => data.triage?.p1 ?? 0,
     'triage_p2' : (_, data) => data.triage?.p2 ?? 0,
     'triage_p3' : (_, data) => data.triage?.p3 ?? 0,
-    'kosong'    : (_, data) => {
+    'kosong' : (_, data) => {
       const t = data.triage ?? {};
-      return Math.max(IGD_TOTAL_BED - (t.p1 + t.p2 + t.p3) - data.antri, 0);
+      return Math.max(IGD_TOTAL_BED - (t.p1 + t.p2 + t.p3 + (data.antri ?? 0)), 0);
     },
     'pct' : (_, data) => {
       const t = data.triage ?? {};
-      return Math.round(((t.p1 + t.p2 + t.p3) / IGD_TOTAL_BED) * 100) + '%';
+      return Math.round(((t.p1 + t.p2 + t.p3 + (data.antri ?? 0)) / IGD_TOTAL_BED) * 100) + '%';
     },
   };
 
@@ -690,15 +690,13 @@ document.addEventListener('DOMContentLoaded', () => countUpAll());
     });
 
     const t      = data.triage ?? {};
-    const terisi = (t.p1 ?? 0) + (t.p2 ?? 0) + (t.p3 ?? 0);
+    const terisi = (t.p1 ?? 0) + (t.p2 ?? 0) + (t.p3 ?? 0) + (data.antri ?? 0);
     const pct    = Math.round((terisi / IGD_TOTAL_BED) * 100);
     const barColor = pct >= 90 ? 'var(--pp-red)' : pct >= 70 ? 'var(--pp-yellow)' : 'var(--pp-green)';
     const bar    = card.querySelector('[data-igd="bar"]');
     if (bar) { bar.style.width = pct + '%'; bar.style.background = barColor; }
 
-    // const banner = document.getElementById('igdAntriBanner');
-    // if (banner) banner.style.display = data.antri > 0 ? 'flex' : 'none';
-
+    // const banner = document.getElementById;
     updateTimestamp(data.diperbarui, false);
   }
 

@@ -45,4 +45,9 @@ return [
     'url' => env('BOR_API_URL', 'http://192.168.10.8:8082'),
     ],
 
+    //Detail TT
+    'infott_api' => [
+    'url' => env('INFOTT_API_URL', 'http://192.168.10.29/wslokal/kominfo/realtime/infott'),
+    ],
+
 ];

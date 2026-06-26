@@ -77,12 +77,16 @@ Route::middleware('auth')->group(function () {
     // Portal Pelayanan Pasien
     Route::get('/portal/pelayananpasien', [PelayananPasienController::class, 'index'])
         ->name('portal.pelayananpasien');
-
+    
     Route::get('/portal/pelayananpasien/ranap', [PelayananPasienController::class, 'detailRanap'])
         ->name('portal.pelayananpasien.ranap');
-
+    //monitoring igd
     Route::get('/portal/pelayananpasien/igd-live', [PelayananPasienController::class, 'igdLive'])
         ->name('portal.pelayananpasien.igd_live');
+    //detail tempat tidur
+    Route::get('/api-proxy/infott', [PelayananPasienController::class, 'infottProxy'])
+    ->name('portal.pelayananpasien.infott_proxy');
+
 
     // Dashboard SDM
     Route::prefix('sdm')->name('sdm.')->middleware(['auth'])->group(function () {

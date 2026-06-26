@@ -1,0 +1,25 @@
+/* ══════════════════════════════════════════════
+   grid sub-ruangan (Level 2)
+   Append ke: resources/css/portal/bor-modal
+══════════════════════════════════════════════ */
+
+/* Grid sub-ruangan (tempatrawat) */
+.bor-subruangan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 4px 2px 8px;
+}
+
+.bor-subruangan-card {
+  background: var(--pp-card-bg, rgba(255,255,255,0.04));
+  border: 1px solid var(--bor-color, var(--pp-border));
+  border-radius: 12px;
+  padding: 14px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.bor-subruangan-card:hover {
+  border-color: var(--bor-color, var(--pp-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bor-color, #7d8590) 12%, transparent);
+}

@@ -44,11 +44,11 @@ class DashboardController extends Controller
             ->max('bulan');
 
         if (!$bulanTerakhirDB || $bulanTerakhirDB <= 1) {
-            // Belum ada data tahun ini, atau hanya ada 1 bulan (berjalan) → fallback tahun lalu
+            // Belum ada data tahun ini, atau hanya ada 1 bulan (berjalan) = fallback tahun lalu
             $tahunPelayanan      = $tahunSekarang - 1;
             $bulanLabelPelayanan = 'Jan – Des';
         } else {
-            // ✅ Label stop di bulan sebelum bulan terakhir (bulan berjalan di-exclude)
+            //  Label stop di bulan sebelum bulan terakhir 
             $tahunPelayanan      = $tahunSekarang;
             $bulanLabelPelayanan = 'Jan – ' . $namaBulanPendek[$bulanTerakhirDB - 1];
         }

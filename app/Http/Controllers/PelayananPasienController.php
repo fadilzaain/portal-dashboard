@@ -72,6 +72,22 @@ class PelayananPasienController extends Controller
         ]);
     }
 
+    // Detail Tempat Tidur
+    public function infottProxy(Request $request)
+    {
+        $url = config('services.infott_api.url', 'http://192.168.10.29/wslokal/kominfo/realtime/infott');
+    
+        try {
+            $response = Http::timeout(10)->get($url);
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json([
+                'metaData' => ['code' => '500', 'message' => $e->getMessage()],
+                'response' => ['ruangan' => []],
+            ], 500);
+        }
+    }
+
     // =========================================================
     // DETAIL RAWAT INAP
     // =========================================================

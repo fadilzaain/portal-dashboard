@@ -1,32 +1,15 @@
 /* ══════════════════════════════════════════════
-   Detail BOR 
-   Level 1 : Semua Ruangan  (fetch API)
-   Level 2 : Manajemen Bed  (data sementara)
-   Level 3 : Detail Pasien  (data sementara)
+   Info Detail BOR 
+   Level 1 : Informasi Tempat Tidur (API http://192.168.10.29/wslokal/kominfo/realtime/infott)
+   Level 2 : Detail Ruangan atau Per Kelas (http://192.168.10.29/wslokal/kominfo/realtime/infott)
 ══════════════════════════════════════════════ */
 
 (function () {
   'use strict';
 
   /* ══════════════════════════════════════════════
-     Konfigurasi Per Ruangan
+     Threshold BOR (%)
   ══════════════════════════════════════════════ */
-  const RUANGAN = [
-    { kode: 1,  nama: 'ABIMANYU',           kapasitas: 68  },
-    { kode: 2,  nama: 'ABIMANYU INFEKSIUS', kapasitas: 15,  todo: true }, // PR cari kode
-    { kode: 3,  nama: 'ARIMBI',             kapasitas: 30  },
-    { kode: 4,  nama: 'BIMA',               kapasitas: 28,  todo: true }, // PR cari kode
-    { kode: 5,  nama: 'DRUPADI',            kapasitas: 29  },
-    { kode: 6,  nama: 'GATOTKACA',          kapasitas: 50  },
-    { kode: 7,  nama: 'ICU SENTRAL',        kapasitas: 36  },
-    { kode: 9,  nama: 'SADEWA',             kapasitas: 44  },
-    { kode: 10, nama: 'SRIKANDI',           kapasitas: 48  },
-    { kode: 11, nama: 'VK',                 kapasitas: 12,  todo: true }, // PR cari kode
-    { kode: 99, nama: 'YUDHISTIRA',         kapasitas: 143, todo: true }, // kode sementara
-    { kode: 13, nama: 'ISTANA PANDAWA',     kapasitas: 40  },
-  ];
-
-  // Threshold BOR (%) 
   const BOR_THRESHOLD = { rendah: 60, ideal_max: 85 };
 
   /* ══════════════════════════════════════════════
@@ -48,32 +31,39 @@
 
   function borStatus(bor) {
     if (!bor) return { cls: 'nodata', label: 'Belum ada data' };
-      if (bor >= BOR_THRESHOLD.rendah && bor <= BOR_THRESHOLD.ideal_max) return { cls: 'ideal',  label: '✓ Ideal'  };
-        if (bor < BOR_THRESHOLD.rendah) return { cls: 'rendah', label: '↓ Rendah' };
+    if (bor >= BOR_THRESHOLD.rendah && bor <= BOR_THRESHOLD.ideal_max) return { cls: 'ideal', label: '✓ Ideal' };
+    if (bor < BOR_THRESHOLD.rendah) return { cls: 'rendah', label: '↓ Rendah' };
     return { cls: 'tinggi', label: '↑ Tinggi' };
-  }
-
-  function getBOR(d) {
-    if (!d) return 0;
-      return parseFloat(d.bor ?? d.BOR ?? d.nilai_bor ?? 0) || 0;
   }
 
   function renderLoading(msg = 'Memuat data...') {
     return `<div class="bor-loading"><div class="bor-spinner"></div><span>${escHtml(msg)}</span></div>`;
   }
 
-  function renderError(msg, onRetry) {
-    // onRetry: string nama fungsi yang dipanggil tombol retry (opsional)
-    const retryBtn = onRetry
-      ? `<button class="bor-error-retry" data-retry="${onRetry}">Coba lagi</button>`
-      : '';
-    return `<div class="bor-error"><div class="bor-error-icon">⚠</div><div>${escHtml(msg)}</div>${retryBtn}</div>`;
+  function renderError(msg) {
+    return `<div class="bor-error"><div class="bor-error-icon">⚠</div><div>${escHtml(msg)}</div></div>`;
   }
 
-  function formatDate(offsetDays = 0) {
-    const d = new Date();
-    d.setDate(d.getDate() + offsetDays);
-    return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  /* ══════════════════════════════════════════════
+     KELAS WARNA PER KELAS PASIEN
+  ══════════════════════════════════════════════ */
+  const KELAS_LABEL = {
+    '1': 'Kelas I',
+    '2': 'Kelas II',
+    '3': 'Kelas III',
+    '4': 'VIP',
+    '5': 'VVIP',
+  };
+
+  function kelasColor(kelas) {
+    const map = {
+      '1': { bg: 'rgba(167,139,250,0.12)', text: '#a78bfa', border: 'rgba(167,139,250,0.3)' },
+      '2': { bg: 'rgba(37,99,235,0.10)',   text: '#2563eb', border: 'rgba(37,99,235,0.25)' },
+      '3': { bg: 'rgba(34,197,94,0.10)',   text: '#22c55e', border: 'rgba(34,197,94,0.25)' },
+      '4': { bg: 'rgba(245,158,11,0.10)',  text: '#f59e0b', border: 'rgba(245,158,11,0.25)' },
+      '5': { bg: 'rgba(239,68,68,0.10)',   text: '#ef4444', border: 'rgba(239,68,68,0.25)' },
+    };
+    return map[String(kelas)] ?? { bg: 'rgba(125,133,144,0.10)', text: '#7d8590', border: 'rgba(125,133,144,0.2)' };
   }
 
   /* ══════════════════════════════════════════════
@@ -81,19 +71,16 @@
   ══════════════════════════════════════════════ */
   const state = {
     level:           1,
-    fetchDate:       null,   // { from, to }
-    apiCache:        null,   // cache per sesi buka modal
-    cacheDateKey:    null,  
-    selectedRuangan: null,
-    selectedBed:     null,
+    apiCache:        null,   // fetch dari proxy
+    selectedRuangan: null,   // id, nama, tempatrawat
   };
 
   /* ══════════════════════════════════════════════
-     DOM REFS  
+     DOM REFS
   ══════════════════════════════════════════════ */
   let overlay, btnBack, btnClose,
       titleEl, subtitleEl, breadcrumb,
-      panels; // { 1: el, 2: el, 3: el }
+      panels;
 
   /* ══════════════════════════════════════════════
      INIT
@@ -111,7 +98,7 @@
                 </svg>
               </button>
               <div>
-                <div class="bor-modal-title" id="borTitle">BOR per Ruangan</div>
+                <div class="bor-modal-title" id="borTitle">Detail Tempat Tidur</div>
                 <div class="bor-modal-subtitle" id="borSubtitle"></div>
               </div>
             </div>
@@ -121,7 +108,6 @@
           <div class="bor-modal-body">
             <div class="bor-panel active" id="borPanelL1"></div>
             <div class="bor-panel"        id="borPanelL2"></div>
-            <div class="bor-panel"        id="borPanelL3"></div>
           </div>
         </div>
       </div>`;
@@ -136,7 +122,6 @@
     panels     = {
       1: document.getElementById('borPanelL1'),
       2: document.getElementById('borPanelL2'),
-      3: document.getElementById('borPanelL3'),
     };
 
     btnClose.addEventListener('click', closeModal);
@@ -148,16 +133,7 @@
   /* ══════════════════════════════════════════════
      OPEN / CLOSE
   ══════════════════════════════════════════════ */
-  function openModal(dateFrom, dateTo) {
-    const newKey = `${dateFrom}|${dateTo}`;
-
-    // Invalidate cache kalau tanggal berubah
-    if (state.cacheDateKey !== newKey) {
-      state.apiCache    = null;
-      state.cacheDateKey = newKey;
-    }
-
-    state.fetchDate = { from: dateFrom, to: dateTo };
+  function openModal() {
     overlay.classList.add('show');
     showLevel(1);
     loadLevel1();
@@ -176,33 +152,27 @@
 
   function showLevel(level) {
     state.level = level;
-    [1, 2, 3].forEach(l => panels[l].classList.toggle('active', l === level));
+    [1, 2].forEach(l => panels[l].classList.toggle('active', l === level));
     btnBack.classList.toggle('hidden', level === 1);
     updateHeader();
   }
 
   function updateHeader() {
-    const { from, to } = state.fetchDate ?? {};
-    const dateStr = (from && to) ? `${from} → ${to}` : '';
     const r = state.selectedRuangan;
-    const b = state.selectedBed;
 
     const crumbs = [{ label: 'Semua Ruangan', level: 1 }];
     if (state.level >= 2 && r) crumbs.push({ label: r.nama, level: 2 });
-    if (state.level >= 3 && b) crumbs.push({ label: `Bed ${b.nomor}`, level: 3 });
 
     switch (state.level) {
       case 1:
-        titleEl.textContent    = 'BOR per Ruangan';
-        subtitleEl.textContent = dateStr;
+        titleEl.textContent    = 'Informasi Tempat Tidur';
+        subtitleEl.textContent = 'Data Terbaru Informasi Tempat Tidur';
         break;
       case 2:
-        titleEl.textContent    = `Manajemen Bed — ${r.nama}`;
-        subtitleEl.textContent = `Kapasitas ${r.kapasitas} bed • ${dateStr}`;
-        break;
-      case 3:
-        titleEl.textContent    = `Detail Pasien — Bed ${b.nomor}`;
-        subtitleEl.textContent = `${r.nama} • ${b.pasien ?? 'Kosong'}`;
+        titleEl.textContent    = r?.nama ?? '—';
+        subtitleEl.textContent = r
+          ? `${r._totalKapasitas} bed total · ${r._totalTerisi} terisi · ${r._totalKosong} kosong`
+          : '';
         break;
     }
 
@@ -223,62 +193,61 @@
   }
 
   /* ══════════════════════════════════════════════
-     LEVEL 1 — Semua Ruangan
+     FETCH DATA VIA PROXY LARAVEL
+  ══════════════════════════════════════════════ */
+  async function fetchRealtime() {
+    // cache sesi biar tidak fetch berulang selama modal terbuka
+    if (state.apiCache) return state.apiCache;
+
+    const res = await fetch('/api-proxy/infott', {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    const ruangan = json?.response?.ruangan ?? [];
+
+    // Hitung total per ruangan dan simpan ke cache
+    state.apiCache = ruangan.map(r => {
+      const totalKapasitas = r.tempatrawat.reduce((s, t) => s + (t.kapasitas ?? 0), 0);
+      const totalTerisi    = r.tempatrawat.reduce((s, t) => s + (t.terisi    ?? 0), 0);
+      const totalKosong    = r.tempatrawat.reduce((s, t) => s + (t.kosong    ?? 0), 0);
+      return {
+        ...r,
+        _totalKapasitas: totalKapasitas,
+        _totalTerisi:    totalTerisi,
+        _totalKosong:    totalKosong,
+      };
+    });
+
+    return state.apiCache;
+  }
+
+  /* ══════════════════════════════════════════════
+     level 1 - akumulasi semua ruangan
   ══════════════════════════════════════════════ */
   async function loadLevel1() {
-    panels[1].innerHTML = renderLoading('Memuat data BOR...');
+    panels[1].innerHTML = renderLoading('Memuat data...');
 
-    // cache kalau sudah ada untuk tanggal ini
-    if (state.apiCache) {
-      renderLevel1();
+    let ruangan;
+    try {
+      ruangan = await fetchRealtime();
+    } catch (err) {
+      panels[1].innerHTML = renderError('Gagal memuat data. Periksa koneksi ke server SIMRS.');
       return;
     }
 
-    const { from, to } = state.fetchDate;
-
-    // Fetch paralel, skip ruangan bertanda todo (kode belum pasti)
-    const results = await Promise.all(
-      RUANGAN.map(async r => {
-        if (r.todo) return { kode: r.kode, data: null };
-        try {
-          const res = await fetch(`/api-proxy/borlostoi/${r.kode}/${from}/${to}`, {
-            signal: AbortSignal.timeout(10000),
-          });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const json = await res.json();
-          return { kode: r.kode, data: json?.rows?.[0] ?? null };
-        } catch {
-          return { kode: r.kode, data: null };
-        }
-      })
-    );
-
-    // Simpan cache — key = kode ruangan
-    state.apiCache = {};
-    results.forEach(({ kode, data }) => { state.apiCache[kode] = data; });
-
-    renderLevel1();
+    renderLevel1(ruangan);
   }
 
-  function renderLevel1() {
-    const cache = state.apiCache ?? {};
-
-    // Hitung summary strip
-    let totalKapasitas = 0, totalTerisi = 0, borSum = 0, borCount = 0;
-    RUANGAN.forEach(r => {
-      totalKapasitas += r.kapasitas;
-      const bor = getBOR(cache[r.kode]);
-      if (bor > 0) {
-        totalTerisi += Math.round((bor / 100) * r.kapasitas);
-        borSum += bor;
-        borCount++;
-      }
-    });
+  function renderLevel1(ruangan) {
+    const totalKapasitas = ruangan.reduce((s, r) => s + r._totalKapasitas, 0);
+    const totalTerisi    = ruangan.reduce((s, r) => s + r._totalTerisi,    0);
+    const totalKosong    = ruangan.reduce((s, r) => s + r._totalKosong,    0);
 
     const summaryHTML = `
       <div class="bor-summary-strip">
         <div class="bor-strip-card">
-          <div class="bor-strip-val">${RUANGAN.length}</div>
+          <div class="bor-strip-val">${ruangan.length}</div>
           <div class="bor-strip-label">Ruangan</div>
         </div>
         <div class="bor-strip-card">
@@ -290,39 +259,55 @@
           <div class="bor-strip-label">Terisi</div>
         </div>
         <div class="bor-strip-card">
-          <div class="bor-strip-val" style="color:#22c55e">${totalKapasitas - totalTerisi}</div>
+          <div class="bor-strip-val" style="color:#22c55e">${totalKosong}</div>
           <div class="bor-strip-label">Kosong</div>
         </div>
       </div>`;
 
-    const cardsHTML = RUANGAN.map(r => {
-      const d      = cache[r.kode];
-      const bor    = getBOR(d);
-      const los    = parseFloat(d?.los ?? d?.avlos ?? 0) || 0;
-      const toi    = parseFloat(d?.toi ?? 0) || 0;
-      const color  = borColor(bor);
-      const status = borStatus(bor);
-      const terisi = bor > 0 ? Math.round((bor / 100) * r.kapasitas) : 0;
-      const pct    = Math.min(bor, 100);
-      const todobadge = r.todo
-        ? `<span class="bor-status-badge nodata" title="Kode ruangan belum dikonfirmasi">⚠ Kode sementara</span>`
-        : '';
+    const cardsHTML = ruangan.map(r => {
+      const pctOccupy = r._totalKapasitas > 0
+        ? Math.round((r._totalTerisi / r._totalKapasitas) * 100)
+        : 0;
 
       return `
-        <div class="bor-ruangan-card" style="--bor-color:${color}" data-kode="${r.kode}" title="Klik untuk lihat detail bed">
-          <div class="bor-ruangan-name">${escHtml(r.nama)}</div>
-          <div class="bor-ruangan-kode">Ruangan #${r.kode}</div>
-          <div class="bor-ruangan-bor-val">${bor > 0 ? bor.toFixed(1) + '%' : '–'}</div>
-          <div class="bor-ruangan-bor-label">BOR${los > 0 ? ' • LOS ' + los.toFixed(1) + 'hr' : ''}${toi > 0 ? ' • TOI ' + toi.toFixed(1) + 'hr' : ''}</div>
-          <div class="bor-ruangan-stats">
-            <div class="bor-stat-item"><div class="bor-stat-num">${r.kapasitas}</div><div class="bor-stat-label">Kapasitas</div></div>
-            <div class="bor-stat-item"><div class="bor-stat-num" style="color:#ef4444">${terisi}</div><div class="bor-stat-label">Terisi</div></div>
-            <div class="bor-stat-item"><div class="bor-stat-num" style="color:#22c55e">${r.kapasitas - terisi}</div><div class="bor-stat-label">Kosong</div></div>
+        <div class="bor-ruangan-card" data-ruangan-id="${r.id}" title="Klik untuk lihat detail per kelas">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+            <div>
+              <div class="bor-ruangan-name">${escHtml(r.nama)}</div>
+              <div class="bor-ruangan-kode">Ruangan #${r.id}</div>
+            </div>
+            <span style="font-size:10px;padding:3px 8px;border-radius:6px;background:rgba(37,99,235,0.1);color:#2563eb;font-weight:600">
+              Detail →
+            </span>
           </div>
-          <div class="bor-progress-wrap"><div class="bor-progress-fill" style="width:${pct}%"></div></div>
-          <span class="bor-status-badge ${status.cls}">${status.label}</span>
-          ${todobadge}
-          <div class="bor-ruangan-arrow">→</div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+            <div style="text-align:center;padding:8px;background:var(--pp-surface);border-radius:8px">
+              <div style="font-size:20px;font-weight:700;color:var(--pp-text);font-family:var(--pp-mono)">${r._totalKapasitas}</div>
+              <div style="font-size:10px;color:var(--pp-muted);margin-top:2px">Kapasitas</div>
+            </div>
+            <div style="text-align:center;padding:8px;background:rgba(239,68,68,0.07);border-radius:8px">
+              <div style="font-size:20px;font-weight:700;color:#ef4444;font-family:var(--pp-mono)">${r._totalTerisi}</div>
+              <div style="font-size:10px;color:var(--pp-muted);margin-top:2px">Terisi</div>
+            </div>
+            <div style="text-align:center;padding:8px;background:rgba(34,197,94,0.07);border-radius:8px">
+              <div style="font-size:20px;font-weight:700;color:#22c55e;font-family:var(--pp-mono)">${r._totalKosong}</div>
+              <div style="font-size:10px;color:var(--pp-muted);margin-top:2px">Kosong</div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:10px;color:var(--pp-muted)">Presentase Kapasitas</span>
+            <span style="font-size:10px;color:var(--pp-muted)">${pctOccupy}%</span>
+          </div>
+          <div class="bor-progress-wrap" style="height:4px">
+            <div class="bor-progress-fill" style="width:${pctOccupy}%;background:#2563eb"></div>
+          </div>
+
+          <div style="margin-top:10px;padding:6px 10px;background:rgba(125,133,144,0.08);border-radius:6px;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:10px;color:var(--pp-muted)">BOR</span>
+            <span style="font-size:11px;color:var(--pp-muted);font-style:italic"></span>
+          </div>
         </div>`;
     }).join('');
 
@@ -330,229 +315,108 @@
 
     panels[1].querySelectorAll('.bor-ruangan-card').forEach(card => {
       card.addEventListener('click', () => {
-        const ruangan = RUANGAN.find(r => r.kode === parseInt(card.dataset.kode)
-                                       && r.nama === card.querySelector('.bor-ruangan-name').textContent);
-        if (ruangan) openLevel2(ruangan);
+        const id          = card.dataset.ruanganId;
+        const ruanganItem = (state.apiCache ?? []).find(r => String(r.id) === String(id));
+        if (ruanganItem) openLevel2(ruanganItem);
       });
     });
   }
 
   /* ══════════════════════════════════════════════
-    Manajemen Bed data sementara
-    { nomor, status, pasien, diagnosa, no_rm, umur, jk, masuk, dokter, jaminan, kelas }
+     level 2 — detail sub ruangan
   ══════════════════════════════════════════════ */
   function openLevel2(ruangan) {
     state.selectedRuangan = ruangan;
     showLevel(2);
-    panels[2].innerHTML = renderLoading('Memuat data bed...');
-    fetchBeds(ruangan).then(beds => renderLevel2(ruangan, beds));
+    renderLevel2(ruangan);
   }
 
-  // janlup ganti fungsi ini sama fetch real kalau DB bed sudah siap
-  function fetchBeds(ruangan) {
-    return Promise.resolve(generateDummyBeds(ruangan));
-  }
+  function renderLevel2(ruangan) {
+    const tempatrawat = ruangan.tempatrawat ?? [];
 
-  function renderLevel2(ruangan, beds) {
-    const BED_STATUS = {
-      kosong:       { label: 'Kosong',      color: '#22c55e' },
-      terisi:       { label: 'Terisi',      color: '#ef4444' },
-      'sudah-bayar':{ label: 'Sudah Bayar', color: '#2563eb' },
-      'dok-selesai':{ label: 'Dok Selesai', color: '#a78bfa' },
-    };
-
-    const counts = Object.fromEntries(Object.keys(BED_STATUS).map(k => [k, 0]));
-    beds.forEach(b => { if (counts[b.status] !== undefined) counts[b.status]++; });
-    const occupied = beds.length - counts.kosong;
-    const borVal   = beds.length > 0 ? ((occupied / beds.length) * 100).toFixed(1) : 0;
-
-    const summaryHTML = `
-      <div class="bed-summary-strip">
-        <div class="bed-strip-card"><div class="bed-strip-val">${beds.length}</div><div class="bed-strip-label">Total Bed</div></div>
-        ${Object.entries(BED_STATUS).map(([k, v]) => `
-        <div class="bed-strip-card">
-          <div class="bed-strip-val" style="color:${v.color}">${counts[k]}</div>
-          <div class="bed-strip-label">${v.label}</div>
-        </div>`).join('')}
-      </div>`;
-
-    const legendHTML = `
-      <div class="bed-legend">
-        ${Object.entries(BED_STATUS).map(([, v]) => `
-        <div class="bed-legend-item">
-          <div class="bed-legend-dot" style="background:${v.color}33;border:1px solid ${v.color}"></div>
-          ${escHtml(v.label)}
-        </div>`).join('')}
-        <div style="margin-left:auto;font-size:11px;color:var(--pp-muted)">
-          BOR aktual: <strong style="color:${borColor(parseFloat(borVal))}">${borVal}%</strong>
-          &nbsp;•&nbsp;<span style="font-size:10px">⚠ Data bed masih sementara</span>
-        </div>
-      </div>`;
-
-    const bedsHTML = beds.map(b => {
-      const cfg = BED_STATUS[b.status] ?? { label: b.status, color: '#7d8590' };
-      return `
-        <div class="bed-card ${b.status}"
-             data-bed='${JSON.stringify(b).replace(/'/g, "&#39;")}'
-             title="Bed ${b.nomor}${b.pasien ? ' — ' + b.pasien : ''}">
-          <div class="bed-number">${b.nomor}</div>
-          <div class="bed-label">${cfg.label}</div>
-          ${b.pasien ? `<div class="bed-pasien">${escHtml(b.pasien.split(' ').slice(0, 2).join(' '))}</div>` : ''}
-        </div>`;
-    }).join('');
-
-    panels[2].innerHTML = summaryHTML + legendHTML + `<div class="bed-grid">${bedsHTML}</div>`;
-
-    panels[2].querySelectorAll('.bed-card').forEach(card => {
-      card.addEventListener('click', () => {
-        try { openLevel3(JSON.parse(card.dataset.bed)); } catch {}
-      });
-    });
-  }
-
-  /* ══════════════════════════════════════════════
-    Detail Pasien
-  ══════════════════════════════════════════════ */
-  function openLevel3(bed) {
-    state.selectedBed = bed;
-    showLevel(3);
-    renderLevel3(bed);
-  }
-
-  function renderLevel3(bed) {
-    if (bed.status === 'kosong') {
-      panels[3].innerHTML = `
-        <div class="bor-error">
-          <div class="bor-error-icon">🛏</div>
-          <div>Bed ${bed.nomor} sedang <strong>kosong</strong></div>
-          <div style="font-size:10px;margin-top:4px">Tidak ada pasien yang menempati bed ini</div>
-        </div>`;
+    if (tempatrawat.length === 0) {
+      panels[2].innerHTML = renderError('Tidak ada data sub-ruangan untuk ruangan ini.');
       return;
     }
 
-    const STATUS_CHIP = {
-      'terisi':       { cls: 'aktif',   label: '● Dirawat'      },
-      'sudah-bayar':  { cls: 'bayar',   label: '✓ Sudah Bayar'  },
-      'dok-selesai':  { cls: 'selesai', label: '✓ Dok. Selesai' },
-    };
-    const st = STATUS_CHIP[bed.status] ?? { cls: 'dummy', label: bed.status };
-    const r  = state.selectedRuangan;
+    const totalKap    = ruangan._totalKapasitas;
+    const totalTerisi = ruangan._totalTerisi;
+    const totalKosong = ruangan._totalKosong;
 
-    panels[3].innerHTML = `
-      <div class="pasien-detail-header">
-        <div class="pasien-avatar">👤</div>
-        <div style="flex:1;min-width:0">
-          <div class="pasien-nama">${escHtml(bed.pasien)}</div>
-          <div class="pasien-meta">
-            <span class="pasien-meta-item">🆔 ${escHtml(bed.no_rm ?? '–')}</span>
-            <span class="pasien-meta-item">🎂 ${bed.umur ?? '–'} tahun</span>
-            <span class="pasien-meta-item">⚧ ${escHtml(bed.jk ?? '–')}</span>
-          </div>
-          <div class="pasien-status-row">
-            <span class="pasien-status-chip ${st.cls}">${st.label}</span>
-            <span class="pasien-status-chip dummy">⚠ Data Sementara</span>
-          </div>
+    const summaryHTML = `
+      <div class="bor-summary-strip">
+        <div class="bor-strip-card">
+          <div class="bor-strip-val">${tempatrawat.length}</div>
+          <div class="bor-strip-label">Sub-Ruangan</div>
         </div>
-      </div>
-
-      <div class="pasien-diagnosa-box">
-        <div class="pasien-detail-section-title">Diagnosa</div>
-        <div class="pasien-diagnosa-text">${escHtml(bed.diagnosa ?? '–')}</div>
-      </div>
-
-      <div class="pasien-detail-grid">
-        <div class="pasien-detail-card">
-          <div class="pasien-detail-section-title">Data Rawat Inap</div>
-          ${detailRow('Bed',       `${bed.nomor} — ${escHtml(r?.nama ?? '–')}`)}
-          ${detailRow('Tgl Masuk', escHtml(bed.masuk   ?? '–'))}
-          ${detailRow('Kelas',     escHtml(bed.kelas   ?? '–'))}
-          ${detailRow('Jaminan',   escHtml(bed.jaminan ?? '–'))}
+        <div class="bor-strip-card">
+          <div class="bor-strip-val">${totalKap}</div>
+          <div class="bor-strip-label">Total Bed</div>
         </div>
-        <div class="pasien-detail-card">
-          <div class="pasien-detail-section-title">Tenaga Medis</div>
-          ${detailRow('DPJP',    escHtml(bed.dokter  ?? '–'))}
-          ${detailRow('Ruangan', escHtml(r?.nama     ?? '–'))}
-          ${detailRow('Status',  st.label)}
+        <div class="bor-strip-card">
+          <div class="bor-strip-val" style="color:#ef4444">${totalTerisi}</div>
+          <div class="bor-strip-label">Terisi</div>
         </div>
-      </div>
-
-      <div style="padding:10px 14px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:9px;font-size:11px;color:#f59e0b">
-        ⚠ Contoh data pasien <strong>sementara</strong>.
+        <div class="bor-strip-card">
+          <div class="bor-strip-val" style="color:#22c55e">${totalKosong}</div>
+          <div class="bor-strip-label">Kosong</div>
+        </div>
       </div>`;
-  }
 
-  function detailRow(key, val) {
-    return `<div class="pasien-detail-row">
-      <span class="pasien-detail-key">${escHtml(key)}</span>
-      <span class="pasien-detail-val">${val}</span>
-    </div>`;
-  }
+    const cardsHTML = tempatrawat.map(t => {
+      const kap      = t.kapasitas ?? 0;
+      const terisi   = t.terisi    ?? 0;
+      const kosong   = t.kosong    ?? 0;
+      const klsCfg   = kelasColor(t.kelas);
+      const klsLabel = KELAS_LABEL[String(t.kelas)] ?? `Kelas ${t.kelas}`;
 
-  /* ══════════════════════════════════════════════
-     DUMMY DATA GENERATOR
-     note: iganti fetchBeds() kalau DB bed sudah siap
-  ══════════════════════════════════════════════ */
-  function generateDummyBeds(ruangan) {
-    const STATUS_POOL  = ['terisi', 'terisi', 'terisi', 'kosong', 'kosong', 'sudah-bayar', 'dok-selesai'];
-    const NAMA_DUMMY   = ['Andi Santoso','Siti Rahayu','Budi Kurniawan','Dewi Lestari',
-                          'Ahmad Fauzi','Rina Wulandari','Hendra Wijaya','Sri Mulyani',
-                          'Agus Prasetyo','Nurul Hidayah','Dian Permata','Rudi Hermawan',
-                          'Yuni Astuti','Bambang Susilo','Fitria Nuraini','Eko Wahyudi'];
-    const DIAGNOSA_DUMMY = ['Demam Berdarah Dengue (DBD)','Hipertensi Grade II','Diabetes Mellitus Tipe 2',
-                            'Appendisitis Akut','Fraktur Femur Kanan','Pneumonia','Gagal Jantung Kongestif',
-                            'Stroke Iskemik','Acute Kidney Injury','Gastroenteritis Akut'];
-    const DOKTER_DUMMY = ['dr. Andi Sp.PD','dr. Budi Sp.PD','dr. Citra Sp.PD','dr. Dian Sp.PD','dr. Eko Sp.PD'];
+      return `
+        <div class="bor-subruangan-card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;color:var(--pp-text);line-height:1.3">${escHtml(t.nama)}</div>
+              <div style="font-size:11px;color:var(--pp-muted);margin-top:2px">#${t.id}</div>
+            </div>
+            <span style="flex-shrink:0;font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;
+                         background:${klsCfg.bg};color:${klsCfg.text};border:1px solid ${klsCfg.border}">
+              ${escHtml(klsLabel)}
+            </span>
+          </div>
 
-    let nameIdx = 0;
-    return Array.from({ length: ruangan.kapasitas }, (_, i) => {
-      const status  = STATUS_POOL[i % STATUS_POOL.length];
-      const hasPasien = status !== 'kosong';
-      const pasien  = hasPasien ? NAMA_DUMMY[nameIdx++ % NAMA_DUMMY.length] : null;
-      return {
-        nomor:    i + 1,
-        status,
-        pasien,
-        diagnosa: pasien ? DIAGNOSA_DUMMY[i % DIAGNOSA_DUMMY.length]         : null,
-        no_rm:    pasien ? `RM-${String(100000 + i * 13 + ruangan.kode * 7).slice(0, 6)}` : null,
-        umur:     pasien ? 20 + (i * 3 % 60)                                 : null,
-        jk:       pasien ? (i % 2 === 0 ? 'Laki-laki' : 'Perempuan')        : null,
-        masuk:    pasien ? formatDate(-3 - (i % 7))                          : null,
-        dokter:   pasien ? DOKTER_DUMMY[i % DOKTER_DUMMY.length]             : null,
-        jaminan:  pasien ? ['BPJS','BPJS','BPJS','Umum','Asuransi'][i % 5]  : null,
-        kelas:    pasien ? ['Kelas 1','Kelas 2','Kelas 3','VIP'][i % 4]      : null,
-      };
-    });
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
+            <div style="text-align:center;padding:8px;background:var(--pp-surface);border-radius:8px">
+              <div style="font-size:20px;font-weight:700;color:var(--pp-text);font-family:var(--pp-mono)">${kap}</div>
+              <div style="font-size:10px;color:var(--pp-muted);margin-top:2px">Kapasitas</div>
+            </div>
+            <div style="text-align:center;padding:8px;background:rgba(239,68,68,0.07);border-radius:8px">
+              <div style="font-size:20px;font-weight:700;color:#ef4444;font-family:var(--pp-mono)">${terisi}</div>
+              <div style="font-size:10px;color:var(--pp-muted);margin-top:2px">Terisi</div>
+            </div>
+            <div style="text-align:center;padding:8px;background:rgba(34,197,94,0.07);border-radius:8px">
+              <div style="font-size:20px;font-weight:700;color:#22c55e;font-family:var(--pp-mono)">${kosong}</div>
+              <div style="font-size:10px;color:var(--pp-muted);margin-top:2px">Kosong</div>
+            </div>
+          </div>
+
+          <div style="padding:6px 10px;background:rgba(125,133,144,0.08);border-radius:6px;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:10px;color:var(--pp-muted)">BOR</span>
+            <span style="font-size:11px;color:var(--pp-muted);font-style:italic"></span>
+          </div>
+        </div>`;
+    }).join('');
+
+    panels[2].innerHTML = summaryHTML + `<div class="bor-subruangan-grid">${cardsHTML}</div>`;
   }
 
   /* ══════════════════════════════════════════════
      ATTACH KE BOR CARD
   ══════════════════════════════════════════════ */
   function attachToBORChart() {
-    function getCurrentDates() {
-      const bulan = document.querySelector('select[name="bulan"]')?.value;
-      const tahun = document.querySelector('select[name="tahun"]')?.value;
-      if (bulan && tahun) {
-        const y = parseInt(tahun), m = parseInt(bulan);
-        return {
-          dari:   `${y}-${String(m).padStart(2, '0')}-01`,
-          sampai: `${y}-${String(m).padStart(2, '0')}-${new Date(y, m, 0).getDate()}`,
-        };
-      }
-      const now = new Date();
-      return {
-        dari:   new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0],
-        sampai: now.toISOString().split('T')[0],
-      };
-    }
-
     const borCard = document.getElementById('borKpiCard');
     if (borCard) {
       borCard.style.cursor = 'pointer';
-      borCard.title = 'Klik untuk melihat detail BOR per ruangan';
-      borCard.addEventListener('click', () => {
-        const { dari, sampai } = getCurrentDates();
-        openModal(dari, sampai);
-      });
+      borCard.title = 'Klik untuk melihat Detail Tempat Tidur';
+      borCard.addEventListener('click', () => openModal());
     }
   }
 
