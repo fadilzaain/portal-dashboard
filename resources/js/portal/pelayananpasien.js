@@ -696,7 +696,6 @@ document.addEventListener('DOMContentLoaded', () => countUpAll());
     const bar    = card.querySelector('[data-igd="bar"]');
     if (bar) { bar.style.width = pct + '%'; bar.style.background = barColor; }
 
-    // const banner = document.getElementById;
     updateTimestamp(data.diperbarui, false);
   }
 
@@ -705,7 +704,6 @@ document.addEventListener('DOMContentLoaded', () => countUpAll());
     if (!tbl || !data.triage) return;
 
     const total = (data.triage.p1 ?? 0) + (data.triage.p2 ?? 0) + (data.triage.p3 ?? 0);
-    // if (total === 0) return;
     ['p1','p2','p3'].forEach((key, i) => {
       const row = tbl.querySelectorAll('tbody tr')[i];
       if (!row) return;
@@ -744,10 +742,8 @@ document.addEventListener('DOMContentLoaded', () => countUpAll());
     }
   }
 
-  // fetchIGD();
-  // setInterval(fetchIGD, INTERVAL_MS);
   setTimeout(() => {
     fetchIGD();
     setInterval(fetchIGD, INTERVAL_MS);
-  }), INTERVAL_MS
+  }, INTERVAL_MS);
 })();

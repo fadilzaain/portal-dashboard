@@ -20,8 +20,10 @@ class PelayananPasienController extends Controller
 
     public function index(Request $request)
     {
-        $bulan  = (int) $request->get('bulan', Carbon::now()->month);
-        $tahun  = (int) $request->get('tahun', Carbon::now()->year);
+        [$defaultTahun, $defaultBulan] = $this->defaultPeriode();
+
+        $bulan  = (int) $request->get('bulan', $defaultBulan);
+        $tahun  = (int) $request->get('tahun', $defaultTahun);
 
         $dari   = Carbon::create($tahun, $bulan, 1)->startOfMonth()->format('Y-m-d');
         $sampai = Carbon::create($tahun, $bulan, 1)->endOfMonth()->format('Y-m-d');
@@ -70,6 +72,15 @@ class PelayananPasienController extends Controller
             // Standar Depkes
             'standar'        => PelayananPasienService::STANDAR,
         ]);
+    }
+
+    private function defaultPeriode(): array
+    {
+        $now = Carbon::now();
+
+        return $now->month === 1
+            ? [$now->year - 1, 12]
+            : [$now->year, $now->month - 1];
     }
 
     // Detail Tempat Tidur

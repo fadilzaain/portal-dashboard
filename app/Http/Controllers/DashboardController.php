@@ -33,28 +33,13 @@ class DashboardController extends Controller
         $bulanLabel     = self::BULAN_NAMES[$bulan] ?? self::BULAN_NAMES[now()->month];
         $bulanLabelData = self::BULAN_NAMES[$bulan] ?? $bulanLabel;
 
-        // ── Hitung rentang untuk card pelayanan ──────────────────
+        // ── Rentang card pelayanan bulan baru kurangi 1 ──
         $namaBulanPendek = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
-        $tahunSekarang   = Carbon::now()->year;
-
-        $bulanTerakhirDB = DB::connection('dashi')
-            ->table('borlosttoiall_thn')
-            ->where('tahun', $tahunSekarang)
-            ->where('bor', '>', 0)
-            ->max('bulan');
-
-        if (!$bulanTerakhirDB || $bulanTerakhirDB <= 1) {
-            // Belum ada data tahun ini, atau hanya ada 1 bulan (berjalan) = fallback tahun lalu
-            $tahunPelayanan      = $tahunSekarang - 1;
-            $bulanLabelPelayanan = 'Jan – Des';
-        } else {
-            //  Label stop di bulan sebelum bulan terakhir 
-            $tahunPelayanan      = $tahunSekarang;
-            $bulanLabelPelayanan = 'Jan – ' . $namaBulanPendek[$bulanTerakhirDB - 1];
-        }
+        [$tahunPelayanan, $sampaibulanPelayanan] = $this->periodePelayanan();
+        $bulanLabelPelayanan = 'Jan – ' . $namaBulanPendek[$sampaibulanPelayanan];
         // ─────────────────────────────────────────────────────────
 
-        $pelayanan = $this->getPelayananSummary();
+        $pelayanan = $this->getPelayananSummary($tahunPelayanan, $sampaibulanPelayanan);
         $keuangan  = $this->getKeuanganSummary($tahun);
         $sdm       = $this->getSdmSummary();
         $mutu      = $this->getMutuSummary($tahun, $bulan);
@@ -71,34 +56,36 @@ class DashboardController extends Controller
         ));
     }
 
-   private function getPelayananSummary(): array
+   
+    private function periodePelayanan(): array
+    {
+        $now = Carbon::now();
+
+        $tahun       = $now->month === 1 ? $now->year - 1 : $now->year;
+        $sampaibulan = $now->month === 1 ? 12 : $now->month - 1;
+
+        $adaData = DB::connection('dashi')
+            ->table('borlosttoiall_thn')
+            ->where('tahun', $tahun)
+            ->whereBetween('bulan', [1, $sampaibulan])
+            ->where('bor', '>', 0)
+            ->exists();
+
+        if (!$adaData) {
+            // fallback data ke bulan baru kurang 1
+            $tahun       -= 1;
+            $sampaibulan  = 12;
+        }
+
+        return [$tahun, $sampaibulan];
+    }
+
+    private function getPelayananSummary(int $tahun, int $sampaibulan): array
     {
         try {
-            $tahunSekarang = Carbon::now()->year;
-
-            $bulanTerakhir = DB::connection('dashi')
-                ->table('borlosttoiall_thn')
-                ->where('tahun', $tahunSekarang)
-                ->where('bor', '>', 0)
-                ->max('bulan');
-
-            if (!$bulanTerakhir || $bulanTerakhir <= 1) {
-                // Fallback utk tahun lalu
-                $queryTahun  = $tahunSekarang - 1;
-                $sampaibulan = DB::connection('dashi')
-                    ->table('borlosttoiall_thn')
-                    ->where('tahun', $queryTahun)
-                    ->where('bor', '>', 0)
-                    ->max('bulan') ?? 12;
-            } else {
-                $queryTahun  = $tahunSekarang;
-                //Exclude bulan terakhir
-                $sampaibulan = $bulanTerakhir - 1;
-            }
-
             $data = DB::connection('dashi')
                 ->table('borlosttoiall_thn')
-                ->where('tahun', $queryTahun)
+                ->where('tahun', $tahun)
                 ->whereBetween('bulan', [1, $sampaibulan])
                 ->where('bor', '>', 0)
                 ->get();
