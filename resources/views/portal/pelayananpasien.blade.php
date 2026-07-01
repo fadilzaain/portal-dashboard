@@ -207,11 +207,12 @@
         </div>
 
         <div class="igd-tabs" data-role="tabs">
-          <button class="igd-tab-btn is-active" data-tab="monitoring" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13a9 9 0 1118 0M3 13a2 2 0 002 2h14a2 2 0 002-2M3 13l5-7m9 7l-5-7"/>
-            </svg>
-            Monitoring
+          <span class="igd-tab-indicator" data-role="tab-indicator"></span>
+            <button class="igd-tab-btn is-active" data-tab="monitoring" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13a9 9 0 1118 0M3 13a2 2 0 002 2h14a2 2 0 002-2M3 13l5-7m9 7l-5-7"/>
+              </svg>
+              Monitoring
           </button>
           <button class="igd-tab-btn" data-tab="kapasitas" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

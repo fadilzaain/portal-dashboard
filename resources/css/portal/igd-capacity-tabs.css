@@ -12,91 +12,118 @@
 /* ── Tab header ──────────────────────────────────────────────── */
 .igd-tabhead {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px 20px 0;
+  gap: 10px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--pp-border);
 }
 
 .igd-tabhead-left {
   display: flex;
-  align-items: flex-end;
-  gap: 18px;
+  align-items: center;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
 .igd-tabhead-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 7px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--pp-text);
-  padding-bottom: 12px;
 }
 
-.igd-tabhead-title svg { color: var(--pp-red); flex-shrink: 0; }
+.igd-tabhead-title svg { width: 15px; height: 15px; color: var(--pp-red); flex-shrink: 0; }
 
 .igd-tabhead-meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--pp-muted);
-  padding-bottom: 12px;
+  white-space: nowrap;
 }
 
-/* Tab switcher */
+/* Tab switcher — segmented pill dengan indicator geser */
 .igd-tabs {
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  padding: 4px;
+  background: var(--pp-surface2);
+  border: 1px solid var(--pp-border);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
 }
+
+.igd-tab-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--pp-accent), #3b82f6);
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  box-shadow:
+    0 3px 10px rgba(37, 99, 235, 0.4),
+    0 1px 3px rgba(37, 99, 235, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: left 0.4s cubic-bezier(0.65, 0, 0.35, 1),
+              width 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.igd-tabs.is-ready .igd-tab-indicator { opacity: 1; }
 
 .igd-tab-btn {
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   border: none;
   background: transparent;
   color: var(--pp-muted);
   font-family: var(--pp-font);
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 600;
-  padding: 8px 4px 12px;
-  margin: 0 8px;
+  padding: 5px 10px;
+  margin: 0;
+  border-radius: 999px;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.3s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 
-.igd-tab-btn::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: var(--pp-accent);
-  border-radius: 2px 2px 0 0;
-  transform: scaleX(0);
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+.igd-tab-btn:hover { color: var(--pp-text); transform: translateY(-1px); }
+.igd-tab-btn:hover svg { transform: scale(1.15) rotate(-4deg); }
+.igd-tab-btn:active { transform: translateY(0) scale(0.96); }
+
+.igd-tab-btn.is-active { color: #fff; }
+.igd-tab-btn.is-active svg { transform: scale(1.05); }
+
+.igd-tab-btn svg { width: 12px; height: 12px; flex-shrink: 0; transition: transform 0.3s ease; }
+
+/* Pulse 2x pas load pertama */
+@keyframes igdTabPulse {
+  0%, 100% { box-shadow: 0 3px 10px rgba(37,99,235,.35), 0 1px 2px rgba(37,99,235,.25), 0 0 0 0 rgba(37,99,235,.4); }
+  50%      { box-shadow: 0 3px 10px rgba(37,99,235,.35), 0 1px 2px rgba(37,99,235,.25), 0 0 0 7px rgba(37,99,235,0); }
 }
-
-.igd-tab-btn:hover { color: var(--pp-text); }
-
-.igd-tab-btn.is-active { color: var(--pp-accent); }
-.igd-tab-btn.is-active::after { transform: scaleX(1); }
-
-.igd-tab-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.igd-tabs.igd-tab-hint .igd-tab-indicator {
+  top: 4px;
+  bottom: 4px;
+  animation: igdTabPulse 1.6s ease-in-out 2;
+}
 
 /* ── Panels ──────────────────────────────────────────────────── */
 .igd-tabpanels {
   position: relative;
-  padding: 18px 20px 20px;
+  padding: 14px 20px 20px;
 }
 
 .igd-panel {

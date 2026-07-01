@@ -104,12 +104,28 @@ const IGDCapacity = (() => {
     if (tooltipEl) tooltipEl.classList.remove('is-visible');
   }
 
+  // ── Geser indicator pill ke posisi button aktif ──────
+  function moveIndicator(btn) {
+    if (!els.indicator || !btn) return;
+    els.indicator.style.left   = btn.offsetLeft + 'px';
+    els.indicator.style.top    = btn.offsetTop + 'px';
+    els.indicator.style.width  = btn.offsetWidth + 'px';
+    els.indicator.style.height = btn.offsetHeight + 'px';
+  }
+
   // ── Tab switching ─────────
   function switchTab(tab) {
     state.activeTab = tab;
+    let activeBtn = null;
+
     els.tabs.querySelectorAll('.igd-tab-btn').forEach(btn => {
-      btn.classList.toggle('is-active', btn.dataset.tab === tab);
+      const isActive = btn.dataset.tab === tab;
+      btn.classList.toggle('is-active', isActive);
+      if (isActive) activeBtn = btn;
     });
+
+    moveIndicator(activeBtn);
+
     els.panels.forEach(p => {
       p.classList.toggle('is-active', p.dataset.panel === tab);
     });
@@ -347,6 +363,7 @@ const IGDCapacity = (() => {
     els = {
       card,
       tabs: card.querySelector('[data-role="tabs"]'),
+      indicator: card.querySelector('[data-role="tab-indicator"]'),
       panels: card.querySelectorAll('[data-panel]'),
       grid: card.querySelector('[data-role="grid"]'),
       breadcrumb: card.querySelector('[data-role="breadcrumb"]'),
@@ -361,7 +378,20 @@ const IGDCapacity = (() => {
     if (!els.tabs) return;
 
     els.tabs.querySelectorAll('.igd-tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      btn.addEventListener('click', () => {
+        els.tabs.classList.remove('igd-tab-hint'); 
+        switchTab(btn.dataset.tab);
+      });
+    });
+
+    // posisi indicator setelah layout siap, tampilkan dan hint pulse
+    requestAnimationFrame(() => {
+      moveIndicator(els.tabs.querySelector('.igd-tab-btn.is-active'));
+      els.tabs.classList.add('is-ready', 'igd-tab-hint');
+    });
+
+    window.addEventListener('resize', () => {
+      moveIndicator(els.tabs.querySelector('.igd-tab-btn.is-active'));
     });
 
     els.breadcrumb?.addEventListener('click', () => {
