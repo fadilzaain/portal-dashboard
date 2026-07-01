@@ -79,7 +79,7 @@ return [
             'engine'    => null,
         ],
 
-        // ── Db ketiga: sipanda_db (tr_mutasirekbank → pendapatan) 
+        // ── Db ketiga: sipanda_db (tr_mutasirekbank = pendapatan) 
         'mysql3' => [
             'driver'    => 'mysql',
             'host'      => env('DB_HOST3', '192.168.10.28'),

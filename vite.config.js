@@ -17,7 +17,9 @@ export default defineConfig({
                 'resources/css/portal/klaimbpjs.css',
                 'resources/js/portal/klaimbpjs.js',
                 'resources/css/portal/bor-modal.css',
-                'resources/js/portal/bor-modal.js'
+                'resources/js/portal/bor-modal.js',
+                'resources/js/portal/igd-capacity-tabs.js',
+                'resources/css/portal/igd-capacity-tabs.css'
             ],
             refresh: true,
         }),
