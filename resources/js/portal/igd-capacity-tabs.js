@@ -6,8 +6,17 @@ const IGDCapacity = (() => {
 
   // ── CONFIG  ──────────────
   const CONFIG = {
-    proxyUrl: null, // diisi dari data attribute saat init()
+    proxyUrl: null, // diisi dari data tribute saat init()
     refreshIntervalMs: 5 * 60 * 1000, // auto refresh tab Kapasitas TT tiap 5 menit
+    // Bypass manual angka header Total Bed / Terisi / Kosong.
+    // Dipakai kalau data dari API lagi gak sesuai / dadakan minta angka fix.
+    // Set enabled: false kalo mau real time
+    bypass: {
+      enabled: true, // true atau false (false kalo mau LIVE)
+      totalBed: 492,
+      terisi: 366,
+      kosong: 126,
+    },
     colorByOccupancy(pct) {
       if (pct >= 90) return 'var(--pp-red)';
       if (pct >= 70) return 'var(--pp-yellow)';
@@ -137,9 +146,10 @@ const IGDCapacity = (() => {
 
   // ── Render: grid card per ruangan (level 1) ─────────────────
   function renderRoomGrid() {
-    const totalKapasitas = sum(state.rooms, 'kapasitas');
-    const totalTerisi = sum(state.rooms, 'terisi');
-    const totalKosong = sum(state.rooms, 'kosong');
+    const b = CONFIG.bypass;
+    const totalKapasitas = b.enabled ? b.totalBed : sum(state.rooms, 'kapasitas');
+    const totalTerisi = b.enabled ? b.terisi : sum(state.rooms, 'terisi');
+    const totalKosong = b.enabled ? b.kosong : sum(state.rooms, 'kosong');
 
     if (els.ttStatRuangan) els.ttStatRuangan.textContent = state.rooms.length;
     if (els.ttStatTotal) els.ttStatTotal.textContent = totalKapasitas;

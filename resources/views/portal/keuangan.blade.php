@@ -1,6 +1,3 @@
-{{-- ============================================================
-     resources/views/portal/keuangan.blade.php
-     ============================================================ --}}
 @extends('layouts.app')
 @section('title', 'Dashboard Keuangan')
 
@@ -53,20 +50,20 @@
         </div>
         <div class="kpi-card kpi-belanja">
             <div class="kpi-label">Belanja Realisasi</div>
-            <div class="kpi-value" id="kpiBelanja">Rp —</div>
-            <div class="kpi-delta" id="kpiBelanjaMom">—</div>
+                <div class="kpi-value" id="kpiBelanja">Rp —</div>
+                    <div class="kpi-delta" id="kpiBelanjaMom">—</div>
             <svg class="kpi-bg-icon" viewBox="0 0 60 60"><rect x="10" y="20" width="40" height="25" rx="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M20 20v-5a10 10 0 0 1 20 0v5" stroke="currentColor" stroke-width="2" fill="none"/></svg>
         </div>
         <div class="kpi-card kpi-surplus">
             <div class="kpi-label">Net (P − B)</div>
-            <div class="kpi-value" id="kpiSurplus">Rp —</div>
-            <div class="kpi-delta" id="kpiAvg">Rata-rata kinerja — %</div>
+                <div class="kpi-value" id="kpiSurplus">Rp —</div>
+                    <div class="kpi-delta" id="kpiAvg">Rata-rata kinerja — %</div>
             <svg class="kpi-bg-icon" viewBox="0 0 60 60"><path d="M15 45 L25 30 L35 38 L50 15" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div class="kpi-card kpi-margin">
             <div class="kpi-label">Kinerja Anggaran</div>
-            <div class="kpi-value" id="kpiMargin">— %</div>
-            <div class="kpi-delta" id="kpiMarginSub">—</div>
+                <div class="kpi-value" id="kpiMargin">— %</div>
+                    <div class="kpi-delta" id="kpiMarginSub">—</div>
             <svg class="kpi-bg-icon" viewBox="0 0 60 60"><circle cx="30" cy="30" r="20" stroke="currentColor" stroke-width="2" fill="none"/><path d="M30 10 A20 20 0 0 1 50 30" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
         </div>
     </section>
