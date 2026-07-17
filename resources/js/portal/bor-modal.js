@@ -13,6 +13,17 @@
   const BOR_THRESHOLD = { rendah: 60, ideal_max: 85 };
 
   /* ══════════════════════════════════════════════
+     Bypass Kapasitas TT 
+     Set enabled: false kalo mau LIVE API
+  ══════════════════════════════════════════════ */
+  const BYPASS = {
+    enabled: true,
+    totalBed: 492,
+    terisi: 366,
+    kosong: 126,
+  };
+
+  /* ══════════════════════════════════════════════
      HELPERS UMUM
   ══════════════════════════════════════════════ */
   function escHtml(str) {
@@ -240,9 +251,9 @@
   }
 
   function renderLevel1(ruangan) {
-    const totalKapasitas = ruangan.reduce((s, r) => s + r._totalKapasitas, 0);
-    const totalTerisi    = ruangan.reduce((s, r) => s + r._totalTerisi,    0);
-    const totalKosong    = ruangan.reduce((s, r) => s + r._totalKosong,    0);
+    const totalKapasitas = BYPASS.enabled ? BYPASS.totalBed : ruangan.reduce((s, r) => s + r._totalKapasitas, 0);
+    const totalTerisi    = BYPASS.enabled ? BYPASS.terisi   : ruangan.reduce((s, r) => s + r._totalTerisi,    0);
+    const totalKosong    = BYPASS.enabled ? BYPASS.kosong   : ruangan.reduce((s, r) => s + r._totalKosong,    0);
 
     const summaryHTML = `
       <div class="bor-summary-strip">
