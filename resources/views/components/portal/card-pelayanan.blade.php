@@ -23,9 +23,7 @@
     <div class="card-header-row">
         <div class="card-header-left">
             <div class="app-icon icon-blue">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
+                <x-icon name="heart" width="20" height="20" stroke-width="1.8" />
             </div>
             <div class="card-title-wrap">
                 <div class="app-name">Pelayanan Pasien</div>
@@ -69,7 +67,7 @@
     <div class="card-footer">
         <span class="card-open-btn">
             Lihat Detail
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            <x-icon name="chevron-right" width="14" height="14" stroke-width="2.5" />
         </span>
         <span class="card-status-dot"></span>
     </div>

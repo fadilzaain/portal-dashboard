@@ -395,9 +395,7 @@
             <a href="{{ route('dashboard') }}"
             class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"
             onclick="closeSidebarOnMobile()">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
+                <x-icon name="home" class="nav-icon" />
                 Beranda Portal
             </a>
 
@@ -406,9 +404,7 @@
             <a href="{{ route('portal.pelayananpasien') }}"
             class="nav-item {{ request()->routeIs('portal.pelayananpasien') ? 'active' : '' }}"
             onclick="closeSidebarOnMobile()">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
+                <x-icon name="heart" class="nav-icon" />
                 Pelayanan Pasien
                 <span class="nav-badge">↗</span>
             </a>
@@ -416,9 +412,7 @@
             <a href="{{ route('portal.keuangan') }}"
             class="nav-item {{ request()->routeIs('portal.keuangan') ? 'active' : '' }}"
             onclick="closeSidebarOnMobile()">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+                <x-icon name="currency-dollar" class="nav-icon" />
                 Keuangan
                 <span class="nav-badge">↗</span>
             </a>
@@ -426,9 +420,7 @@
             <a href="{{ route('sdm.portal.sdm') }}"
             class="nav-item {{ request()->routeIs('sdm.*') ? 'active' : '' }}"
             onclick="closeSidebarOnMobile()">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
+                <x-icon name="users" class="nav-icon" />
                 SDM
                 <span class="nav-badge">↗</span>
             </a>
@@ -436,9 +428,7 @@
             <a href="{{ route('portal.indikatormutu') }}"
             class="nav-item {{ request()->routeIs('portal.indikatormutu.*') ? 'active' : '' }}"
             onclick="closeSidebarOnMobile()">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                </svg>
+                <x-icon name="document-text" class="nav-icon" />
                 Indikator Mutu
                 <span class="nav-badge">↗</span>
             </a>
@@ -446,9 +436,7 @@
             <a href="{{ route('portal.klaimbpjs') }}"
             class="nav-item {{ request()->routeIs('portal.klaimbpjs') ? 'active' : '' }}"
             onclick="closeSidebarOnMobile()">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                </svg>
+                <x-icon name="shield-check" class="nav-icon" />
                 Klaim BPJS
                 <span class="nav-badge">↗</span>
             </a>
@@ -469,9 +457,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="logout-btn" title="Logout">
-                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
+                        <x-icon name="arrow-right-on-rectangle" width="15" height="15" />
                     </button>
                 </form>
             </div>
@@ -488,9 +474,7 @@
             <div class="topbar-left">
                 {{-- Hamburger — mobile only --}}
                 <button id="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Buka menu">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
+                    <x-icon name="bars-3" width="18" height="18" />
                 </button>
 
                 <img src="{{ asset('images/logo-rsud-jombang.png') }}"
@@ -512,21 +496,14 @@
                 {{-- Dark / Light mode toggle --}}
                 <button class="topbar-icon-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Ganti tema">
                     {{-- Sun = tampil saat light mode aktif --}}
-                    <svg class="icon-sun" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="5"/>
-                        <path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
+                    <x-icon name="sun" width="16" height="16" class="icon-sun" />
                     {{-- Moon = tampil saat dark mode aktif --}}
-                    <svg class="icon-moon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-                    </svg>
+                    <x-icon name="moon" width="16" height="16" class="icon-moon" />
                 </button>
 
                 {{-- Notifikasi --}}
                 <div class="topbar-icon-btn">
-                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                    </svg>
+                    <x-icon name="bell" width="16" height="16" />
                 </div>
             </div>
         </header>

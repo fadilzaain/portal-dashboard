@@ -22,9 +22,7 @@
     <div class="card-header-row">
         <div class="card-header-left">
             <div class="app-icon icon-purple">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
+                <x-icon name="users" width="20" height="20" stroke-width="1.8" />
             </div>
             <div class="card-title-wrap">
                 <div class="app-name">SDM</div>
@@ -91,7 +89,7 @@
     <div class="card-footer">
         <span class="card-open-btn">
             Lihat Detail
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            <x-icon name="chevron-right" width="14" height="14" stroke-width="2.5" />
         </span>
         <span class="card-status-dot"></span>
     </div>
