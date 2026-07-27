@@ -19,7 +19,9 @@ export default defineConfig({
                 'resources/css/portal/bor-modal.css',
                 'resources/js/portal/bor-modal.js',
                 'resources/js/portal/igd-capacity-tabs.js',
-                'resources/css/portal/igd-capacity-tabs.css'
+                'resources/css/portal/igd-capacity-tabs.css',
+                'resources/css/portal/portal-navbar.css',
+                'resources/css/portal/sdm.css'
             ],
             refresh: true,
         }),
