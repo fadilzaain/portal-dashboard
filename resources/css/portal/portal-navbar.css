@@ -1,0 +1,235 @@
+/* ══════════════════════════════════════════════════════════
+   PORTAL NAVBAR (SHARED)
+   Dipakai di semua halaman modul portal lewat komponen
+   <x-portal.navbar>. File ini SATU-SATUNYA sumber styling
+   navbar — jangan re-declare .pp-navbar* di CSS halaman lain.
+
+   Self-contained: cuma gantung ke variable tema global
+   (--topbar-text / --topbar-muted dari layouts/app.blade.php,
+   sudah tersedia di semua halaman), sisanya pakai local
+   custom property punya sendiri (--nav-green) biar gak
+   tergantung variable spesifik punya satu halaman doang.
+   ══════════════════════════════════════════════════════════ */
+
+.pp-navbar {
+  --nav-green: #16a34a;
+  border-bottom: 1.5px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pp-navbar { border-bottom-color: rgba(48,54,61,0.8); --nav-green: #22c55e; }
+}
+
+.dark .pp-navbar,
+[data-theme="dark"] .pp-navbar { border-bottom-color: rgba(48,54,61,0.8); --nav-green: #22c55e; }
+
+.pp-navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  gap: 12px;
+}
+
+/* Kiri: back + breadcrumb */
+.pp-navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pp-nav-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.pp-nav-back:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pp-nav-back       { border-color: rgba(48,54,61,0.8); color: #7d8590; }
+  .pp-nav-back:hover { background: #1c2330; color: #e6edf3; }
+}
+
+.dark .pp-nav-back,
+[data-theme="dark"] .pp-nav-back       { border-color: rgba(48,54,61,0.8); color: #7d8590; }
+.dark .pp-nav-back:hover,
+[data-theme="dark"] .pp-nav-back:hover { background: #1c2330; color: #e6edf3; }
+
+/* Breadcrumb */
+.pp-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.pp-breadcrumb-link {
+  color: var(--topbar-muted);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.pp-breadcrumb-link:hover {
+  color: var(--topbar-text);
+}
+
+.pp-breadcrumb-sep {
+  color: var(--topbar-muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.pp-breadcrumb-current {
+  color: var(--topbar-text);
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Kanan: slot bebas (filter pill, date badge, live badge, dll) */
+.pp-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pp-filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  padding: 5px 12px;
+  transition: border-color 0.2s;
+}
+
+.pp-filter-pill:focus-within {
+  border-color: #2563eb;
+}
+
+.pp-filter-icon {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.pp-filter-sep {
+  width: 1px;
+  height: 12px;
+  background: #d1d5db;
+  flex-shrink: 0;
+}
+
+.pp-nav-select {
+  background: transparent;
+  border: none;
+  color: #111827;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  padding: 0 2px;
+}
+
+.pp-nav-select option {
+  background: #ffffff;
+  color: #111827;
+}
+
+/* Teks statis non-interaktif di dalam pill (mis. badge tanggal di SDM),
+   disamain styling-nya sama .pp-nav-select biar konsisten */
+.pp-nav-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pp-filter-pill       { background: #1c2330; border-color: rgba(48,54,61,0.8); }
+  .pp-filter-icon       { color: #7d8590; }
+  .pp-filter-sep        { background: rgba(48,54,61,0.8); }
+  .pp-nav-select        { color: #e6edf3; }
+  .pp-nav-select option { background: #1c2330; color: #e6edf3; }
+  .pp-nav-date          { color: #e6edf3; }
+}
+
+.dark .pp-filter-pill,
+[data-theme="dark"] .pp-filter-pill       { background: #1c2330; border-color: rgba(48,54,61,0.8); }
+.dark .pp-filter-icon,
+[data-theme="dark"] .pp-filter-icon       { color: #7d8590; }
+.dark .pp-filter-sep,
+[data-theme="dark"] .pp-filter-sep        { background: rgba(48,54,61,0.8); }
+.dark .pp-nav-select,
+[data-theme="dark"] .pp-nav-select        { color: #e6edf3; }
+.dark .pp-nav-select option,
+[data-theme="dark"] .pp-nav-select option { background: #1c2330; color: #e6edf3; }
+.dark .pp-nav-date,
+[data-theme="dark"] .pp-nav-date          { color: #e6edf3; }
+
+/* Badge live */
+.pp-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--nav-green);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pp-badge-live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--nav-green);
+  border-radius: 50%;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pp-navbar-inner {
+    padding: 10px 0;
+  }
+  .pp-breadcrumb-link,
+  .pp-breadcrumb-sep {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .pp-filter-pill {
+    padding: 4px 10px;
+  }
+}

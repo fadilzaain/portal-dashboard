@@ -5,6 +5,7 @@
 @section('page_subtitle', 'Monitoring Pegawai')
 
 @push('styles')
+@vite(['resources/css/portal/portal-navbar.css'])
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -39,75 +40,41 @@ body { background: var(--navy-950); color: var(--text-primary); }
     min-height: 100vh;
 }
 
-/* ── DATE BAR ── */
-.sdm-datebar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.sdm-datebar-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--navy-900);
-    border: 1px solid #22d3ee;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.btn-home {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--navy-900);
-    border: 1px solid #22d3ee;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-    text-decoration: none;
-}
-
-.btn-home:hover {
-    background: rgba(34, 211, 238, 0.1);
-}
+/* Header/date bar sekarang pakai komponen <x-portal.navbar> bareng
+   halaman portal lain, CSS-nya di resources/css/portal/portal-navbar.css */
 /* ── STAT GRID ── */
-.sdm-stat-grid, .sdm-stat-grid-2 {
+/* Satu grid buat 10 card (5 kolom x 2 baris otomatis wrap),
+   gak perlu 2 class grid terpisah kayak sebelumnya (.sdm-stat-grid-2 dihapus) */
+.sdm-stat-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 10px;
+    margin-bottom: 24px;
 }
-.sdm-stat-grid-2 { margin-bottom: 24px; }
 
 .sdm-sc {
     background: var(--navy-900);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
+    border-radius: 12px;
+    padding: 12px 14px;
     display: flex;
     align-items: center;
-    gap: 14px;
-    transition: box-shadow 0.2s, transform 0.2s;
+    gap: 10px;
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 }
 .sdm-sc:hover {
-    box-shadow: 0 4px 20px rgba(56,189,248,0.1);
+    box-shadow: 0 4px 16px rgba(56,189,248,0.1);
     transform: translateY(-1px);
     border-color: rgba(56,189,248,0.3);
 }
 .sdm-sc-icon {
-    width: 48px; height: 48px;
-    border-radius: 12px;
+    width: 36px; height: 36px;
+    border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
 }
-.sdm-sc-icon svg { width: 28px; height: 28px; }
+.sdm-sc-icon svg { width: 18px; height: 18px; }
+.sdm-sc-body { min-width: 0; flex: 1; }
 .ic-blue    { background: rgba(56,189,248,0.12); }
 .ic-indigo  { background: rgba(99,102,241,0.12); }
 .ic-teal    { background: rgba(45,212,191,0.12); }
@@ -119,16 +86,38 @@ body { background: var(--navy-950); color: var(--text-primary); }
 .ic-rose    { background: rgba(251,113,133,0.12); }
 .ic-cyan    { background: rgba(34,211,238,0.12); }
 .sdm-sc-label {
-    font-size: 10.5px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.6px;
-    color: var(--text-muted); margin-bottom: 3px;
+    font-size: 9.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text-muted); margin-bottom: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .sdm-sc-val {
-    font-size: 22px; font-weight: 800;
-    color: var(--text-primary); line-height: 1; margin-bottom: 2px;
+    font-size: 17px; font-weight: 800;
+    color: var(--text-primary); line-height: 1.15; margin-bottom: 4px;
 }
-.sdm-sc-val span { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-.sdm-sc-pct { font-size: 11px; color: var(--text-muted); }
+.sdm-sc-val span { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.sdm-sc-pct { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
+.sdm-sc-bar {
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(148,163,184,0.15);
+    overflow: hidden;
+}
+.sdm-sc-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+}
+.bar-blue    { background: #38bdf8; }
+.bar-indigo  { background: #a78bfa; }
+.bar-teal    { background: #2dd4bf; }
+.bar-sky     { background: #38bdf8; }
+.bar-amber   { background: #f59e0b; }
+.bar-orange  { background: #fb923c; }
+.bar-emerald { background: #34d399; }
+.bar-purple  { background: #a78bfa; }
+.bar-rose    { background: #fb7185; }
+.bar-cyan    { background: #22d3ee; }
 
 /* ── MONITORING HARI INI ── */
 .mon-section { margin-bottom: 20px; }
@@ -415,14 +404,14 @@ body { background: var(--navy-950); color: var(--text-primary); }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1200px) {
-    .sdm-stat-grid, .sdm-stat-grid-2 { grid-template-columns: repeat(3, 1fr); }
+    .sdm-stat-grid { grid-template-columns: repeat(3, 1fr); }
     .bez-summary { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 900px) {
     .sdm-bottom-row { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
-    .sdm-stat-grid, .sdm-stat-grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .sdm-stat-grid { grid-template-columns: repeat(2, 1fr); }
     .bez-summary { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
@@ -431,156 +420,92 @@ body { background: var(--navy-950); color: var(--text-primary); }
 @section('content')
 <div class="sdm-wrap">
 
-    {{-- DATE BAR --}}
-   <div class="sdm-datebar">
-        <a href="{{ url('dashboard') }}" class="btn-home">
-            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+    <x-portal.navbar title="Portal SDM">
+        <div class="pp-filter-pill">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" class="pp-filter-icon">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
-            Home
-        </a>
-        <div class="sdm-datebar-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            {{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}
+            <span class="pp-nav-date">{{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}</span>
         </div>
-    </div>
+    </x-portal.navbar>
 
-    {{-- STAT ROW 1 --}}
+    {{-- STAT CARDS: data-driven, 1 loop buat 10 card biar gak duplikat markup --}}
+    @php
+        $statCards = [
+            [
+                'label' => 'Total Pegawai', 'value' => $totalPegawai, 'sublabel' => '100% dari keseluruhan', 'pct' => 100,
+                'color' => 'blue', 'stroke' => '#38bdf8',
+                'icon'  => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+            ],
+            [
+                'label' => 'PNS', 'value' => $totalPns, 'sublabel' => $pctPns . '% dari total', 'pct' => $pctPns,
+                'color' => 'teal', 'stroke' => '#2dd4bf',
+                'icon'  => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+            ],
+            [
+                'label' => 'P3K', 'value' => $totalP3k, 'sublabel' => $pctP3k . '% dari total', 'pct' => $pctP3k,
+                'color' => 'indigo', 'stroke' => '#a78bfa',
+                'icon'  => '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>',
+            ],
+            [
+                'label' => 'P3K Paruh Waktu', 'value' => $totalP3kParuhWaktu, 'sublabel' => $pctP3kParuh . '% dari total', 'pct' => $pctP3kParuh,
+                'color' => 'sky', 'stroke' => '#38bdf8',
+                'icon'  => '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+            ],
+            [
+                'label' => 'CPNS', 'value' => $totalCpns, 'sublabel' => $pctCpns . '% dari total', 'pct' => $pctCpns,
+                'color' => 'amber', 'stroke' => '#f59e0b',
+                'icon'  => '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+            ],
+            [
+                'label' => 'Kontrak', 'value' => $totalKontrak, 'sublabel' => $pctKontrak . '% dari total', 'pct' => $pctKontrak,
+                'color' => 'orange', 'stroke' => '#fb923c',
+                'icon'  => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+            ],
+            [
+                'label' => 'Tetap', 'value' => $totalTetap, 'sublabel' => $pctTetap . '% dari total', 'pct' => $pctTetap,
+                'color' => 'emerald', 'stroke' => '#34d399',
+                'icon'  => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+            ],
+            [
+                'label' => 'Orientasi', 'value' => $totalOrientasi, 'sublabel' => $pctOrientasi . '% dari total', 'pct' => $pctOrientasi,
+                'color' => 'purple', 'stroke' => '#a78bfa',
+                'icon'  => '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+            ],
+            [
+                'label' => 'Medis', 'value' => $totalMedis, 'sublabel' => $pctMedis . '% dari total', 'pct' => $pctMedis,
+                'color' => 'rose', 'stroke' => '#fb7185',
+                'icon'  => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+            ],
+            [
+                'label' => 'Non Medis', 'value' => $totalNonMedis, 'sublabel' => $pctNonMedis . '% dari total', 'pct' => $pctNonMedis,
+                'color' => 'cyan', 'stroke' => '#22d3ee',
+                'icon'  => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/>',
+            ],
+        ];
+    @endphp
     <div class="sdm-stat-grid">
+        @foreach ($statCards as $card)
         <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-blue">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <div class="sdm-sc-icon ic-{{ $card['color'] }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="{{ $card['stroke'] }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    {!! $card['icon'] !!}
                 </svg>
             </div>
-            <div>
-                <div class="sdm-sc-label">Total Pegawai</div>
-                <div class="sdm-sc-val">{{ number_format($totalPegawai) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">100% dari keseluruhan</div>
+            <div class="sdm-sc-body">
+                <div class="sdm-sc-label">{{ $card['label'] }}</div>
+                <div class="sdm-sc-val">{{ number_format($card['value']) }} <span>Orang</span></div>
+                <div class="sdm-sc-pct">{{ $card['sublabel'] }}</div>
+                <div class="sdm-sc-bar">
+                    <div class="sdm-sc-bar-fill bar-{{ $card['color'] }}" style="width:{{ min((int) $card['pct'], 100) }}%"></div>
+                </div>
             </div>
         </div>
-        <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-teal">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                </svg>
-            </div>
-            <div>
-                <div class="sdm-sc-label">PNS</div>
-                <div class="sdm-sc-val">{{ number_format($totalPns) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">{{ $pctPns }}% dari total</div>
-            </div>
-        </div>
-        <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-indigo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>
-                </svg>
-            </div>
-            <div>
-                <div class="sdm-sc-label">P3K</div>
-                <div class="sdm-sc-val">{{ number_format($totalP3k) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">{{ $pctP3k }}% dari total</div>
-            </div>
-        </div>
-        <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-sky">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                </svg>
-            </div>
-            <div>
-                <div class="sdm-sc-label">P3K Paruh Waktu</div>
-                <div class="sdm-sc-val">{{ number_format($totalP3kParuhWaktu) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">{{ $pctP3kParuh }}% dari total</div>
-            </div>
-        </div>
-        <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-amber">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-                </svg>
-            </div>
-            <div>
-                <div class="sdm-sc-label">CPNS</div>
-                <div class="sdm-sc-val">{{ number_format($totalCpns) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">{{ $pctCpns }}% dari total</div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
-    {{-- STAT ROW 2 --}}
-    <div class="sdm-stat-grid-2">
-        <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-orange">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                </svg>
-            </div>
-            <div>
-                <div class="sdm-sc-label">Kontrak</div>
-                <div class="sdm-sc-val">{{ number_format($totalKontrak) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">{{ $pctKontrak }}% dari total</div>
-            </div>
-        </div>
-        <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-emerald">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-            </div>
-            <div>
-                <div class="sdm-sc-label">Tetap</div>
-                <div class="sdm-sc-val">{{ number_format($totalTetap) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">{{ $pctTetap }}% dari total</div>
-            </div>
-        </div>
-        <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-purple">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
-                    <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-            </div>
-            <div>
-                <div class="sdm-sc-label">Orientasi</div>
-                <div class="sdm-sc-val">{{ number_format($totalOrientasi) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">{{ $pctOrientasi }}% dari total</div>
-            </div>
-        </div>
-        <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-rose">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                </svg>
-            </div>
-            <div>
-                <div class="sdm-sc-label">Medis</div>
-                <div class="sdm-sc-val">{{ number_format($totalMedis) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">{{ $pctMedis }}% dari total</div>
-            </div>
-        </div>
-        <div class="sdm-sc">
-            <div class="sdm-sc-icon ic-cyan">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                    <line x1="23" y1="11" x2="17" y2="11"/>
-                </svg>
-            </div>
-            <div>
-                <div class="sdm-sc-label">Non Medis</div>
-                <div class="sdm-sc-val">{{ number_format($totalNonMedis) }} <span>Orang</span></div>
-                <div class="sdm-sc-pct">{{ $pctNonMedis }}% dari total</div>
-            </div>
-        </div>
-    </div>
 
     {{-- ── MONITORING HARI INI ── --}}
     <div class="mon-section">

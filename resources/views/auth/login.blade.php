@@ -25,10 +25,7 @@
           <label class="block text-sm text-gray-600 mb-1.5">Email</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
-              </svg>
+              <x-icon name="envelope" class="w-4 h-4" />
             </span>
             <input type="email" name="email" value="{{ old('email') }}" required
               placeholder="kamu@email.com"
@@ -44,9 +41,7 @@
           <label class="block text-sm text-gray-600 mb-1.5">Password</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
-              </svg>
+              <x-icon name="lock" class="w-4 h-4" />
             </span>
             <input type="password" id="password" name="password" required
               placeholder="••••••••"
@@ -55,10 +50,7 @@
                      focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
             <button type="button" onclick="togglePw()"
               class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
+              <x-icon name="eye" id="eye-icon" class="w-4 h-4" />
             </button>
           </div>
           @error('password') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
