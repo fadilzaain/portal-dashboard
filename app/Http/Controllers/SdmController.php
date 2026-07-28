@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Services\BezettingService;
+use App\Services\SdmPerJenisService;
 use App\Services\SikawanService;
 
 class SdmController extends Controller
 {
     public function __construct(
-        private SikawanService  $sikawan,
-        private BezettingService $bezetting,
+        private SikawanService     $sikawan,
+        private BezettingService   $bezetting,
+        private SdmPerJenisService $sdmPerJenis,
     ) {}
 
     public function index()
@@ -29,6 +31,9 @@ class SdmController extends Controller
             $sdm['shiftSummary'],
             $sdm['totalPegawai']
         );
+
+        // ── SDM Per Jenis (per unit x per jabatan) ────────────
+        $rasioKategoriDetail = $this->sdmPerJenis->getRingkasanKategori();
 
         // ── View ─────────────────────────────────────────────
         return view('portal.sdm', [
@@ -69,6 +74,9 @@ class SdmController extends Controller
 
             // Monitoring Hari Ini
             'monitoring'   => $monitoring,
+
+            // Rasio Kecukupan SDM per Kategori (detail per unit x per jabatan)
+            'rasioKategoriDetail' => $rasioKategoriDetail,
         ]);
     }
 }

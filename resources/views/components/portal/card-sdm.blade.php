@@ -68,7 +68,7 @@
                 <span class="legend-val">{{ number_format($nonSdm) }}</span>
             </div>
         </div>
-    </div>{{-- tutup .sdm-row --}}
+    </div>
 
     {{-- Baris bawah: shift --}}
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;">

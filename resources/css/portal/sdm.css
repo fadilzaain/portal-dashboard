@@ -179,47 +179,6 @@
 .mon-avail-val   { font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 2px; }
 .mon-avail-sub   { font-size: 11px; color: var(--sdm-text-muted); }
 
-/* Rasio per kategori */
-.mon-rasio-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-}
-.mon-rasio-card {
-    background: var(--sdm-surface);
-    border: 1px solid var(--sdm-border);
-    border-radius: 12px;
-    padding: 14px 14px 12px;
-    transition: transform 0.15s;
-}
-.mon-rasio-card:hover { transform: translateY(-1px); }
-.mon-rasio-header {
-    display: flex; align-items: center;
-    justify-content: space-between; margin-bottom: 10px;
-}
-.mon-rasio-name { font-size: 11px; font-weight: 700; color: var(--sdm-text); }
-.mon-rasio-status {
-    font-size: 9px; font-weight: 700; padding: 2px 7px;
-    border-radius: 99px; text-transform: uppercase; letter-spacing: 0.3px;
-}
-.status-aman   { background: rgba(52,211,153,0.15); color: var(--accent-green); }
-.status-waspada{ background: rgba(245,158,11,0.15); color: var(--accent-amber); }
-.status-kritis { background: rgba(248,113,113,0.15); color: var(--accent-red); }
-
-.mon-rasio-nums {
-    display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;
-}
-.mon-rasio-pct  { font-size: 24px; font-weight: 800; line-height: 1; }
-.mon-rasio-unit { font-size: 11px; color: var(--sdm-text-muted); }
-
-.mon-rasio-bar  { height: 5px; background: var(--sdm-track); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
-.mon-rasio-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
-.fill-aman    { background: var(--accent-green); }
-.fill-waspada { background: var(--accent-amber); }
-.fill-kritis  { background: var(--accent-red); }
-
-.mon-rasio-detail { font-size: 10px; color: var(--sdm-text-muted); }
-
 /* Unit kritis */
 .mon-kritis-grid {
     display: grid;
@@ -428,11 +387,181 @@
 .stb-label { font-size: 10px; color: var(--sdm-text-muted); margin-top: 2px; font-weight: 600; }
 
 /* ── Smooth transition pas ganti tema light/dark ── */
-.sdm-sc, .mon-avail-card, .mon-rasio-card, .sdm-panel,
+.sdm-sc, .mon-avail-card, .rk-card, .sdm-panel,
 .bez-sc, .shift-item, .shift-detail, .shift-total-bubble,
 .mon-kritis-item, .bez-table thead th {
     transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease,
                 box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   RASIO KECUKUPAN SDM PER KATEGORI — premium card + ring progress + expand
+   ══════════════════════════════════════════════════════════════════════ */
+.rk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+}
+
+.rk-card {
+    position: relative;
+    background: linear-gradient(160deg, var(--sdm-surface) 0%, var(--sdm-surface-alt) 130%);
+    border: 1px solid var(--sdm-border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+    transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+.rk-card::before {
+    content: '';
+    position: absolute; inset: 0 0 auto 0; height: 3px;
+    background: var(--rk-accent, var(--accent-blue));
+    opacity: 0.9;
+}
+.rk-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px -12px rgba(15,23,42,0.18);
+    border-color: var(--rk-accent, var(--accent-blue));
+}
+.rk-card.status-aman    { --rk-accent: var(--accent-green); }
+.rk-card.status-waspada { --rk-accent: var(--accent-amber); }
+.rk-card.status-kritis  { --rk-accent: var(--accent-red); }
+
+.rk-card-head {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+}
+
+.rk-ring-wrap { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+.rk-ring { width: 64px; height: 64px; transform: rotate(-90deg); }
+.rk-ring-track {
+    fill: none; stroke: var(--sdm-track); stroke-width: 5;
+}
+.rk-ring-fill {
+    fill: none; stroke: var(--rk-accent, var(--accent-blue)); stroke-width: 5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rk-ring-icon {
+    position: absolute; inset: 0; margin: auto;
+    width: 22px; height: 22px;
+    color: var(--rk-accent, var(--accent-blue));
+}
+
+.rk-card-body { min-width: 0; }
+.rk-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.rk-card-name {
+    font-size: 12.5px; font-weight: 700; color: var(--sdm-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rk-status-pill {
+    font-size: 9px; font-weight: 700; padding: 2px 7px;
+    border-radius: 99px; text-transform: uppercase; letter-spacing: 0.3px;
+    color: var(--rk-accent, var(--accent-blue));
+    flex-shrink: 0;
+}
+.rk-card.status-aman    .rk-status-pill { background: rgba(52,211,153,0.15); }
+.rk-card.status-waspada .rk-status-pill { background: rgba(245,158,11,0.15); }
+.rk-card.status-kritis  .rk-status-pill { background: rgba(248,113,113,0.15); }
+.rk-card-pct {
+    font-size: 26px; font-weight: 800; line-height: 1.15;
+    color: var(--rk-accent, var(--accent-blue));
+}
+.rk-card-pct span { font-size: 14px; font-weight: 700; opacity: 0.7; }
+.rk-card-sub { font-size: 10.5px; color: var(--sdm-text-muted); margin-top: 1px; }
+
+.rk-chevron {
+    color: var(--sdm-text-muted);
+    transition: transform 0.3s ease, color 0.2s ease;
+    flex-shrink: 0;
+}
+.rk-card.open .rk-chevron { transform: rotate(180deg); color: var(--rk-accent, var(--accent-blue)); }
+
+/* Expand pakai grid-template-rows trick biar animasi ke "auto height" mulus tanpa JS hitung tinggi */
+.rk-expand {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rk-card.open .rk-expand { grid-template-rows: 1fr; }
+.rk-expand-inner { overflow: hidden; min-height: 0; }
+
+.rk-detail-toolbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 0 16px 12px;
+}
+.rk-search-wrap {
+    flex: 1; display: flex; align-items: center; gap: 8px;
+    background: var(--sdm-surface-alt);
+    border: 1px solid var(--sdm-border);
+    border-radius: 10px;
+    padding: 7px 10px;
+    color: var(--sdm-text-muted);
+}
+.rk-search {
+    flex: 1; border: none; background: transparent; outline: none;
+    font-size: 12px; color: var(--sdm-text);
+}
+.rk-search::placeholder { color: var(--sdm-text-muted); }
+.rk-kurang-tag {
+    font-size: 10px; font-weight: 700; white-space: nowrap;
+    padding: 5px 10px; border-radius: 99px;
+    background: rgba(248,113,113,0.12); color: var(--accent-red);
+}
+
+.rk-table-wrap {
+    max-height: 260px; overflow-y: auto;
+    border-top: 1px solid var(--sdm-border);
+    margin: 0 16px 16px;
+}
+.rk-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.rk-table thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--sdm-surface-alt);
+    color: var(--sdm-text-muted);
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+    text-align: left; padding: 8px 8px;
+}
+.rk-table th.c, .rk-table td.c { text-align: center; }
+.rk-table td {
+    padding: 8px 8px; border-top: 1px solid var(--sdm-border);
+    color: var(--sdm-text); vertical-align: middle;
+}
+.rk-table tbody tr:hover td { background: var(--sdm-surface-alt); }
+.rk-td-unit { font-weight: 600; }
+
+.rk-formasi { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 60px; }
+.rk-formasi span { font-size: 11px; font-weight: 700; }
+.rk-mini-bar { width: 100%; height: 4px; background: var(--sdm-track); border-radius: 99px; overflow: hidden; }
+.rk-mini-fill { height: 100%; background: var(--rk-accent, var(--accent-blue)); border-radius: 99px; transition: width 0.6s ease; }
+
+.rk-badge {
+    display: inline-block; font-size: 9.5px; font-weight: 700;
+    padding: 3px 9px; border-radius: 99px; letter-spacing: 0.3px;
+}
+.rk-badge-green { background: rgba(52,211,153,0.15); color: var(--accent-green); }
+.rk-badge-red   { background: rgba(248,113,113,0.15); color: var(--accent-red); }
+.rk-badge-blue  { background: rgba(56,189,248,0.15); color: var(--accent-blue); }
+
+.rk-empty, .rk-empty-state {
+    text-align: center; font-size: 11.5px; color: var(--sdm-text-muted);
+    padding: 20px 10px;
+}
+.rk-empty-state {
+    grid-column: 1 / -1;
+    background: var(--sdm-surface);
+    border: 1px dashed var(--sdm-border);
+    border-radius: 14px;
 }
 
 /* ── RESPONSIVE ── */
@@ -442,8 +571,16 @@
 }
 @media (max-width: 900px) {
     .sdm-bottom-row { grid-template-columns: 1fr; }
+    .rk-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
 @media (max-width: 600px) {
     .sdm-stat-grid { grid-template-columns: repeat(2, 1fr); }
     .bez-summary { grid-template-columns: repeat(2, 1fr); }
+    .rk-grid { grid-template-columns: 1fr; }
+    .rk-card-head { grid-template-columns: 52px 1fr auto; padding: 14px 12px; gap: 10px; }
+    .rk-ring-wrap, .rk-ring { width: 52px; height: 52px; }
+    .rk-ring-icon { width: 18px; height: 18px; }
+    .rk-card-pct { font-size: 22px; }
+    .rk-table-wrap { margin: 0 10px 12px; }
+    .rk-detail-toolbar { padding: 0 10px 10px; flex-wrap: wrap; }
 }

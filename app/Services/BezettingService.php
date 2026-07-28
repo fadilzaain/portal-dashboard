@@ -13,18 +13,6 @@ class BezettingService
     private int $timeout;
     private int $cacheTtl;
 
-    // Mapping kata kunci jabatan ke kategori
-    private array $categoryMap = [
-        'Dokter'  => ['dokter', 'dr.'],
-        'Perawat' => ['perawat', 'bidan', 'penata anest', 'asisten penata'],
-        'Farmasi' => ['apoteker', 'asisten apoteker'],
-        'Medis Lainnya' => [
-            'teknisi', 'nutrisionis', 'fisioterapi', 'analis', 'radiografer',
-            'perekam', 'sanitarian', 'terapis', 'okupasi', 'ortosis',
-            'refraksionis', 'fisikawan', 'psikologi',
-        ],
-    ];
-
     public function __construct()
     {
         $this->url      = env('API_BEZETTING_URL', '');
@@ -75,7 +63,7 @@ class BezettingService
                     'tersedia'   => (int) ($row['JUMLAH PEGAWAI'] ?? $row['JUMLAH_PEGAWAI'] ?? 0),
                     'delta'      => $delta,
                     'kekurangan' => $delta < 0 ? abs($delta) : 0,
-                    'kategori'   => $this->resolveKategori($row['JABATAN'] ?? ''),
+                    'kategori'   => JabatanKategori::resolve($row['JABATAN'] ?? ''),
                     'pct'        => $this->hitungPct(
                         (int) ($row['JUMLAH PEGAWAI'] ?? 0),
                         (int) ($row['KEBUTUHAN'] ?? 0)
@@ -147,10 +135,9 @@ class BezettingService
             : 0;
 
         // ── Rasio per kategori ──────────────────────────────
-        $kategoriUrut = ['Dokter', 'Perawat', 'Farmasi', 'Medis Lainnya', 'Lainnya'];
         $rasioKategori = [];
 
-        foreach ($kategoriUrut as $kat) {
+        foreach (JabatanKategori::URUTAN as $kat) {
             $rows = $validData->filter(fn($r) => $r->kategori === $kat);
             if ($rows->isEmpty()) continue;
 
@@ -198,24 +185,6 @@ class BezettingService
     public function flushCache(): void
     {
         Cache::forget('bezetting_data');
-    }
-
-     //===========================================
-     //Tentukan kategori berdasarkan nama jabatan
-     //===========================================
-    private function resolveKategori(string $jabatan): string
-    {
-        $lower = strtolower($jabatan);
-
-        foreach ($this->categoryMap as $kategori => $keywords) {
-            foreach ($keywords as $kw) {
-                if (str_contains($lower, $kw)) {
-                    return $kategori;
-                }
-            }
-        }
-
-        return 'Lainnya';
     }
 
     //=====================================================
