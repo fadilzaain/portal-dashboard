@@ -26,11 +26,6 @@ class SdmController extends Controller
         // ── Bezetting ────────────────────────────────────────
         $bezData    = $this->bezetting->getData();
         $bezSummary = $this->bezetting->getSummary($bezData);
-        $monitoring = $this->bezetting->getMonitoring(
-            $bezData,
-            $sdm['shiftSummary'],
-            $sdm['totalPegawai']
-        );
 
         // ── SDM Per Jenis (per unit x per jabatan) ────────────
         $rasioKategoriDetail = $this->sdmPerJenis->getRingkasanKategori();
@@ -71,9 +66,6 @@ class SdmController extends Controller
 
             // Bezetting
             'bezSummary'   => $bezSummary,
-
-            // Monitoring Hari Ini
-            'monitoring'   => $monitoring,
 
             // Rasio Kecukupan SDM per Kategori (detail per unit x per jabatan)
             'rasioKategoriDetail' => $rasioKategoriDetail,

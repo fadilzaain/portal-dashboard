@@ -67,10 +67,6 @@
   color: var(--pp-text);
 }
 
-/* NAVBAR: CSS-nya udah pindah ke resources/css/portal/portal-navbar.css
-   dan dipakai bareng via komponen <x-portal.navbar>. Jangan re-declare
-   .pp-navbar* di sini lagi biar gak duplikat. */
-
 /* ── Filter bar ──────── */
 .pp-filter-bar {
   display: flex;

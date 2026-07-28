@@ -104,54 +104,6 @@
     {{-- ── MONITORING HARI INI ── --}}
     <div class="mon-section">
 
-        <!-- {{-- 1. Ketersediaan SDM Hari Ini --}}
-        <div class="mon-section-title">Ketersediaan SDM Hari Ini</div>
-        <div class="mon-avail-grid" style="margin-bottom:20px">
-
-            <div class="mon-avail-card">
-                <div class="mon-avail-icon" style="background:rgba(56,189,248,0.12)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="mon-avail-label">Total Hadir Hari Ini</div>
-                    <div class="mon-avail-val" style="color:var(--accent-blue)">{{ number_format($monitoring['totalHadir']) }}</div>
-                    <div class="mon-avail-sub">{{ $monitoring['pctHadir'] }}% dari total pegawai</div>
-                </div>
-            </div>
-
-            <div class="mon-avail-card">
-                <div class="mon-avail-icon" style="background:rgba(245,158,11,0.12)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="mon-avail-label">Shift Aktif Sekarang</div>
-                    <div class="mon-avail-val" style="color:var(--accent-amber)">{{ $monitoring['shiftAktifNama'] }}</div>
-                    <div class="mon-avail-sub">{{ number_format($monitoring['shiftAktifTotal']) }} orang bertugas</div>
-                </div>
-            </div>
-
-            <div class="mon-avail-card">
-                <div class="mon-avail-icon" style="background:rgba(167,139,250,0.12)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="mon-avail-label">Rasio Kecukupan Global</div>
-                    <div class="mon-avail-val" style="color:{{ $monitoring['rasioGlobal'] >= 80 ? 'var(--accent-green)' : ($monitoring['rasioGlobal'] >= 60 ? 'var(--accent-amber)' : 'var(--accent-red)') }}">
-                        {{ $monitoring['rasioGlobal'] }}%
-                    </div>
-                    <div class="mon-avail-sub">tersedia vs kebutuhan formasi</div>
-                </div>
-            </div>
-
-        </div> -->
-
         {{-- 2. Rasio Kecukupan SDM per Kategori (detail per unit x per jabatan, sumber: API SDM Per Jenis) --}}
         <div class="mon-section-title">Rasio Kecukupan SDM per Kategori</div>
         <div class="rk-grid" style="margin-bottom:20px">
@@ -233,7 +185,7 @@
                                         <td class="c">
                                             <div class="rk-formasi">
                                                 <span>{{ $d['jumlah'] }}/{{ $d['kebutuhan'] }}</span>
-                                                <div class="rk-mini-bar"><div class="rk-mini-fill" style="width:{{ $rowPct }}%"></div></div>
+                                                <div class="mini-bar"><div class="mini-fill tone-accent" style="width:{{ $rowPct }}%"></div></div>
                                             </div>
                                         </td>
                                         <td class="c"><span class="rk-badge {{ $ketCls }}">{{ $d['keterangan'] }}</span></td>
@@ -251,31 +203,6 @@
             @endforelse
         </div>
 
-        <!-- {{-- 3. Jabatan Kritis (rasio < 70%) --}}
-        @if(count($monitoring['jabatanKritis']) > 0)
-        <div class="mon-section-title" style="color:var(--accent-red)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            Jabatan Kritis (rasio &lt; 70%)
-        </div>
-        <div class="mon-kritis-grid" style="margin-bottom:20px">
-            @foreach ($monitoring['jabatanKritis'] as $item)
-            <div class="mon-kritis-item">
-                <div>
-                    <div class="mon-kritis-name">{{ $item['jabatan'] }}</div>
-                    <div class="mon-kritis-kat">{{ $item['kategori'] }}</div>
-                </div>
-                <div class="mon-kritis-right">
-                    <div class="mon-kritis-pct">{{ $item['pct'] }}%</div>
-                    <div class="mon-kritis-sub">{{ $item['tersedia'] }}/{{ $item['kebutuhan'] }}</div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-        @endif -->
-
     </div>
 
     {{-- BEZETTING FULL WIDTH --}}
@@ -288,41 +215,74 @@
             {{-- Summary cards --}}
             <div class="bez-summary">
                 <div class="bez-sc">
-                    <div class="bez-sc-label">Total Jabatan</div>
-                    <div class="bez-sc-val">{{ $bezSummary['total'] }}</div>
+                    <div class="bez-sc-icon ic-slate">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+                    </div>
+                    <div>
+                        <div class="bez-sc-label">Total Jabatan</div>
+                        <div class="bez-sc-val">{{ $bezSummary['total'] }}</div>
+                    </div>
                 </div>
                 <div class="bez-sc">
-                    <div class="bez-sc-label">Kekurangan</div>
-                    <div class="bez-sc-val red">{{ $bezSummary['totalKurang'] }}</div>
+                    <div class="bez-sc-icon ic-red">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path></svg>
+                    </div>
+                    <div>
+                        <div class="bez-sc-label">Kekurangan</div>
+                        <div class="bez-sc-val red">{{ $bezSummary['totalKurang'] }}</div>
+                    </div>
                 </div>
                 <div class="bez-sc">
-                    <div class="bez-sc-label">Total Orang Kurang</div>
-                    <div class="bez-sc-val red">{{ $bezSummary['totalOrangKurang'] }}</div>
+                    <div class="bez-sc-icon ic-amber">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                    <div>
+                        <div class="bez-sc-label">Total Orang Kurang</div>
+                        <div class="bez-sc-val red">{{ $bezSummary['totalOrangKurang'] }}</div>
+                    </div>
                 </div>
                 <div class="bez-sc">
-                    <div class="bez-sc-label">Surplus</div>
-                    <div class="bez-sc-val teal">{{ $bezSummary['totalLebih'] }}</div>
+                    <div class="bez-sc-icon ic-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                    </div>
+                    <div>
+                        <div class="bez-sc-label">Cukup</div>
+                        <div class="bez-sc-val green">{{ $bezSummary['totalCukup'] }}</div>
+                    </div>
+                </div>
+                <div class="bez-sc">
+                    <div class="bez-sc-icon ic-teal">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15V9"></path><path d="M12 15v-3"></path><path d="M6 15v-6"></path><path d="M2 9.5 8 5l4 3 8-5"></path></svg>
+                    </div>
+                    <div>
+                        <div class="bez-sc-label">Surplus</div>
+                        <div class="bez-sc-val teal">{{ $bezSummary['totalLebih'] }}</div>
+                    </div>
                 </div>
             </div>
 
-            {{-- Tabs --}}
-            <div class="bez-tabs">
-                <div class="bez-tab t-kurang active" onclick="bezSetTab('kurang', this)">
+            {{-- Pill tabs dgn sliding indicator (gaya konsisten sama tab IGD) --}}
+            <div class="bez-tabs" data-role="bez-tabs">
+                <div class="bez-tab-indicator" data-role="bez-tab-indicator"></div>
+                <button type="button" class="bez-tab t-kurang is-active" data-tone="red" onclick="bezSetTab('kurang', this)">
                     Kekurangan <span class="cnt">{{ $bezSummary['totalKurang'] }}</span>
-                </div>
-                <div class="bez-tab t-cukup" onclick="bezSetTab('cukup', this)">
+                </button>
+                <button type="button" class="bez-tab t-cukup" data-tone="green" onclick="bezSetTab('cukup', this)">
                     Cukup <span class="cnt">{{ $bezSummary['totalCukup'] }}</span>
-                </div>
-                <div class="bez-tab t-lebih" onclick="bezSetTab('lebih', this)">
+                </button>
+                <button type="button" class="bez-tab t-lebih" data-tone="blue" onclick="bezSetTab('lebih', this)">
                     Surplus <span class="cnt">{{ $bezSummary['totalLebih'] }}</span>
-                </div>
+                </button>
             </div>
 
             {{-- Search + filter --}}
             <div class="bez-search">
-                <input type="text" id="bez-search" placeholder="Cari jabatan..." oninput="bezRender()">
-                <select id="bez-kat" onchange="bezRender()" style="min-width:110px">
-                    <option value="">Semua</option>
+                <div class="bez-search-input-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="bez-search" placeholder="Cari jabatan..." oninput="bezRender()">
+                </div>
+                <select id="bez-kat" onchange="bezRender()">
+                    <option value="">Semua Kategori</option>
                     <option>Dokter</option>
                     <option>Perawat</option>
                     <option>Farmasi</option>
@@ -345,6 +305,10 @@
                     </thead>
                     <tbody id="bez-tbody"></tbody>
                 </table>
+                <div class="bez-empty-state" id="bez-empty-state" style="display:none">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <span>Tidak ada data yang cocok</span>
+                </div>
             </div>
         </div>
 
@@ -428,8 +392,14 @@ function rkFilter(i, q) {
 }
 
 // Animasi ring progress dari 0% ke nilai aslinya begitu card kebaca browser
+// (skip stagger kalau user set preferensi "reduce motion" di OS/browser-nya)
+const sdmReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.querySelectorAll('.rk-ring-fill').forEach((ring, idx) => {
     const target = ring.dataset.targetOffset;
+    if (sdmReduceMotion) {
+        ring.style.strokeDashoffset = target;
+        return;
+    }
     requestAnimationFrame(() => {
         setTimeout(() => { ring.style.strokeDashoffset = target; }, 80 * idx);
     });
@@ -507,11 +477,22 @@ const BEZ = {
 };
 
 let bezTab = 'kurang';
+const bezTabsEl      = document.querySelector('[data-role="bez-tabs"]');
+const bezIndicatorEl = document.querySelector('[data-role="bez-tab-indicator"]');
+
+// Geser pill indicator ke tombol tab yang aktif + ganti warna sesuai tone (red/green/blue)
+function bezMoveIndicator(btn) {
+    if (!bezIndicatorEl || !btn) return;
+    bezIndicatorEl.style.left   = btn.offsetLeft + 'px';
+    bezIndicatorEl.style.width  = btn.offsetWidth + 'px';
+    bezIndicatorEl.dataset.tone = btn.dataset.tone;
+}
 
 function bezSetTab(tab, el) {
     bezTab = tab;
-    document.querySelectorAll('.bez-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
+    document.querySelectorAll('.bez-tab').forEach(t => t.classList.remove('is-active'));
+    el.classList.add('is-active');
+    bezMoveIndicator(el);
     bezRender();
 }
 
@@ -528,14 +509,18 @@ function bezRender() {
         (!kat || r.kat === kat)
     );
 
-    const tbody = document.getElementById('bez-tbody');
+    const tbody     = document.getElementById('bez-tbody');
+    const emptyState = document.getElementById('bez-empty-state');
+
     if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="5" class="bez-empty">Tidak ada data</td></tr>`;
+        tbody.innerHTML = '';
+        emptyState.style.display = 'flex';
         return;
     }
+    emptyState.style.display = 'none';
 
-    const progCls  = bezTab === 'kurang' ? 'prog-red'   : bezTab === 'cukup' ? 'prog-green' : 'prog-blue';
-    const deltaCls = bezTab === 'kurang' ? 'delta-red'  : bezTab === 'cukup' ? 'delta-green': 'delta-blue';
+    const tone     = bezTab === 'kurang' ? 'red' : bezTab === 'cukup' ? 'green' : 'blue';
+    const badgeCls = bezTab === 'kurang' ? 'rk-badge-red' : bezTab === 'cukup' ? 'rk-badge-green' : 'rk-badge-blue';
 
     tbody.innerHTML = rows.map((r, i) => {
         const sign = r.d > 0 ? '+' : r.d === 0 ? '=' : '';
@@ -550,16 +535,27 @@ function bezRender() {
                 <div style="display:flex;align-items:center;gap:6px">
                     <span style="font-weight:600;min-width:24px">${r.t}</span>
                     <div style="flex:1">
-                        <div class="prog-wrap"><div class="prog-bar ${progCls}" style="width:${r.p}%"></div></div>
+                        <div class="mini-bar"><div class="mini-fill tone-${tone}" style="width:${r.p}%"></div></div>
                         <div style="font-size:9px;color:var(--text-muted);margin-top:1px">${r.p}%</div>
                     </div>
                 </div>
             </td>
-            <td class="c"><span class="delta-badge ${deltaCls}">${sign}${r.d}</span></td>
+            <td class="c"><span class="rk-badge ${badgeCls}">${sign}${r.d}</span></td>
         </tr>`;
     }).join('');
 }
 
+// Posisi awal indicator + hint pulse 2x pas pertama kali kebaca browser
+requestAnimationFrame(() => {
+    bezMoveIndicator(bezTabsEl?.querySelector('.bez-tab.is-active'));
+    bezTabsEl?.classList.add('is-ready');
+    if (!sdmReduceMotion) bezTabsEl?.classList.add('bez-tab-hint');
+});
+window.addEventListener('resize', () => {
+    bezMoveIndicator(bezTabsEl?.querySelector('.bez-tab.is-active'));
+});
+
 bezRender();
 </script>
+
 @endpush
