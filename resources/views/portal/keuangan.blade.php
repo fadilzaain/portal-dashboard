@@ -10,32 +10,30 @@
 
     {{-- FILTER BAR --}}
     <div class="filter-bar">
-        <span class="filter-label">Tahun</span>
-        <select id="tahunSelect" class="filter-select">
-            @forelse($tahunList as $t)
-                <option value="{{ $t }}" @selected((int)$t===(int)$tahun)>{{ $t }}</option>
-            @empty
-                <option value="{{ $tahun }}">{{ $tahun }}</option>
-            @endforelse
-        </select>
-
-        <span class="filter-label" style="margin-left:6px">Bulan</span>
-        <select id="bulanSelect" class="filter-select">
-            @for($i = 1; $i <= 12; $i++)
-                <option value="{{ $i }}" @selected($i === (int) now()->month)>
-                    {{ DateTime::createFromFormat('!m', $i)->format('F') }}
-                </option>
-            @endfor
-        </select>
-
-        <a href="{{ url('/') }}"
-           title="Kembali ke Home"
-           style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:transparent;border:1px solid rgba(255,255,255,.07);border-radius:8px;color:#7D8590;font-size:11px;text-decoration:none;transition:all .15s"
-           onmouseover="this.style.cssText+=';background:#1e2438;color:#e2e8f0'"
-           onmouseout="this.style.cssText+=';background:transparent;color:#7D8590'">
-            <x-icon name="home" width="13" height="13" />
-            Home
+        <a href="{{ url('/') }}" class="keu-back-btn" title="Kembali ke Dashboard">
+            <x-icon name="chevron-left" width="14" height="14" />
+            <span>Dashboard</span>
         </a>
+
+        <div class="filter-group">
+            <span class="filter-label">Tahun</span>
+            <select id="tahunSelect" class="filter-select">
+                @forelse($tahunList as $t)
+                    <option value="{{ $t }}" @selected((int)$t===(int)$tahun)>{{ $t }}</option>
+                @empty
+                    <option value="{{ $tahun }}">{{ $tahun }}</option>
+                @endforelse
+            </select>
+
+            <span class="filter-label" style="margin-left:6px">Bulan</span>
+            <select id="bulanSelect" class="filter-select">
+                @for($i = 1; $i <= 12; $i++)
+                    <option value="{{ $i }}" @selected($i === (int) now()->month)>
+                        {{ DateTime::createFromFormat('!m', $i)->format('F') }}
+                    </option>
+                @endfor
+            </select>
+        </div>
     </div>
 
     {{-- KPI CARDS --}}

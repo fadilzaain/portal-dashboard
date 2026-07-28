@@ -44,8 +44,17 @@
 
 .sdm-wrap {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    padding: 1.5rem;
+    padding: 0 1.5rem 1.5rem;
+    margin-top: -14px;
     color: var(--sdm-text);
+}
+
+.sdm-wrap .pp-navbar {
+    margin-bottom: 4px;
+}
+
+.sdm-wrap .pp-navbar-inner {
+    padding: 4px 0;
 }
 
 /* Header/date bar sekarang pakai komponen <x-portal.navbar> bareng
