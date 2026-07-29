@@ -166,6 +166,88 @@
     background: var(--sdm-border);
 }
 
+/* ── UNIT & JABATAN PERLU PERHATIAN (ringkasan prioritas) ── */
+.prio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.prio-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    background: var(--sdm-surface);
+    border: 1px solid var(--sdm-border);
+    border-left: 3px solid var(--accent-red);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    animation: sdmFadeSlideUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+.prio-list .prio-item:nth-child(1) { animation-delay: 0.02s; }
+.prio-list .prio-item:nth-child(2) { animation-delay: 0.06s; }
+.prio-list .prio-item:nth-child(3) { animation-delay: 0.10s; }
+.prio-list .prio-item:nth-child(4) { animation-delay: 0.14s; }
+.prio-list .prio-item:nth-child(5) { animation-delay: 0.18s; }
+.prio-list .prio-item:nth-child(n+6) { animation-delay: 0.20s; }
+.prio-item:hover {
+    box-shadow: 0 8px 20px -10px rgba(15,23,42,0.18);
+    transform: translateY(-1px);
+    border-color: var(--accent-red);
+    background: var(--sdm-surface-alt);
+}
+.prio-item:hover .prio-arrow { transform: translateX(3px); color: var(--accent-red); }
+.prio-item:focus-visible { outline: 2px solid var(--accent-red); outline-offset: 2px; }
+
+.prio-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: rgba(248,113,113,0.14);
+    color: var(--accent-red);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+.prio-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.prio-jabatan {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--sdm-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.prio-unit {
+    font-size: 10.5px;
+    color: var(--sdm-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.prio-item .kat-badge { flex-shrink: 0; }
+.prio-arrow {
+    flex-shrink: 0;
+    color: var(--sdm-text-muted);
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
 /* ── BAR CHART PANEL ── */
 .sdm-panel {
     background: var(--sdm-surface);
@@ -438,6 +520,17 @@
 .rk-card.status-waspada { --rk-accent: var(--accent-amber); }
 .rk-card.status-kritis  { --rk-accent: var(--accent-red); }
 
+/* Dipicu sdmScrollToUnit() pas user klik item di "Perlu Perhatian" */
+@keyframes rkHighlightPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(56,189,248,0.45); }
+    50%  { box-shadow: 0 0 0 9px rgba(56,189,248,0); }
+    100% { box-shadow: 0 0 0 0 rgba(56,189,248,0); }
+}
+.rk-card.rk-highlight {
+    border-color: var(--accent-blue);
+    animation: rkHighlightPulse 0.8s ease-out 2;
+}
+
 .rk-card-head {
     width: 100%;
     display: grid;
@@ -639,4 +732,7 @@
     .rk-card-pct { font-size: 22px; }
     .rk-table-wrap { margin: 0 10px 12px; }
     .rk-detail-toolbar { padding: 0 10px 10px; flex-wrap: wrap; }
+    .prio-item { gap: 8px; padding: 9px 10px; }
+    .prio-item .kat-badge { display: none; }
+    .prio-jabatan { font-size: 12px; }
 }

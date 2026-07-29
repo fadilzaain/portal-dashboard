@@ -144,17 +144,41 @@ class SdmPerJenisService
     }
 
     /**
+     * Unit-unit dengan total kekurangan formasi terbanyak (dijumlah lintas semua
+     * jabatan di unit tsb), buat card "Unit Perlu Perhatian" (chart batang).
+     * `slug` dipakai buat scroll-to lewat sdmScrollToUnit() di sdm.blade.php.
+     *
+     * @return array<int, array{unit: string, slug: string, kekurangan: int, jabatanKurangCount: int}>
+     */
+    public function getPrioritasUnit(int $limit = 6): array
+    {
+        return $this->getData()
+            ->groupBy('unit')
+            ->map(fn(Collection $rows, $unitKey) => [
+                'unit'               => (string) $unitKey,
+                'slug'               => Str::slug((string) $unitKey),
+                'kekurangan'         => $rows->sum('kekurangan'),
+                'jabatanKurangCount' => $rows->where('keterangan', 'KURANG')->count(),
+            ])
+            ->filter(fn($u) => $u['kekurangan'] > 0)
+            ->sortByDesc('kekurangan')
+            ->take($limit)
+            ->values()
+            ->toArray();
+    }
+
+    /**
      * Jabatan-jabatan paling kritis lintas semua unit (kekurangan terbanyak),
-     * buat card ringkasan "Unit & Jabatan Perlu Perhatian" di atas panel Bezetting.
-     * `slug` unit-nya sama persis dengan yang dipakai getRingkasanPerUnit(),
-     * jadi klik item di sini bisa langsung scroll ke card unit yang bersangkutan.
+     * buat card "Jabatan Perlu Perhatian" (ranked list). `slug` unit-nya sama
+     * persis dengan getRingkasanPerUnit(), jadi klik item bisa langsung scroll
+     * ke card unit yang bersangkutan.
      *
      * @return array<int, array{
      *   unit: string, slug: string, jabatan: string, kategori: string,
      *   kekurangan: int, kebutuhan: int, jumlah: int
      * }>
      */
-    public function getPrioritas(int $limit = 8): array
+    public function getPrioritasJabatan(int $limit = 8): array
     {
         return $this->getData()
             ->filter(fn($r) => $r->kekurangan > 0)

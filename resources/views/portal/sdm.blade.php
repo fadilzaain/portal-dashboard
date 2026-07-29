@@ -101,29 +101,62 @@
     </div>
 
 
-    {{-- ── UNIT & JABATAN PERLU PERHATIAN (ringkasan prioritas, sumber: API SDM Per Jenis) ── --}}
+    {{-- ── UNIT & JABATAN PERLU PERHATIAN (2 card terpisah, sumber: API SDM Per Jenis) ── --}}
     <div class="mon-section">
         <div class="mon-section-title">Unit &amp; Jabatan Perlu Perhatian</div>
-        <div class="prio-list">
-            @php
-                // Warna badge kategori disamain sama yang dipakai tabel Bezetting di bawah biar konsisten
-                $katCls = ['Dokter' => 'kat-dokter', 'Perawat' => 'kat-perawat', 'Farmasi' => 'kat-farmasi', 'Medis Lainnya' => 'kat-medis'];
-            @endphp
-            @forelse ($prioritasSdm as $p)
-            <button type="button" class="prio-item" onclick="sdmScrollToUnit('{{ $p['slug'] }}')">
-                <span class="prio-badge">-{{ $p['kekurangan'] }}</span>
-                <div class="prio-body">
-                    <span class="prio-jabatan">{{ $p['jabatan'] }}</span>
-                    <span class="prio-unit">{{ $p['unit'] }}</span>
+        <div class="prio-grid">
+
+            {{-- CARD 1: Unit Perlu Perhatian → chart batang horizontal (Chart.js) --}}
+            <div class="mon-card">
+                <div class="mon-card-hd">
+                    <span class="mon-card-title">Unit Perlu Perhatian</span>
+                    <span class="mon-card-sub">Total kekurangan formasi per unit</span>
                 </div>
-                <span class="kat-badge {{ $katCls[$p['kategori']] ?? 'kat-lainnya' }}">{{ $p['kategori'] }}</span>
-                <svg class="prio-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 6 15 12 9 18"></polyline>
-                </svg>
-            </button>
-            @empty
-            <div class="rk-empty-state">Tidak ada kekurangan formasi yang perlu perhatian saat ini.</div>
-            @endforelse
+                @if (empty($prioritasUnit))
+                <div class="rk-empty-state">Tidak ada unit yang perlu perhatian saat ini.</div>
+                @else
+                <div class="uprio-chart-wrap">
+                    <canvas id="prioUnitChart"></canvas>
+                </div>
+                @endif
+            </div>
+
+            {{-- CARD 2: Jabatan Perlu Perhatian → ranked list dgn track/dot (beda gaya dari chart batang biar gak monoton) --}}
+            <div class="mon-card">
+                <div class="mon-card-hd">
+                    <span class="mon-card-title">Jabatan Perlu Perhatian</span>
+                    <span class="mon-card-sub">Ranking jabatan dgn kekurangan formasi terbanyak</span>
+                </div>
+                @php
+                    // Warna badge kategori disamain sama yang dipakai tabel Bezetting biar konsisten
+                    $katCls        = ['Dokter' => 'kat-dokter', 'Perawat' => 'kat-perawat', 'Farmasi' => 'kat-farmasi', 'Medis Lainnya' => 'kat-medis'];
+                    $maxKekJabatan = collect($prioritasJabatan)->max('kekurangan') ?: 1;
+                @endphp
+                <div class="jprio-list">
+                    @forelse ($prioritasJabatan as $i => $p)
+                    @php $trackPct = min((int) round($p['kekurangan'] / $maxKekJabatan * 100), 100); @endphp
+                    <button type="button" class="jprio-item" onclick="sdmScrollToUnit('{{ $p['slug'] }}')">
+                        <span class="jprio-rank">{{ $i + 1 }}</span>
+                        <div class="jprio-body">
+                            <div class="jprio-top">
+                                <span class="jprio-jabatan">{{ $p['jabatan'] }}</span>
+                                <span class="jprio-kekurangan">-{{ $p['kekurangan'] }}</span>
+                            </div>
+                            <div class="jprio-track">
+                                <div class="jprio-track-fill" data-target-width="{{ $trackPct }}%" style="width:0%"></div>
+                            </div>
+                            <div class="jprio-meta">
+                                <span class="jprio-unit">{{ $p['unit'] }}</span>
+                                <span class="kat-badge {{ $katCls[$p['kategori']] ?? 'kat-lainnya' }}">{{ $p['kategori'] }}</span>
+                            </div>
+                        </div>
+                    </button>
+                    @empty
+                    <div class="rk-empty-state">Tidak ada jabatan yang perlu perhatian saat ini.</div>
+                    @endforelse
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -334,38 +367,46 @@
                             <span class="rk-kurang-tag">{{ $u['kurangCount'] }} formasi kurang</span>
                             @endif
                         </div>
-                        <div class="rk-table-wrap">
-                            <table class="rk-table">
-                                <thead>
-                                    <tr>
-                                        <th>Jabatan</th>
-                                        <th class="c">Formasi</th>
-                                        <th class="c">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="rk-tbody-{{ $i }}">
-                                    @foreach ($u['detail'] as $d)
-                                    @php
-                                        $ketCls = match ($d['keterangan']) {
-                                            'KURANG' => 'rk-badge-red',
-                                            'LEBIH'  => 'rk-badge-blue',
-                                            default  => 'rk-badge-green',
-                                        };
-                                        $rowPct = $d['kebutuhan'] > 0 ? min((int) round($d['jumlah'] / $d['kebutuhan'] * 100), 100) : 100;
-                                    @endphp
-                                    <tr class="rk-row" data-search="{{ strtolower($d['jabatan']) }}">
-                                        <td class="rk-td-unit">{{ $d['jabatan'] }}</td>
-                                        <td class="c">
-                                            <div class="rk-formasi">
-                                                <span>{{ $d['jumlah'] }}/{{ $d['kebutuhan'] }}</span>
-                                                <div class="mini-bar"><div class="mini-fill tone-accent" style="width:{{ $rowPct }}%"></div></div>
-                                            </div>
-                                        </td>
-                                        <td class="c"><span class="rk-badge {{ $ketCls }}">{{ $d['keterangan'] }}</span></td>
-                                    </tr>
+                        <div class="rk-detail-wrap" id="rk-detail-{{ $i }}">
+                            @php
+                                // Dikelompokin per status biar user gak perlu scan satu-satu di tabel padat —
+                                // yang KURANG ditaruh paling atas soalnya itu yang paling perlu diperhatikan.
+                                $grouped = collect($u['detail'])->groupBy('keterangan');
+                                $ketMeta = [
+                                    'KURANG' => ['label' => 'Kekurangan Formasi', 'badge' => 'rk-badge-red',   'tone' => 'red'],
+                                    'LEBIH'  => ['label' => 'Surplus Formasi',    'badge' => 'rk-badge-blue',  'tone' => 'blue'],
+                                    'CUKUP'  => ['label' => 'Formasi Cukup',      'badge' => 'rk-badge-green', 'tone' => 'green'],
+                                ];
+                                // Jaga-jaga kalau API kirim nilai keterangan lain di luar 3 di atas
+                                foreach ($grouped->keys() as $ketKey) {
+                                    if (!isset($ketMeta[$ketKey])) {
+                                        $ketMeta[$ketKey] = ['label' => ucfirst(strtolower($ketKey)), 'badge' => 'rk-badge-green', 'tone' => 'green'];
+                                    }
+                                }
+                            @endphp
+                            <div class="rk-detail-list">
+                                @foreach ($ketMeta as $ketKey => $meta)
+                                @php $groupRows = $grouped->get($ketKey, collect()); @endphp
+                                @if ($groupRows->isNotEmpty())
+                                <div class="rk-group">
+                                    <div class="rk-group-hd">
+                                        <span class="rk-group-label">{{ $meta['label'] }}</span>
+                                        <span class="rk-badge {{ $meta['badge'] }}">{{ $groupRows->count() }}</span>
+                                    </div>
+                                    @foreach ($groupRows as $d)
+                                    @php $rowPct = $d['kebutuhan'] > 0 ? min((int) round($d['jumlah'] / $d['kebutuhan'] * 100), 100) : 100; @endphp
+                                    <div class="rk-row-card tone-{{ $meta['tone'] }}" data-search="{{ strtolower($d['jabatan']) }}">
+                                        <div class="rk-row-main">
+                                            <span class="rk-row-jabatan">{{ $d['jabatan'] }}</span>
+                                            <span class="rk-row-formasi">{{ $d['jumlah'] }}<span>/{{ $d['kebutuhan'] }}</span></span>
+                                        </div>
+                                        <div class="mini-bar"><div class="mini-fill tone-{{ $meta['tone'] }}" style="width:{{ $rowPct }}%"></div></div>
+                                    </div>
                                     @endforeach
-                                </tbody>
-                            </table>
+                                </div>
+                                @endif
+                                @endforeach
+                            </div>
                             <div class="rk-empty" style="display:none">Tidak ada data yang cocok</div>
                         </div>
                     </div>
@@ -409,15 +450,20 @@ function sdmScrollToUnit(slug) {
 
 function rkFilter(i, q) {
     q = q.trim().toLowerCase();
-    const tbody = document.getElementById(`rk-tbody-${i}`);
-    const wrap  = tbody.closest('.rk-table-wrap');
-    const rows  = tbody.querySelectorAll('.rk-row');
+    const wrap = document.getElementById(`rk-detail-${i}`);
+    const rows = wrap.querySelectorAll('.rk-row-card');
     let visible = 0;
 
     rows.forEach(row => {
         const match = !q || row.dataset.search.includes(q);
         row.style.display = match ? '' : 'none';
         if (match) visible++;
+    });
+
+    // Grup (Kekurangan/Cukup/Surplus) disembunyiin kalau semua row di dalamnya kena filter out
+    wrap.querySelectorAll('.rk-group').forEach(group => {
+        const anyVisible = [...group.querySelectorAll('.rk-row-card')].some(r => r.style.display !== 'none');
+        group.style.display = anyVisible ? '' : 'none';
     });
 
     wrap.querySelector('.rk-empty').style.display = visible ? 'none' : 'block';
@@ -436,6 +482,81 @@ document.querySelectorAll('.rk-ring-fill').forEach((ring, idx) => {
         setTimeout(() => { ring.style.strokeDashoffset = target; }, 80 * idx);
     });
 });
+
+// Track ranking "Jabatan Perlu Perhatian" dari 0% ke nilai aslinya begitu kebaca browser
+// (pola sama kayak animasi rk-ring-fill di atas biar konsisten)
+document.querySelectorAll('.jprio-track-fill').forEach((el, idx) => {
+    const target = el.dataset.targetWidth;
+    if (sdmReduceMotion) {
+        el.style.width = target;
+        return;
+    }
+    requestAnimationFrame(() => {
+        setTimeout(() => { el.style.width = target; }, 60 * idx);
+    });
+});
+
+// ── CHART "UNIT PERLU PERHATIAN" (horizontal bar, gradient, klik → scroll ke unit) ─────────
+const prioUnitCanvas = document.getElementById('prioUnitChart');
+if (prioUnitCanvas) {
+    const prioUnitSlugs = {!! json_encode(collect($prioritasUnit ?? [])->pluck('slug')) !!};
+    new Chart(prioUnitCanvas, {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode(collect($prioritasUnit ?? [])->pluck('unit')) !!},
+            datasets: [{
+                data: {!! json_encode(collect($prioritasUnit ?? [])->pluck('kekurangan')) !!},
+                backgroundColor(ctx) {
+                    const { chartArea, ctx: c } = ctx.chart;
+                    if (!chartArea) return 'rgba(248,113,113,0.7)';
+                    const g = c.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
+                    g.addColorStop(0, 'rgba(248,113,113,0.55)');
+                    g.addColorStop(1, 'rgba(239,68,68,0.95)');
+                    return g;
+                },
+                borderRadius: 8,
+                borderSkipped: false,
+                barThickness: 16,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 900, easing: 'easeOutQuart' },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(148,163,184,0.08)' },
+                    ticks: { color: '#94a3b8', precision: 0, font: { size: 10.5, family: 'Plus Jakarta Sans' } }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: '#94a3b8', font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' } }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0a1628',
+                    titleColor: '#e2e8f0',
+                    bodyColor: '#94a3b8',
+                    borderColor: 'rgba(248,113,113,.3)',
+                    borderWidth: 1,
+                    callbacks: { label: ctx => ` ${ctx.parsed.x.toLocaleString('id-ID')} orang kurang` }
+                }
+            },
+            onClick(evt, elements) {
+                if (!elements.length) return;
+                const slug = prioUnitSlugs[elements[0].index];
+                if (slug) sdmScrollToUnit(slug);
+            },
+            onHover(evt, elements) {
+                evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+            }
+        }
+    });
+}
 
 // ── BAR CHART ─────────────────────────────────────────────────────────────
 new Chart(document.getElementById('statusBarChart'), {
