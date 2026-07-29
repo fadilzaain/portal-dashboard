@@ -166,87 +166,87 @@
     background: var(--sdm-border);
 }
 
-/* ── UNIT & JABATAN PERLU PERHATIAN (ringkasan prioritas) ── */
-.prio-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+/* ── UNIT & JABATAN PERLU PERHATIAN (2 card: chart batang + ranked list) ── */
+.prio-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: stretch;
 }
-.prio-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
+.mon-card {
     background: var(--sdm-surface);
     border: 1px solid var(--sdm-border);
-    border-left: 3px solid var(--accent-red);
-    border-radius: 12px;
-    padding: 10px 14px;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    color: inherit;
-    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-    animation: sdmFadeSlideUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
-}
-.prio-list .prio-item:nth-child(1) { animation-delay: 0.02s; }
-.prio-list .prio-item:nth-child(2) { animation-delay: 0.06s; }
-.prio-list .prio-item:nth-child(3) { animation-delay: 0.10s; }
-.prio-list .prio-item:nth-child(4) { animation-delay: 0.14s; }
-.prio-list .prio-item:nth-child(5) { animation-delay: 0.18s; }
-.prio-list .prio-item:nth-child(n+6) { animation-delay: 0.20s; }
-.prio-item:hover {
-    box-shadow: 0 8px 20px -10px rgba(15,23,42,0.18);
-    transform: translateY(-1px);
-    border-color: var(--accent-red);
-    background: var(--sdm-surface-alt);
-}
-.prio-item:hover .prio-arrow { transform: translateX(3px); color: var(--accent-red); }
-.prio-item:focus-visible { outline: 2px solid var(--accent-red); outline-offset: 2px; }
-
-.prio-badge {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 34px;
-    height: 26px;
-    padding: 0 8px;
-    border-radius: 8px;
-    background: rgba(248,113,113,0.14);
-    color: var(--accent-red);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.2px;
-}
-.prio-body {
-    flex: 1;
-    min-width: 0;
+    border-radius: 14px;
+    padding: 18px 20px;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    min-width: 0;
 }
-.prio-jabatan {
-    font-size: 12.5px;
-    font-weight: 700;
+.mon-card-hd { margin-bottom: 14px; }
+.mon-card-title {
+    display: block;
+    font-size: 12px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px;
     color: var(--sdm-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
-.prio-unit {
-    font-size: 10.5px;
-    color: var(--sdm-text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.mon-card-sub {
+    display: block;
+    font-size: 10.5px; color: var(--sdm-text-muted);
+    margin-top: 2px;
 }
-.prio-item .kat-badge { flex-shrink: 0; }
-.prio-arrow {
+
+/* Card 1: chart batang horizontal */
+.uprio-chart-wrap { position: relative; height: 260px; }
+
+/* Card 2: ranked list jabatan */
+.jprio-list {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 260px; overflow-y: auto; padding-right: 2px;
+}
+.jprio-list::-webkit-scrollbar { width: 4px; }
+.jprio-list::-webkit-scrollbar-track { background: transparent; }
+.jprio-list::-webkit-scrollbar-thumb { background: rgba(248,113,113,0.2); border-radius: 2px; }
+.jprio-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    width: 100%; text-align: left; font: inherit; color: inherit;
+    background: transparent; border: none; border-radius: 10px;
+    padding: 8px; cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+    animation: sdmFadeSlideUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+.jprio-list .jprio-item:nth-child(1) { animation-delay: 0.02s; }
+.jprio-list .jprio-item:nth-child(2) { animation-delay: 0.06s; }
+.jprio-list .jprio-item:nth-child(3) { animation-delay: 0.10s; }
+.jprio-list .jprio-item:nth-child(4) { animation-delay: 0.14s; }
+.jprio-list .jprio-item:nth-child(5) { animation-delay: 0.18s; }
+.jprio-list .jprio-item:nth-child(n+6) { animation-delay: 0.20s; }
+.jprio-item:hover { background: var(--sdm-surface-alt); transform: translateX(2px); }
+.jprio-item:focus-visible { outline: 2px solid var(--accent-red); outline-offset: 2px; }
+.jprio-rank {
     flex-shrink: 0;
-    color: var(--sdm-text-muted);
-    transition: transform 0.2s ease, color 0.2s ease;
+    display: flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(248,113,113,0.14); color: var(--accent-red);
+    font-size: 11px; font-weight: 800;
 }
+.jprio-body { flex: 1; min-width: 0; }
+.jprio-top {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    margin-bottom: 5px;
+}
+.jprio-jabatan {
+    font-size: 12px; font-weight: 700; color: var(--sdm-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.jprio-kekurangan { flex-shrink: 0; font-size: 11px; font-weight: 800; color: var(--accent-red); }
+.jprio-track { width: 100%; height: 5px; background: var(--sdm-track); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+.jprio-track-fill { height: 100%; border-radius: 99px; background: var(--accent-red); transition: width 0.6s ease; }
+.jprio-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.jprio-unit {
+    font-size: 10.5px; color: var(--sdm-text-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.jprio-meta .kat-badge { flex-shrink: 0; }
 
 /* ── BAR CHART PANEL ── */
 .sdm-panel {
@@ -623,29 +623,46 @@
     background: rgba(248,113,113,0.12); color: var(--accent-red);
 }
 
-.rk-table-wrap {
-    max-height: 260px; overflow-y: auto;
+.rk-detail-wrap {
+    max-height: 320px; overflow-y: auto;
     border-top: 1px solid var(--sdm-border);
-    margin: 0 16px 16px;
+    margin: 0 16px 16px; padding-top: 12px;
 }
-.rk-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
-.rk-table thead th {
-    position: sticky; top: 0; z-index: 1;
-    background: var(--sdm-surface-alt);
-    color: var(--sdm-text-muted);
-    font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
-    text-align: left; padding: 8px 8px;
-}
-.rk-table th.c, .rk-table td.c { text-align: center; }
-.rk-table td {
-    padding: 8px 8px; border-top: 1px solid var(--sdm-border);
-    color: var(--sdm-text); vertical-align: middle;
-}
-.rk-table tbody tr:hover td { background: var(--sdm-surface-alt); }
-.rk-td-unit { font-weight: 600; }
+.rk-detail-wrap::-webkit-scrollbar { width: 4px; }
+.rk-detail-wrap::-webkit-scrollbar-track { background: transparent; }
+.rk-detail-wrap::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.25); border-radius: 2px; }
 
-.rk-formasi { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 60px; }
-.rk-formasi span { font-size: 11px; font-weight: 700; }
+.rk-detail-list { display: flex; flex-direction: column; gap: 14px; }
+.rk-group { display: flex; flex-direction: column; gap: 6px; }
+.rk-group-hd {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2px;
+}
+.rk-group-label {
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--sdm-text-muted);
+}
+
+.rk-row-card {
+    background: var(--sdm-surface-alt);
+    border: 1px solid var(--sdm-border);
+    border-left: 3px solid var(--sdm-border);
+    border-radius: 10px;
+    padding: 8px 10px;
+}
+.rk-row-card.tone-red   { border-left-color: var(--accent-red); }
+.rk-row-card.tone-green { border-left-color: var(--accent-green); }
+.rk-row-card.tone-blue  { border-left-color: var(--accent-blue); }
+.rk-row-main {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin-bottom: 5px;
+}
+.rk-row-jabatan {
+    font-size: 12px; font-weight: 600; color: var(--sdm-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rk-row-formasi { flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: var(--sdm-text); }
+.rk-row-formasi span { font-weight: 500; color: var(--sdm-text-muted); }
 
 .rk-badge {
     display: inline-block; font-size: 9.5px; font-weight: 700;
@@ -717,6 +734,7 @@
 @media (max-width: 900px) {
     .sdm-bottom-row { grid-template-columns: 1fr; }
     .rk-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .prio-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
     .sdm-stat-grid { grid-template-columns: repeat(2, 1fr); }
@@ -730,9 +748,10 @@
     .rk-ring-wrap, .rk-ring { width: 52px; height: 52px; }
     .rk-ring-icon { width: 18px; height: 18px; }
     .rk-card-pct { font-size: 22px; }
-    .rk-table-wrap { margin: 0 10px 12px; }
+    .rk-detail-wrap { margin: 0 10px 12px; }
     .rk-detail-toolbar { padding: 0 10px 10px; flex-wrap: wrap; }
-    .prio-item { gap: 8px; padding: 9px 10px; }
-    .prio-item .kat-badge { display: none; }
-    .prio-jabatan { font-size: 12px; }
+    .mon-card { padding: 16px; }
+    .jprio-item { gap: 8px; padding: 7px; }
+    .jprio-meta .kat-badge { display: none; }
+    .jprio-jabatan { font-size: 11.5px; }
 }

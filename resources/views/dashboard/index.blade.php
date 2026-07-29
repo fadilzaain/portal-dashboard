@@ -376,7 +376,7 @@
     </div>
 
     <p class="text-xs text-center mt-8" style="color:#334155">
-        Dashboard Portal
+        Dashboard Integrasi
         <span style="color:#3b82f6;font-weight:600">RSUD JOMBANG</span>
         &nbsp;·&nbsp;
         Support by <span style="color:#10b981;font-weight:600">IT WORKS RSUD JOMBANG</span>
