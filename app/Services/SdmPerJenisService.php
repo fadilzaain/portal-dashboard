@@ -6,23 +6,29 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Ambil & olah data dari API "monitoring SDM per jenis" (per unit x per jabatan).
  * Response API berbentuk: { "success": true, "data": { "Poli Bedah": [ {...}, {...} ], "Poli Syaraf": [...] } }
- * Dipakai buat section "Rasio Kecukupan SDM per Kategori" biar sedetail SI-OSMAR (breakdown per unit).
+ * Dipakai buat section "Unit & Jabatan Perlu Perhatian" (ringkasan prioritas) dan
+ * "Detail Rasio Kecukupan SDM per Unit" (breakdown per unit x per jabatan, sedetail SI-OSMAR).
  */
 class SdmPerJenisService
 {
     private string $url;
     private int $timeout;
     private int $cacheTtl;
+    private bool $verifySsl;
 
     public function __construct()
     {
-        $this->url      = env('API_SDM_PERJENIS_URL', '');
-        $this->timeout  = (int) env('API_SDM_PERJENIS_TIMEOUT', 15);
-        $this->cacheTtl = (int) env('API_SDM_PERJENIS_CACHE_TTL', 3600);
+        $this->url       = env('API_SDM_PERJENIS_URL', '');
+        $this->timeout   = (int) env('API_SDM_PERJENIS_TIMEOUT', 15);
+        $this->cacheTtl  = (int) env('API_SDM_PERJENIS_CACHE_TTL', 3600);
+        // Default true (aman/verified). Set false di .env kalau server SI KAWAN
+        // pakai sertifikat self-signed/internal yang gak lolos verifikasi cURL error 60.
+        $this->verifySsl = (bool) env('API_SDM_PERJENIS_VERIFY_SSL', true);
     }
 
     // Data mentah sudah diflat jadi 1 baris per (unit, jabatan), sudah di-cache
@@ -41,7 +47,9 @@ class SdmPerJenisService
     private function fetchAndParse(): Collection
     {
         try {
-            $response = Http::timeout($this->timeout)->get($this->url);
+            $response = Http::timeout($this->timeout)
+                ->withOptions(['verify' => $this->verifySsl])
+                ->get($this->url);
 
             if (!$response->successful()) {
                 Log::warning('SdmPerJenisService: response tidak sukses', [
@@ -95,46 +103,74 @@ class SdmPerJenisService
     }
 
     /**
-     * Ringkasan per kategori besar buat card "Rasio Kecukupan SDM per Kategori",
-     * lengkap dengan detail per unit x per jabatan buat expand di UI.
+     * Ringkasan per unit buat section "Detail Rasio Kecukupan SDM per Unit"
+     * (di bawah, expand per unit buat lihat breakdown jabatannya).
+     * `slug` dipakai sebagai anchor id <div id="unit-{slug}"> biar bisa di-scroll-to
+     * dari card "Unit Perlu Perhatian" di atas.
      *
      * @return array<int, array{
-     *   kategori: string, kebutuhan: int, tersedia: int, pct: int, status: string,
-     *   unitCount: int, kurangCount: int, detail: array
+     *   unit: string, slug: string, kebutuhan: int, tersedia: int, pct: int,
+     *   status: string, kurangCount: int, detail: array
      * }>
      */
-    public function getRingkasanKategori(): array
+    public function getRingkasanPerUnit(): array
     {
-        $data      = $this->getData();
-        $ringkasan = [];
+        return $this->getData()
+            ->groupBy('unit')
+            ->map(function (Collection $rows, $unitKey) {
+                $unit      = (string) $unitKey; // array key numerik di-auto-cast PHP jadi int, dibalikin ke string
+                $kebutuhan = $rows->sum('kebutuhan');
+                $tersedia  = $rows->sum('jumlah');
+                $pct       = $kebutuhan > 0 ? (int) min(round($tersedia / $kebutuhan * 100), 100) : 100;
 
-        foreach (JabatanKategori::URUTAN as $kategori) {
-            $rows = $data->filter(fn($r) => $r->kategori === $kategori)->values();
-            if ($rows->isEmpty()) {
-                continue;
-            }
+                return [
+                    'unit'        => $unit,
+                    'slug'        => Str::slug($unit),
+                    'kebutuhan'   => $kebutuhan,
+                    'tersedia'    => $tersedia,
+                    'pct'         => $pct,
+                    'status'      => $pct >= 80 ? 'aman' : ($pct >= 60 ? 'waspada' : 'kritis'),
+                    'kurangCount' => $rows->filter(fn($r) => $r->keterangan === 'KURANG')->count(),
+                    'detail'      => $rows
+                        ->map(fn($r) => (array) $r)
+                        ->sortBy('jabatan')
+                        ->values()
+                        ->toArray(),
+                ];
+            })
+            ->sortBy('unit')
+            ->values()
+            ->toArray();
+    }
 
-            $kebutuhan = $rows->sum('kebutuhan');
-            $tersedia  = $rows->sum('jumlah');
-            $pct       = $kebutuhan > 0 ? (int) min(round($tersedia / $kebutuhan * 100), 100) : 100;
-
-            $ringkasan[] = [
-                'kategori'    => $kategori,
-                'kebutuhan'   => $kebutuhan,
-                'tersedia'    => $tersedia,
-                'pct'         => $pct,
-                'status'      => $pct >= 80 ? 'aman' : ($pct >= 60 ? 'waspada' : 'kritis'),
-                'unitCount'   => $rows->pluck('unit')->unique()->count(),
-                'kurangCount' => $rows->filter(fn($r) => $r->keterangan === 'KURANG')->count(),
-                'detail'      => $rows
-                    ->map(fn($r) => (array) $r)
-                    ->sortBy(fn($r) => $r['unit'] . '|' . $r['jabatan'])
-                    ->values()
-                    ->toArray(),
-            ];
-        }
-
-        return $ringkasan;
+    /**
+     * Jabatan-jabatan paling kritis lintas semua unit (kekurangan terbanyak),
+     * buat card ringkasan "Unit & Jabatan Perlu Perhatian" di atas panel Bezetting.
+     * `slug` unit-nya sama persis dengan yang dipakai getRingkasanPerUnit(),
+     * jadi klik item di sini bisa langsung scroll ke card unit yang bersangkutan.
+     *
+     * @return array<int, array{
+     *   unit: string, slug: string, jabatan: string, kategori: string,
+     *   kekurangan: int, kebutuhan: int, jumlah: int
+     * }>
+     */
+    public function getPrioritas(int $limit = 8): array
+    {
+        return $this->getData()
+            ->filter(fn($r) => $r->kekurangan > 0)
+            ->sortByDesc('kekurangan')
+            ->take($limit)
+            ->map(fn($r) => [
+                'unit'       => $r->unit,
+                'slug'       => Str::slug($r->unit),
+                'jabatan'    => $r->jabatan,
+                'kategori'   => $r->kategori,
+                'kekurangan' => $r->kekurangan,
+                'kebutuhan'  => $r->kebutuhan,
+                'jumlah'     => $r->jumlah,
+            ])
+            ->values()
+            ->toArray();
     }
 
     // Flush cache manual (misal dipanggil dari artisan command atau admin action)

@@ -54,7 +54,7 @@ class BezettingService
             }
 
             return collect($raw)->map(function ($row) {
-                // Handle variasi nama field (spasi, case)
+                // Handle variasi nama field 
                 $delta = (int) ($row['KURANG/ LEBIH'] ?? $row['KURANG/LEBIH'] ?? $row['KURANG_LEBIH'] ?? 0);
 
                 return (object) [
@@ -78,7 +78,7 @@ class BezettingService
     }
 
      //=================================
-     //Ringkasan untuk summary cards
+     //Ringkasan summary cards
      //================================
     public function getSummary(Collection $data): array
     {
@@ -99,7 +99,7 @@ class BezettingService
     }
 
      //===========================================
-     //Flush cache manual (misal dipanggil dari artisan command atau admin action)
+     //Flush cache manual 
      //===========================================
     public function flushCache(): void
     {

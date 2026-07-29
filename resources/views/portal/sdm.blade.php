@@ -101,108 +101,30 @@
     </div>
 
 
-    {{-- ── MONITORING HARI INI ── --}}
+    {{-- ── UNIT & JABATAN PERLU PERHATIAN (ringkasan prioritas, sumber: API SDM Per Jenis) ── --}}
     <div class="mon-section">
-
-        {{-- 2. Rasio Kecukupan SDM per Kategori (detail per unit x per jabatan, sumber: API SDM Per Jenis) --}}
-        <div class="mon-section-title">Rasio Kecukupan SDM per Kategori</div>
-        <div class="rk-grid" style="margin-bottom:20px">
-            @forelse ($rasioKategoriDetail as $i => $rk)
+        <div class="mon-section-title">Unit &amp; Jabatan Perlu Perhatian</div>
+        <div class="prio-list">
             @php
-                $rkIcon = match ($rk['kategori']) {
-                    'Dokter'        => '<path d="M8 3v9a4 4 0 0 0 8 0V3"/><path d="M4 3h4"/><path d="M16 3h4"/><circle cx="20" cy="10" r="2"/>',
-                    'Perawat'       => '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
-                    'Farmasi'       => '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
-                    'Medis Lainnya' => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
-                    default         => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-                };
-                $rkRadius = 26;
-                $rkRing   = 2 * M_PI * $rkRadius;
-                $rkOffset = $rkRing - ($rk['pct'] / 100 * $rkRing);
+                // Warna badge kategori disamain sama yang dipakai tabel Bezetting di bawah biar konsisten
+                $katCls = ['Dokter' => 'kat-dokter', 'Perawat' => 'kat-perawat', 'Farmasi' => 'kat-farmasi', 'Medis Lainnya' => 'kat-medis'];
             @endphp
-            <div class="rk-card status-{{ $rk['status'] }}" data-rk="{{ $i }}">
-                <button type="button" class="rk-card-head" onclick="rkToggle({{ $i }})" aria-expanded="false">
-                    <div class="rk-ring-wrap">
-                        <svg class="rk-ring" viewBox="0 0 64 64">
-                            <circle class="rk-ring-track" cx="32" cy="32" r="{{ $rkRadius }}"></circle>
-                            <circle class="rk-ring-fill" cx="32" cy="32" r="{{ $rkRadius }}"
-                                style="stroke-dasharray:{{ $rkRing }};stroke-dashoffset:{{ $rkRing }}"
-                                data-target-offset="{{ $rkOffset }}"></circle>
-                        </svg>
-                        <svg class="rk-ring-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            {!! $rkIcon !!}
-                        </svg>
-                    </div>
-                    <div class="rk-card-body">
-                        <div class="rk-card-top">
-                            <span class="rk-card-name">{{ $rk['kategori'] }}</span>
-                            <span class="rk-status-pill">{{ ucfirst($rk['status']) }}</span>
-                        </div>
-                        <div class="rk-card-pct">{{ $rk['pct'] }}<span>%</span></div>
-                        <div class="rk-card-sub">{{ number_format($rk['tersedia']) }} / {{ number_format($rk['kebutuhan']) }} orang &middot; {{ $rk['unitCount'] }} unit</div>
-                    </div>
-                    <svg class="rk-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </button>
-
-                <div class="rk-expand">
-                    <div class="rk-expand-inner">
-                        <div class="rk-detail-toolbar">
-                            <div class="rk-search-wrap">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
-                                <input type="text" class="rk-search" placeholder="Cari unit atau jabatan..." oninput="rkFilter({{ $i }}, this.value)">
-                            </div>
-                            @if ($rk['kurangCount'] > 0)
-                            <span class="rk-kurang-tag">{{ $rk['kurangCount'] }} formasi kurang</span>
-                            @endif
-                        </div>
-                        <div class="rk-table-wrap">
-                            <table class="rk-table">
-                                <thead>
-                                    <tr>
-                                        <th>Unit</th>
-                                        <th>Jabatan</th>
-                                        <th class="c">Formasi</th>
-                                        <th class="c">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="rk-tbody-{{ $i }}">
-                                    @foreach ($rk['detail'] as $d)
-                                    @php
-                                        $ketCls = match ($d['keterangan']) {
-                                            'KURANG' => 'rk-badge-red',
-                                            'LEBIH'  => 'rk-badge-blue',
-                                            default  => 'rk-badge-green',
-                                        };
-                                        $rowPct = $d['kebutuhan'] > 0 ? min((int) round($d['jumlah'] / $d['kebutuhan'] * 100), 100) : 100;
-                                    @endphp
-                                    <tr class="rk-row" data-search="{{ strtolower($d['unit'] . ' ' . $d['jabatan']) }}">
-                                        <td class="rk-td-unit">{{ $d['unit'] }}</td>
-                                        <td>{{ $d['jabatan'] }}</td>
-                                        <td class="c">
-                                            <div class="rk-formasi">
-                                                <span>{{ $d['jumlah'] }}/{{ $d['kebutuhan'] }}</span>
-                                                <div class="mini-bar"><div class="mini-fill tone-accent" style="width:{{ $rowPct }}%"></div></div>
-                                            </div>
-                                        </td>
-                                        <td class="c"><span class="rk-badge {{ $ketCls }}">{{ $d['keterangan'] }}</span></td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                            <div class="rk-empty" style="display:none">Tidak ada data yang cocok</div>
-                        </div>
-                    </div>
+            @forelse ($prioritasSdm as $p)
+            <button type="button" class="prio-item" onclick="sdmScrollToUnit('{{ $p['slug'] }}')">
+                <span class="prio-badge">-{{ $p['kekurangan'] }}</span>
+                <div class="prio-body">
+                    <span class="prio-jabatan">{{ $p['jabatan'] }}</span>
+                    <span class="prio-unit">{{ $p['unit'] }}</span>
                 </div>
-            </div>
+                <span class="kat-badge {{ $katCls[$p['kategori']] ?? 'kat-lainnya' }}">{{ $p['kategori'] }}</span>
+                <svg class="prio-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 6 15 12 9 18"></polyline>
+                </svg>
+            </button>
             @empty
-            <div class="rk-empty-state">Data rasio kecukupan per kategori belum tersedia.</div>
+            <div class="rk-empty-state">Tidak ada kekurangan formasi yang perlu perhatian saat ini.</div>
             @endforelse
         </div>
-
     </div>
 
     {{-- BEZETTING FULL WIDTH --}}
@@ -361,18 +283,128 @@
         </div>
 
     </div>
+
+    {{-- ── DETAIL RASIO KECUKUPAN SDM PER UNIT (paling bawah, sumber: API SDM Per Jenis) ── --}}
+    <div class="mon-section" style="margin-top:20px">
+        <div class="mon-section-title">Detail Rasio Kecukupan SDM per Unit</div>
+        <div class="rk-grid" id="sdm-unit-grid">
+            @forelse ($unitDetail as $i => $u)
+            @php
+                $rkRadius = 26;
+                $rkRing   = 2 * M_PI * $rkRadius;
+                $rkOffset = $rkRing - ($u['pct'] / 100 * $rkRing);
+                $jumlahJabatan = count($u['detail']);
+            @endphp
+            <div class="rk-card status-{{ $u['status'] }}" data-rk="{{ $i }}" id="unit-{{ $u['slug'] }}">
+                <button type="button" class="rk-card-head" onclick="rkToggle({{ $i }})" aria-expanded="false">
+                    <div class="rk-ring-wrap">
+                        <svg class="rk-ring" viewBox="0 0 64 64">
+                            <circle class="rk-ring-track" cx="32" cy="32" r="{{ $rkRadius }}"></circle>
+                            <circle class="rk-ring-fill" cx="32" cy="32" r="{{ $rkRadius }}"
+                                style="stroke-dasharray:{{ $rkRing }};stroke-dashoffset:{{ $rkRing }}"
+                                data-target-offset="{{ $rkOffset }}"></circle>
+                        </svg>
+                        <svg class="rk-ring-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/>
+                        </svg>
+                    </div>
+                    <div class="rk-card-body">
+                        <div class="rk-card-top">
+                            <span class="rk-card-name">{{ $u['unit'] }}</span>
+                            <span class="rk-status-pill">{{ ucfirst($u['status']) }}</span>
+                        </div>
+                        <div class="rk-card-pct">{{ $u['pct'] }}<span>%</span></div>
+                        <div class="rk-card-sub">{{ number_format($u['tersedia']) }} / {{ number_format($u['kebutuhan']) }} orang &middot; {{ $jumlahJabatan }} jabatan</div>
+                    </div>
+                    <svg class="rk-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="rk-expand">
+                    <div class="rk-expand-inner">
+                        <div class="rk-detail-toolbar">
+                            <div class="rk-search-wrap">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" class="rk-search" placeholder="Cari jabatan..." oninput="rkFilter({{ $i }}, this.value)">
+                            </div>
+                            @if ($u['kurangCount'] > 0)
+                            <span class="rk-kurang-tag">{{ $u['kurangCount'] }} formasi kurang</span>
+                            @endif
+                        </div>
+                        <div class="rk-table-wrap">
+                            <table class="rk-table">
+                                <thead>
+                                    <tr>
+                                        <th>Jabatan</th>
+                                        <th class="c">Formasi</th>
+                                        <th class="c">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rk-tbody-{{ $i }}">
+                                    @foreach ($u['detail'] as $d)
+                                    @php
+                                        $ketCls = match ($d['keterangan']) {
+                                            'KURANG' => 'rk-badge-red',
+                                            'LEBIH'  => 'rk-badge-blue',
+                                            default  => 'rk-badge-green',
+                                        };
+                                        $rowPct = $d['kebutuhan'] > 0 ? min((int) round($d['jumlah'] / $d['kebutuhan'] * 100), 100) : 100;
+                                    @endphp
+                                    <tr class="rk-row" data-search="{{ strtolower($d['jabatan']) }}">
+                                        <td class="rk-td-unit">{{ $d['jabatan'] }}</td>
+                                        <td class="c">
+                                            <div class="rk-formasi">
+                                                <span>{{ $d['jumlah'] }}/{{ $d['kebutuhan'] }}</span>
+                                                <div class="mini-bar"><div class="mini-fill tone-accent" style="width:{{ $rowPct }}%"></div></div>
+                                            </div>
+                                        </td>
+                                        <td class="c"><span class="rk-badge {{ $ketCls }}">{{ $d['keterangan'] }}</span></td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <div class="rk-empty" style="display:none">Tidak ada data yang cocok</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="rk-empty-state">Data detail per unit belum tersedia.</div>
+            @endforelse
+        </div>
+    </div>
+
 </div>
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// ── RASIO KECUKUPAN PER KATEGORI: expand/collapse + search + animasi ring ──
+// ── RK CARD (dipakai bareng oleh section "Detail per Unit"): expand/collapse + search + animasi ring ──
 function rkToggle(i) {
     const card = document.querySelector(`.rk-card[data-rk="${i}"]`);
     const btn  = card.querySelector('.rk-card-head');
     const open = card.classList.toggle('open');
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+// Dipanggil dari card "Unit & Jabatan Perlu Perhatian" di atas: buka card unit
+// yang dituju (kalau lagi ketutup) lalu smooth-scroll ke situ + kasih highlight sebentar
+function sdmScrollToUnit(slug) {
+    const card = document.getElementById(`unit-${slug}`);
+    if (!card) return;
+
+    if (!card.classList.contains('open')) {
+        rkToggle(card.dataset.rk);
+    }
+
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    card.classList.add('rk-highlight');
+    setTimeout(() => card.classList.remove('rk-highlight'), 1600);
 }
 
 function rkFilter(i, q) {

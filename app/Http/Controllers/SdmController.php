@@ -28,7 +28,8 @@ class SdmController extends Controller
         $bezSummary = $this->bezetting->getSummary($bezData);
 
         // ── SDM Per Jenis (per unit x per jabatan) ────────────
-        $rasioKategoriDetail = $this->sdmPerJenis->getRingkasanKategori();
+        $unitDetail   = $this->sdmPerJenis->getRingkasanPerUnit();
+        $prioritasSdm = $this->sdmPerJenis->getPrioritas();
 
         // ── View ─────────────────────────────────────────────
         return view('portal.sdm', [
@@ -67,8 +68,9 @@ class SdmController extends Controller
             // Bezetting
             'bezSummary'   => $bezSummary,
 
-            // Rasio Kecukupan SDM per Kategori (detail per unit x per jabatan)
-            'rasioKategoriDetail' => $rasioKategoriDetail,
+            // Detail per unit (bawah) + prioritas jabatan paling kekurangan (atas Bezetting)
+            'unitDetail'   => $unitDetail,
+            'prioritasSdm' => $prioritasSdm,
         ]);
     }
 }
