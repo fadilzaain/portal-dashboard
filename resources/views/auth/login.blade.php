@@ -66,7 +66,7 @@
             </div>
 
             <button type="submit"
-                class="w-full text-white text-sm font-medium py-2.5 rounded-xl transition
+                class="w-full text-white text-sm font-medium py-2.5 rounded-xl transition auth-shine
                        bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400
                        shadow-lg shadow-teal-500/25 hover:shadow-teal-400/35 hover:-translate-y-0.5">
                 Masuk
