@@ -57,8 +57,6 @@
     padding: 4px 0;
 }
 
-/* Header/date bar sekarang pakai komponen <x-portal.navbar> bareng
-   halaman portal lain, CSS-nya di resources/css/portal/portal-navbar.css */
 /* ── STAT GRID ── */
 /* Satu grid buat 10 card (5 kolom x 2 baris otomatis wrap),
    gak perlu 2 class grid terpisah kayak sebelumnya (.sdm-stat-grid-2 dihapus) */

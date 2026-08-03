@@ -1,0 +1,174 @@
+/* ============================================================
+   AUTH THEME
+   ============================================================ */
+
+:root {
+    /* Panel kiri — gradasi biru premium, lebih dalam & kaya */
+    --auth-blue-950:    #05081c;
+    --auth-blue-900:    #0b1638;
+    --auth-blue-800:    #12275f;
+    --auth-blue-600:    #1d4ed8;
+    --auth-blue-500:    #2f6bff;
+    --auth-indigo-600:  #4338ca;
+    --auth-cyan-400:    #22d3ee;
+
+    /* Panel kanan — putih lembut, bukan putih terik */
+    --auth-offwhite:    #f7f9fc;
+    --auth-card-bg:     #ffffff;
+    --auth-card-border: #e8edf4;
+
+    /* Accent tetap teal, konsisten sama dashboard */
+    --auth-teal:        #14b8a6;
+    --auth-teal-glow:   rgba(20, 184, 166, .35);
+}
+
+html, body { height: 100%; }
+body { font-family: 'Sora', sans-serif; }
+
+/* Font serif elegan — khusus wordmark judul di panel kiri, biar berasa "premium editorial" */
+.auth-wordmark {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* ── Wrapper two-tone: fit 1 layar, gak ada scroll di level halaman ── */
+.auth-split {
+    height: 100vh;
+    height: 100dvh; /* viewport dinamis, aman dari address bar HP */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+@media (min-width: 1024px) {
+    .auth-split { flex-direction: row; }
+}
+
+/* ── Panel kiri: gradasi biru premium + blob + spotlight + vignette ── */
+.auth-left {
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    background:
+        radial-gradient(ellipse 70% 55% at 12% 8%, rgba(47,107,255,.35), transparent 60%),
+        linear-gradient(160deg, var(--auth-blue-950) 0%, var(--auth-blue-900) 30%, var(--auth-blue-800) 58%, var(--auth-blue-600) 82%, var(--auth-indigo-600) 100%);
+}
+/* vignette halus di tepi biar berasa "dalam", bukan flat */
+.auth-left::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 120px 20px rgba(0,0,0,.35);
+    pointer-events: none;
+}
+
+/* Mobile: compact — cuma logo bar, biar form kanan langsung keliatan tanpa scroll */
+.auth-left--compact {
+    padding: .9rem 1.25rem;
+    min-height: 0;
+}
+
+/* Desktop (lg+): full — logo + wordmark + tagline singkat */
+@media (min-width: 1024px) {
+    .auth-left--full {
+        width: 44%;
+        padding: 3rem;
+        height: 100%;
+    }
+}
+
+.auth-left::before {
+    /* grid halus biar ga polos */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse 90% 70% at 25% 25%, black 40%, transparent 100%);
+}
+.auth-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .5;
+    will-change: transform;
+}
+.auth-blob-1 {
+    width: 380px; height: 380px;
+    top: -10%; right: -14%;
+    background: radial-gradient(circle, rgba(34,211,238,.5), transparent 70%);
+    animation: auth-float-1 18s ease-in-out infinite;
+}
+.auth-blob-2 {
+    width: 340px; height: 340px;
+    bottom: -12%; left: -10%;
+    background: radial-gradient(circle, rgba(67,56,202,.55), transparent 70%);
+    animation: auth-float-2 22s ease-in-out infinite;
+}
+.auth-blob-3 {
+    width: 260px; height: 260px;
+    top: 42%; left: 18%;
+    background: radial-gradient(circle, var(--auth-teal-glow), transparent 70%);
+    animation: auth-float-3 26s ease-in-out infinite;
+}
+/* Blob & vignette diredam di mode compact (mobile) biar logo bar tetap bersih dibaca */
+.auth-left--compact .auth-blob { opacity: .25; filter: blur(60px); }
+.auth-left--compact::after { box-shadow: none; }
+
+@keyframes auth-float-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(-40px, 30px) scale(1.08); }
+}
+@keyframes auth-float-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(35px, -25px) scale(1.05); }
+}
+@keyframes auth-float-3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(25px, 35px) scale(1.1); }
+}
+
+/* Konten di atas blob/vignette */
+.auth-left-content { position: relative; z-index: 1; }
+
+/* Credit line tipis di bawah panel kiri (desktop only) */
+.auth-left-footer {
+    font-size: .7rem;
+    color: rgba(255,255,255,.3);
+}
+
+/* ── Panel kanan: putih lembut untuk form, fit tanpa scroll ── */
+.auth-right {
+    flex: 1;
+    min-height: 0;
+    background: var(--auth-offwhite);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1.5rem;
+    overflow-y: auto; /* jaga-jaga kalau layar sangat pendek, form tetap bisa diakses */
+}
+
+.auth-card {
+    background: var(--auth-card-bg);
+    border: 1px solid var(--auth-card-border);
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 40px -20px rgba(15, 23, 42, .12);
+}
+
+/* ── Utility animasi umum untuk konten auth ── */
+.auth-fade-up {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: auth-fade-up .6s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes auth-fade-up {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Matikan animasi buat user yang minta reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .auth-blob, .auth-fade-up { animation: none !important; opacity: 1 !important; transform: none !important; }
+}

@@ -50,34 +50,4 @@ class AuthController extends Controller
 
         return redirect()->route('login');
     }
-
-    /**
- * Tampilkan halaman register.
- */
-public function showRegister()
-{
-    return view('auth.register');
-}
-
-/**
- * Proses form register.
- */
-public function register(Request $request)
-{
-    $request->validate([
-        'name'                  => ['required', 'string', 'max:255'],
-        'email'                 => ['required', 'email', 'unique:users,email'],
-        'password'              => ['required', 'min:8', 'confirmed'],
-    ]);
-
-    $user = \App\Models\User::create([
-        'name'     => $request->name,
-        'email'    => $request->email,
-        'password' => \Illuminate\Support\Facades\Hash::make($request->password),
-    ]);
-
-    Auth::login($user);
-
-    return redirect()->route('dashboard');
-}
 }

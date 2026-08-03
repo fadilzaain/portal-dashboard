@@ -22,7 +22,8 @@ export default defineConfig({
                 'resources/js/portal/igd-capacity-tabs.js',
                 'resources/css/portal/igd-capacity-tabs.css',
                 'resources/css/portal/portal-navbar.css',
-                'resources/css/portal/sdm.css'
+                'resources/css/portal/sdm.css',
+                'resources/css/portal/auth.css'
             ],
             refresh: true,
         }),

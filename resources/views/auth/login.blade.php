@@ -3,99 +3,93 @@
 @section('title', 'Login — Portal Dashboard')
 
 @section('content')
-<div class="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-  <div class="w-full max-w-sm">
+<div class="w-full max-w-sm">
 
-    {{-- Logo --}}
-    <div class="text-center mb-7">
-      <div class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
-        <img src="{{ asset('images/logo-rsud-jombang.png') }}" alt="Logo" class="w-8 h-8 object-contain" />
-      </div>
-      <h1 class="text-xl font-semibold text-gray-900">Selamat Datang</h1>
-      <p class="text-sm text-gray-500 mt-1">Dashboard integrasi RSUD Jombang</p>
+    {{-- Judul --}}
+    <div class="mb-5 auth-fade-up" style="animation-delay: .1s">
+        <h1 class="text-xl font-semibold text-slate-900 tracking-tight">Selamat Datang</h1>
+        <p class="text-sm text-slate-500 mt-1">Masuk Dengan Akun Yang Sudah Terdaftar</p>
     </div>
 
-    {{-- Card --}}
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-7">
-      <form method="POST" action="{{ route('login.post') }}">
-        @csrf
+    {{-- Card form --}}
+    <div class="auth-card p-6 auth-fade-up" style="animation-delay: .18s">
+        <form method="POST" action="{{ route('login.post') }}" novalidate>
+            @csrf
 
-        {{-- Email --}}
-        <div class="mb-4">
-          <label class="block text-sm text-gray-600 mb-1.5">Email</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <x-icon name="envelope" class="w-4 h-4" />
-            </span>
-            <input type="email" name="email" value="{{ old('email') }}" required
-              placeholder="kamu@email.com"
-              class="w-full pl-9 pr-3 py-2.5 text-sm border rounded-lg outline-none transition
-                     {{ $errors->has('email') ? 'border-red-400 bg-red-50' : 'border-gray-300' }}
-                     focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
-          </div>
-          @error('email') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-        </div>
+            {{-- Email --}}
+            <div class="mb-3.5">
+                <label for="email" class="block text-sm text-slate-600 mb-1.5">Email</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <x-icon name="envelope" class="w-4 h-4" />
+                    </span>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required
+                        autocomplete="username" placeholder="kamu@email.com"
+                        class="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl outline-none transition text-slate-900 placeholder:text-slate-400
+                               bg-slate-50 border
+                               {{ $errors->has('email') ? 'border-red-300 bg-red-50' : 'border-slate-200' }}
+                               focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:bg-white" />
+                </div>
+                @error('email') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+            </div>
 
-        {{-- Password --}}
-        <div class="mb-1">
-          <label class="block text-sm text-gray-600 mb-1.5">Password</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <x-icon name="lock" class="w-4 h-4" />
-            </span>
-            <input type="password" id="password" name="password" required
-              placeholder="••••••••"
-              class="w-full pl-9 pr-10 py-2.5 text-sm border rounded-lg outline-none transition
-                     {{ $errors->has('password') ? 'border-red-400 bg-red-50' : 'border-gray-300' }}
-                     focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
-            <button type="button" onclick="togglePw()"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              <x-icon name="eye" id="eye-icon" class="w-4 h-4" />
+            {{-- Password --}}
+            <div class="mb-2">
+                <label for="password" class="block text-sm text-slate-600 mb-1.5">Password</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <x-icon name="lock" class="w-4 h-4" />
+                    </span>
+                    <input type="password" id="password" name="password" required
+                        autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                        class="w-full pl-9 pr-10 py-2.5 text-sm rounded-xl outline-none transition text-slate-900 placeholder:text-slate-400
+                               bg-slate-50 border
+                               {{ $errors->has('password') ? 'border-red-300 bg-red-50' : 'border-slate-200' }}
+                               focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:bg-white" />
+                    <button type="button" onclick="togglePw()" aria-label="Tampilkan password"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                        <x-icon name="eye" id="eye-icon" class="w-4 h-4" />
+                    </button>
+                </div>
+                @error('password') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="text-right mb-4">
+                <a href="#" class="text-xs text-teal-600 hover:text-teal-700 hover:underline transition">Lupa password?</a>
+            </div>
+
+            {{-- Ingat saya --}}
+            <div class="flex items-center mb-5">
+                <input type="checkbox" id="remember" name="remember"
+                    class="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 focus:ring-offset-0" />
+                <label for="remember" class="ml-2 text-sm text-slate-600">Ingat saya</label>
+            </div>
+
+            <button type="submit"
+                class="w-full text-white text-sm font-medium py-2.5 rounded-xl transition
+                       bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400
+                       shadow-lg shadow-teal-500/25 hover:shadow-teal-400/35 hover:-translate-y-0.5">
+                Masuk
             </button>
-          </div>
-          @error('password') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-        </div>
-
-        <div class="text-right mb-5">
-          <a href="#" class="text-xs text-indigo-500 hover:underline">Lupa password?</a>
-        </div>
-
-        {{-- Remember --}}
-        <div class="flex items-center mb-5">
-          <input type="checkbox" id="remember" name="remember"
-            class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-          <label for="remember" class="ml-2 text-sm text-gray-600">Ingat saya</label>
-        </div>
-
-        <button type="submit"
-          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2.5 rounded-lg transition">
-          Masuk
-        </button>
-
-        <div class="flex items-center gap-3 my-5">
-          <div class="flex-1 h-px bg-gray-200"></div>
-          <span class="text-xs text-gray-400">atau</span>
-          <div class="flex-1 h-px bg-gray-200"></div>
-        </div>
-
-        <p class="text-center text-sm text-gray-500">
-          Belum punya akun?
-          <a href="/register" class="text-indigo-600 hover:underline font-medium">Daftar sekarang</a>
-        </p>
-
-      </form>
+        </form>
     </div>
-  </div>
+
+    {{-- Catatan sistem private — pengganti link registrasi --}}
+    <div class="flex items-center justify-center gap-1.5 mt-5 text-xs text-slate-400 auth-fade-up" style="animation-delay: .28s">
+        <x-icon name="shield-check" class="w-3.5 h-3.5 text-slate-400" />
+        <span>Akses akun dikelola oleh SIMRS RSUD Jombang</span>
+    </div>
+
 </div>
 
 <script>
 function togglePw() {
-  const inp = document.getElementById('password');
-  const isText = inp.type === 'text';
-  inp.type = isText ? 'password' : 'text';
-  document.getElementById('eye-icon').innerHTML = isText
-    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
-    : '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    const inp = document.getElementById('password');
+    const isText = inp.type === 'text';
+    inp.type = isText ? 'password' : 'text';
+    document.getElementById('eye-icon').innerHTML = isText
+        ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+        : '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
 }
 </script>
 @endsection
