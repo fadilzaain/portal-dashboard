@@ -47,6 +47,7 @@
     padding: 0 1.5rem 1.5rem;
     margin-top: -14px;
     color: var(--sdm-text);
+    overflow-x: hidden;
 }
 
 .sdm-wrap .pp-navbar {
@@ -58,8 +59,6 @@
 }
 
 /* ── STAT GRID ── */
-/* Satu grid buat 10 card (5 kolom x 2 baris otomatis wrap),
-   gak perlu 2 class grid terpisah kayak sebelumnya (.sdm-stat-grid-2 dihapus) */
 .sdm-stat-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -83,7 +82,7 @@
     transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
     animation: sdm-fade-up 0.4s ease both;
 }
-/* Stagger masuknya tiap card biar kesannya smooth, bukan muncul bareng */
+/* Stagger masuknya tiap card */
 .sdm-stat-grid .sdm-sc:nth-child(1)  { animation-delay: 0.00s; }
 .sdm-stat-grid .sdm-sc:nth-child(2)  { animation-delay: 0.03s; }
 .sdm-stat-grid .sdm-sc:nth-child(3)  { animation-delay: 0.06s; }
@@ -164,7 +163,7 @@
     background: var(--sdm-border);
 }
 
-/* ── UNIT & JABATAN PERLU PERHATIAN (2 card: chart batang + ranked list) ── */
+/* ── UNIT & JABATAN PERLU PERHATIAN ── */
 .prio-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -304,7 +303,7 @@
 .bez-sc-val.green { color: var(--accent-green); }
 .bez-sc-val.amber { color: var(--accent-amber); }
 
-/* Pill tabs + sliding indicator (gaya konsisten sama tab IGD) */
+/* Pill tabs + sliding indicator */
 .bez-tabs {
     position: relative;
     display: inline-flex; align-items: center; gap: 2px;
@@ -389,7 +388,7 @@
 }
 
 /* Table */
-.bez-table-wrap { max-height: 340px; overflow-y: auto; position: relative; }
+.bez-table-wrap { max-height: 340px; overflow-y: auto; overflow-x: auto; position: relative; -webkit-overflow-scrolling: touch; }
 .bez-table-wrap::-webkit-scrollbar { width: 4px; }
 .bez-table-wrap::-webkit-scrollbar-track { background: transparent; }
 .bez-table-wrap::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.2); border-radius: 2px; }
@@ -485,9 +484,9 @@
                 box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   RASIO KECUKUPAN SDM PER KATEGORI — premium card + ring progress + expand
-   ══════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════
+   RASIO KECUKUPAN SDM PER KATEGORI 
+   ══════════════════════════════════════ */
 .rk-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -589,7 +588,7 @@
 }
 .rk-card.open .rk-chevron { transform: rotate(180deg); color: var(--rk-accent, var(--accent-blue)); }
 
-/* Expand pakai grid-template-rows trick biar animasi ke "auto height" mulus tanpa JS hitung tinggi */
+/* Expand pakai grid-template-rows trick biar smooth */
 .rk-expand {
     display: grid;
     grid-template-rows: 0fr;
@@ -630,7 +629,7 @@
 .rk-table-wrap .bez-table { table-layout: auto; }
 .rk-row-hidden { display: none !important; }
 
-/* ── TOOLBAR unit: search + filter status (Semua/Kritis/Waspada/Aman), reuse .bez-search-input-wrap/.bez-tabs ── */
+/* ── TOOLBAR unit: search + filter status (Semua/Kritis/Waspada/Aman) ── */
 .rk-toolbar {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     margin-bottom: 14px;
@@ -666,7 +665,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   ANIMASI MASUK (staggered fade+slide) — stat card, rasio kategori, ringkasan bezetting
+   ANIMASI MASUK stat card, rasio kategori, ringkasan bezetting
    ══════════════════════════════════════════════════════════════════════ */
 @keyframes sdmFadeSlideUp {
     from { opacity: 0; transform: translateY(10px); }
@@ -698,7 +697,7 @@
 .bez-summary .bez-sc:nth-child(4) { animation-delay: 0.14s; }
 .bez-summary .bez-sc:nth-child(5) { animation-delay: 0.18s; }
 
-/* Hormatin preferensi user yang matiin animasi (aksesibilitas) */
+/* matiin animasi (aksesibilitas) */
 @media (prefers-reduced-motion: reduce) {
     .sdm-sc, .rk-card, .bez-sc { animation: none; }
     .rk-ring-fill, .rk-expand, .rk-chevron, .bez-tab-indicator,
@@ -738,4 +737,25 @@
     .jprio-item { gap: 8px; padding: 7px; }
     .jprio-meta .kat-badge { display: none; }
     .jprio-jabatan { font-size: 11.5px; }
+
+    /* Shift Hari Ini jadi stack vertikal biar tiap bagian dapet ruang penuh */
+    .shift-item { flex-direction: column; }
+    .shift-side {
+        flex: none; width: 100%; flex-direction: row; align-items: center;
+        justify-content: space-between; padding: 8px 14px;
+    }
+    .shift-name { margin-bottom: 0; }
+    .shift-detail { grid-template-columns: 1fr; padding: 10px 14px; }
+    .shift-total-bubble {
+        flex: none; width: 100%; flex-direction: row;
+        justify-content: center; gap: 6px; padding: 8px;
+    }
+    .stb-val { font-size: 16px; }
+    .stb-label { margin-top: 0; }
+
+    /* Tabel Bezetting */
+    .bez-table { min-width: 460px; table-layout: auto; }
+
+    /* Kurangin padding halaman biar konten dapet ruang lebih lega di hp */
+    .sdm-wrap { padding: 0 12px 12px; }
 }

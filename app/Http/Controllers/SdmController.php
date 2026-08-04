@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Services\BezettingService;
-use App\Services\SdmPerJenisService;
-use App\Services\SikawanService;
+use App\Services\Sdm\BezettingService;
+use App\Services\Sdm\SdmPerJenisService;
+use App\Services\Sdm\SikawanService;
 
 class SdmController extends Controller
 {

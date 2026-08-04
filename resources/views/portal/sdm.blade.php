@@ -464,8 +464,7 @@
 
 @push('scripts')
 @php
-    // Data yang dibutuhin sdm.js, dikumpulin di satu object biar gak
-    // nyebar json_encode() di banyak tempat
+    // Data yang dibutuhin sdm.js, dikumpulin di satu object biar gak nyebar di banyak tempat
     $sdmJsData = [
         'prioritasUnit' => $prioritasUnit,
         'statusLabels'  => $statusLabels,

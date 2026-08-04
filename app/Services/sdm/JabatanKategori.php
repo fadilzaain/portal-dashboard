@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Sdm;
 
 /**
  * Resolusi kategori besar (Dokter/Perawat/Farmasi/Medis Lainnya/Lainnya) dari nama jabatan.
- * Dipakai bareng oleh BezettingService & SdmPerJenisService biar mapping-nya cuma didefinisikan
- * sekali di satu tempat (sebelumnya duplikat di masing-masing service).
+ * Dipakai bareng oleh BezettingService & SdmPerJenisService biar mapping-nya cuma didefinisikan di satu tempat
  */
 class JabatanKategori
 {
-    // Kata kunci per kategori (lowercase, dicocokkan pakai str_contains)
+    // Kata kunci per kategori
     private const MAP = [
         'Dokter'        => ['dokter', 'dr.'],
         'Perawat'       => ['perawat', 'bidan', 'penata anest', 'asisten penata'],
@@ -21,7 +20,7 @@ class JabatanKategori
         ],
     ];
 
-    // Urutan tampil kategori di UI (dipakai controller/service biar konsisten di semua tempat)
+    // Urutan tampil kategori di UI 
     public const URUTAN = ['Dokter', 'Perawat', 'Farmasi', 'Medis Lainnya', 'Lainnya'];
 
     public static function resolve(string $jabatan): string
