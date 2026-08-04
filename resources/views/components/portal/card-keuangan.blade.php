@@ -56,7 +56,7 @@
         <div class="progress-bar-wrap">
             <div class="progress-bar-fill" style="width:{{ $pctBelanja }}%"></div>
         </div>
-            <div class="progress-pct">{{ $pctBelanja }}% belanja dari pendapatan · YTD {{ $tahun }}</div>
+            <div class="progress-pct">{{ $pctBelanja }}% belanja dari pendapatan · {{ $tahun }}</div>
     </div>
 
     <div class="card-footer">

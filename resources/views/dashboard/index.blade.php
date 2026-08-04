@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Beranda Portal')
+@section('title', 'Dash-i')
 @section('page_title', 'DASH-i')
 @section('page_subtitle', 'Pilih Dashboard')
 
@@ -18,6 +18,7 @@
         overflow: hidden;
         margin-bottom: 2rem;
     }
+    
     .greeting-card::before {
         content: '';
         position: absolute; top: -60px; right: -60px;
@@ -390,10 +391,10 @@
     function updateGreeting() {
         const now = new Date();
         const h   = now.getHours();
-        const salam = h < 11 ? 'Selamat Pagi ☀️'
-                    : h < 15 ? 'Selamat Siang 🌤️'
-                    : h < 18 ? 'Selamat Sore 🌇'
-                    :          'Selamat Malam 🌙';
+        const salam = h < 11 ? 'Selamat Pagi'
+                    : h < 15 ? 'Selamat Siang'
+                    : h < 18 ? 'Selamat Sore'
+                    :          'Selamat Malam';
 
         document.getElementById('greeting-time').textContent = salam;
         document.getElementById('gs-date').textContent =

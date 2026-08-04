@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Login — Portal Dashboard')
+@section('title', 'Dashi-i')
 
 @section('content')
 <div class="w-full max-w-sm">
