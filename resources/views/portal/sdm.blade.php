@@ -25,7 +25,7 @@
         </div>
     </x-portal.navbar>
 
-    {{-- STAT CARDS: data-driven, 1 loop buat 10 card biar gak duplikat markup --}}
+    {{-- STAT CARDS --}}
     @php
         $statCards = [
             [
@@ -101,7 +101,7 @@
     </div>
 
 
-    {{-- ── UNIT & JABATAN PERLU PERHATIAN (2 card terpisah, sumber: API SDM Per Jenis) ── --}}
+    {{-- ── UNIT & JABATAN PERLU PERHATIAN  ── --}}
     <div class="mon-section">
         <div class="mon-section-title">Unit &amp; Jabatan Perlu Perhatian</div>
         <div class="prio-grid">
@@ -121,7 +121,7 @@
                 @endif
             </div>
 
-            {{-- CARD 2: Jabatan Perlu Perhatian → ranked list dgn track/dot (beda gaya dari chart batang biar gak monoton) --}}
+            {{-- CARD 2: Jabatan Perlu Perhatian  --}}
             <div class="mon-card">
                 <div class="mon-card-hd">
                     <span class="mon-card-title">Jabatan Perlu Perhatian</span>
@@ -216,7 +216,7 @@
                 </div>
             </div>
 
-            {{-- Pill tabs dgn sliding indicator (gaya konsisten sama tab IGD) --}}
+            {{-- Pill tabs --}}
             <div class="bez-tabs" data-role="bez-tabs">
                 <div class="bez-tab-indicator" data-role="bez-tab-indicator"></div>
                 <button type="button" class="bez-tab t-kurang is-active" data-tone="red" onclick="bezSetTab('kurang', this)">
@@ -317,7 +317,7 @@
 
     </div>
 
-{{-- ── DETAIL RASIO KECUKUPAN SDM PER UNIT (paling bawah, sumber: API SDM Per Jenis) ── --}}
+{{-- ── DETAIL RASIO KECUKUPAN SDM PER UNIT ── --}}
     <div class="mon-section" style="margin-top:20px">
         <div class="mon-section-title">Detail Rasio Kecukupan SDM per Unit</div>
 
@@ -330,7 +330,7 @@
             $rkStatusCounts  = collect($unitDetail)->countBy('status');
         @endphp
 
-        {{-- Toolbar: cari nama unit + filter status (pola sama kayak bez-tabs/bez-search Bezetting di atas) --}}
+        {{-- Toolbar: cari nama unit + filter status --}}
         <div class="rk-toolbar">
             <div class="bez-search-input-wrap rk-unit-search-wrap">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -463,329 +463,34 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@php
+    // Data yang dibutuhin sdm.js, dikumpulin di satu object biar gak
+    // nyebar json_encode() di banyak tempat
+    $sdmJsData = [
+        'prioritasUnit' => $prioritasUnit,
+        'statusLabels'  => $statusLabels,
+        'statusValues'  => $statusValues,
+        'bezetting'     => [
+            'kurang' => $bezSummary['kurang']->map(fn($r) => [
+                'jabatan' => $r->jabatan, 'kebutuhan' => $r->kebutuhan,
+                'tersedia' => $r->tersedia, 'delta' => $r->delta,
+                'pct' => $r->pct, 'kategori' => $r->kategori,
+            ])->values(),
+            'cukup' => $bezSummary['cukup']->map(fn($r) => [
+                'jabatan' => $r->jabatan, 'kebutuhan' => $r->kebutuhan,
+                'tersedia' => $r->tersedia, 'delta' => $r->delta,
+                'pct' => $r->pct, 'kategori' => $r->kategori,
+            ])->values(),
+            'lebih' => $bezSummary['lebih']->map(fn($r) => [
+                'jabatan' => $r->jabatan, 'kebutuhan' => $r->kebutuhan,
+                'tersedia' => $r->tersedia, 'delta' => $r->delta,
+                'pct' => $r->pct, 'kategori' => $r->kategori,
+            ])->values(),
+        ],
+    ];
+@endphp
 <script>
-// ── RK CARD (dipakai bareng oleh section "Detail per Unit"): expand/collapse + search + animasi ring ──
-function rkToggle(i) {
-    const card = document.querySelector(`.rk-card[data-rk="${i}"]`);
-    const btn  = card.querySelector('.rk-card-head');
-    const open = card.classList.toggle('open');
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-}
-
-// Dipanggil dari card "Unit & Jabatan Perlu Perhatian" di atas: buka card unit
-// yang dituju (kalau lagi ketutup) lalu smooth-scroll ke situ + kasih highlight sebentar
-function sdmScrollToUnit(slug) {
-    const card = document.getElementById(`unit-${slug}`);
-    if (!card) return;
-
-    if (!card.classList.contains('open')) {
-        rkToggle(card.dataset.rk);
-    }
-
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    card.classList.add('rk-highlight');
-    setTimeout(() => card.classList.remove('rk-highlight'), 1600);
-}
-
-function rkFilter(i, q) {
-    q = q.trim().toLowerCase();
-    const wrap = document.getElementById(`rk-detail-${i}`);
-    const rows = wrap.querySelectorAll('tbody tr');
-    let visible = 0;
-
-    rows.forEach(row => {
-        const match = !q || row.dataset.search.includes(q);
-        row.classList.toggle('rk-row-hidden', !match);
-        if (match) visible++;
-    });
-
-    document.getElementById(`rk-empty-${i}`).style.display = visible ? 'none' : 'block';
-}
-
-// ── TOOLBAR UNIT: cari nama unit + filter status (Semua/Kritis/Waspada/Aman) ──
-let rkStatusFilter = '';
-const rkTabsEl      = document.querySelector('[data-role="rk-status-tabs"]');
-const rkIndicatorEl = document.querySelector('[data-role="rk-status-indicator"]');
-
-function rkSetStatusTab(status, el) {
-    rkStatusFilter = status;
-    rkTabsEl.querySelectorAll('.bez-tab').forEach(t => t.classList.remove('is-active'));
-    el.classList.add('is-active');
-    moveTabIndicator(rkIndicatorEl, el);
-    rkUnitRender();
-}
-
-function rkUnitRender() {
-    const q = document.getElementById('rk-unit-search').value.trim().toLowerCase();
-    const cards = document.querySelectorAll('#sdm-unit-grid .rk-card');
-    let visible = 0;
-
-    cards.forEach(card => {
-        const match = (!rkStatusFilter || card.dataset.status === rkStatusFilter)
-                   && (!q || card.dataset.unit.includes(q));
-        card.classList.toggle('rk-row-hidden', !match);
-        if (match) visible++;
-    });
-
-    const emptyEl = document.getElementById('rk-unit-empty');
-    if (emptyEl) emptyEl.style.display = visible ? 'none' : 'block';
-}
-
-requestAnimationFrame(() => {
-    moveTabIndicator(rkIndicatorEl, rkTabsEl?.querySelector('.bez-tab.is-active'));
-    rkTabsEl?.classList.add('is-ready');
-});
-
-// Animasi ring progress dari 0% ke nilai aslinya begitu card kebaca browser
-// (skip stagger kalau user set preferensi "reduce motion" di OS/browser-nya)
-const sdmReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-document.querySelectorAll('.rk-ring-fill').forEach((ring, idx) => {
-    const target = ring.dataset.targetOffset;
-    if (sdmReduceMotion) {
-        ring.style.strokeDashoffset = target;
-        return;
-    }
-    requestAnimationFrame(() => {
-        setTimeout(() => { ring.style.strokeDashoffset = target; }, 80 * idx);
-    });
-});
-
-// Track ranking "Jabatan Perlu Perhatian" dari 0% ke nilai aslinya begitu kebaca browser
-// (pola sama kayak animasi rk-ring-fill di atas biar konsisten)
-document.querySelectorAll('.jprio-track-fill').forEach((el, idx) => {
-    const target = el.dataset.targetWidth;
-    if (sdmReduceMotion) {
-        el.style.width = target;
-        return;
-    }
-    requestAnimationFrame(() => {
-        setTimeout(() => { el.style.width = target; }, 60 * idx);
-    });
-});
-
-// ── CHART "UNIT PERLU PERHATIAN" (horizontal bar, gradient, klik → scroll ke unit) ─────────
-const prioUnitCanvas = document.getElementById('prioUnitChart');
-if (prioUnitCanvas) {
-    const prioUnitSlugs = {!! json_encode(collect($prioritasUnit ?? [])->pluck('slug')) !!};
-    new Chart(prioUnitCanvas, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode(collect($prioritasUnit ?? [])->pluck('unit')) !!},
-            datasets: [{
-                data: {!! json_encode(collect($prioritasUnit ?? [])->pluck('kekurangan')) !!},
-                backgroundColor(ctx) {
-                    const { chartArea, ctx: c } = ctx.chart;
-                    if (!chartArea) return 'rgba(248,113,113,0.7)';
-                    const g = c.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-                    g.addColorStop(0, 'rgba(248,113,113,0.55)');
-                    g.addColorStop(1, 'rgba(239,68,68,0.95)');
-                    return g;
-                },
-                borderRadius: 8,
-                borderSkipped: false,
-                barThickness: 16,
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 900, easing: 'easeOutQuart' },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    grid: { color: 'rgba(148,163,184,0.08)' },
-                    ticks: { color: '#94a3b8', precision: 0, font: { size: 10.5, family: 'Plus Jakarta Sans' } }
-                },
-                y: {
-                    grid: { display: false },
-                    ticks: { color: '#94a3b8', font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' } }
-                }
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#0a1628',
-                    titleColor: '#e2e8f0',
-                    bodyColor: '#94a3b8',
-                    borderColor: 'rgba(248,113,113,.3)',
-                    borderWidth: 1,
-                    callbacks: { label: ctx => ` ${ctx.parsed.x.toLocaleString('id-ID')} orang kurang` }
-                }
-            },
-            onClick(evt, elements) {
-                if (!elements.length) return;
-                const slug = prioUnitSlugs[elements[0].index];
-                if (slug) sdmScrollToUnit(slug);
-            },
-            onHover(evt, elements) {
-                evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
-            }
-        }
-    });
-}
-
-// ── BAR CHART ─────────────────────────────────────────────────────────────
-new Chart(document.getElementById('statusBarChart'), {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode($statusLabels) !!},
-        datasets: [{
-            data: {!! json_encode($statusValues) !!},
-            backgroundColor: 'rgba(56,189,248,0.7)',
-            borderColor: '#38bdf8',
-            borderWidth: 1,
-            borderRadius: 6,
-            borderSkipped: false,
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            x: {
-                grid: { display: false },
-                ticks: { color: '#94a3b8', font: { size: 11, family: 'Plus Jakarta Sans' } }
-            },
-            y: {
-                beginAtZero: true,
-                grid: { color: 'rgba(255,255,255,0.05)' },
-                ticks: {
-                    color: '#94a3b8',
-                    callback: v => v.toLocaleString('id-ID'),
-                    font: { size: 11, family: 'Plus Jakarta Sans' }
-                }
-            }
-        },
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: '#0a1628',
-                titleColor: '#e2e8f0',
-                bodyColor: '#94a3b8',
-                borderColor: 'rgba(56,189,248,.25)',
-                borderWidth: 1,
-                callbacks: { label: ctx => ` ${ctx.parsed.y.toLocaleString('id-ID')} orang` }
-            }
-        }
-    },
-    plugins: [{
-        id: 'topLabel',
-        afterDatasetsDraw(chart) {
-            const { ctx } = chart;
-            chart.data.datasets.forEach((ds, i) => {
-                chart.getDatasetMeta(i).data.forEach((bar, idx) => {
-                    const v = ds.data[idx];
-                    if (!v) return;
-                    ctx.save();
-                    ctx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-                    ctx.fillText(v.toLocaleString('id-ID'), bar.x, bar.y - 4);
-                    ctx.restore();
-                });
-            });
-        }
-    }]
-});
-
-// ── BEZETTING TABLE ────────────────────────────────────────────────────────
-const BEZ = {
-    kurang: {!! json_encode($bezSummary['kurang']->map(fn($r) => ['j'=>$r->jabatan,'k'=>$r->kebutuhan,'t'=>$r->tersedia,'d'=>$r->delta,'p'=>$r->pct,'kat'=>$r->kategori])->values()) !!},
-    cukup:  {!! json_encode($bezSummary['cukup']->map(fn($r) => ['j'=>$r->jabatan,'k'=>$r->kebutuhan,'t'=>$r->tersedia,'d'=>$r->delta,'p'=>$r->pct,'kat'=>$r->kategori])->values()) !!},
-    lebih:  {!! json_encode($bezSummary['lebih']->map(fn($r) => ['j'=>$r->jabatan,'k'=>$r->kebutuhan,'t'=>$r->tersedia,'d'=>$r->delta,'p'=>$r->pct,'kat'=>$r->kategori])->values()) !!},
-};
-
-let bezTab = 'kurang';
-const bezTabsEl      = document.querySelector('[data-role="bez-tabs"]');
-const bezIndicatorEl = document.querySelector('[data-role="bez-tab-indicator"]');
-
-// Geser pill indicator ke tombol tab yang aktif + ganti warna sesuai tone (red/green/blue)
-// Geser pill indicator ke tombol tab yang aktif + ganti warna sesuai tone
-// Dipakai bareng oleh bez-tabs (Bezetting) dan rk-status-tabs (Detail Rasio Kecukupan) biar gak duplikat logic
-function moveTabIndicator(indicatorEl, btn) {
-    if (!indicatorEl || !btn) return;
-    indicatorEl.style.left   = btn.offsetLeft + 'px';
-    indicatorEl.style.width  = btn.offsetWidth + 'px';
-    indicatorEl.dataset.tone = btn.dataset.tone;
-}
-
-function bezMoveIndicator(btn) {
-    moveTabIndicator(bezIndicatorEl, btn);
-}
-
-function bezSetTab(tab, el) {
-    bezTab = tab;
-    document.querySelectorAll('.bez-tab').forEach(t => t.classList.remove('is-active'));
-    el.classList.add('is-active');
-    bezMoveIndicator(el);
-    bezRender();
-}
-
-function katClass(kat) {
-    const m = {'Dokter':'kat-dokter','Perawat':'kat-perawat','Farmasi':'kat-farmasi','Medis Lainnya':'kat-medis'};
-    return m[kat] || 'kat-lainnya';
-}
-
-function bezRender() {
-    const q   = document.getElementById('bez-search').value.toLowerCase();
-    const kat = document.getElementById('bez-kat').value;
-    const rows = BEZ[bezTab].filter(r =>
-        (!q   || r.j.toLowerCase().includes(q)) &&
-        (!kat || r.kat === kat)
-    );
-
-    const tbody     = document.getElementById('bez-tbody');
-    const emptyState = document.getElementById('bez-empty-state');
-
-    if (!rows.length) {
-        tbody.innerHTML = '';
-        emptyState.style.display = 'flex';
-        return;
-    }
-    emptyState.style.display = 'none';
-
-    const tone     = bezTab === 'kurang' ? 'red' : bezTab === 'cukup' ? 'green' : 'blue';
-    const badgeCls = bezTab === 'kurang' ? 'rk-badge-red' : bezTab === 'cukup' ? 'rk-badge-green' : 'rk-badge-blue';
-
-    tbody.innerHTML = rows.map((r, i) => {
-        const sign = r.d > 0 ? '+' : r.d === 0 ? '=' : '';
-        return `<tr>
-            <td style="color:var(--text-muted);font-size:11px">${i+1}</td>
-            <td>
-                <div style="font-size:12px;line-height:1.3">${r.j}</div>
-                <span class="kat-badge ${katClass(r.kat)}">${r.kat}</span>
-            </td>
-            <td class="r" style="font-weight:600">${r.k}</td>
-            <td>
-                <div style="display:flex;align-items:center;gap:6px">
-                    <span style="font-weight:600;min-width:24px">${r.t}</span>
-                    <div style="flex:1">
-                        <div class="mini-bar"><div class="mini-fill tone-${tone}" style="width:${r.p}%"></div></div>
-                        <div style="font-size:9px;color:var(--text-muted);margin-top:1px">${r.p}%</div>
-                    </div>
-                </div>
-            </td>
-            <td class="c"><span class="rk-badge ${badgeCls}">${sign}${r.d}</span></td>
-        </tr>`;
-    }).join('');
-}
-
-// Posisi awal indicator dan hint pulse 
-requestAnimationFrame(() => {
-    bezMoveIndicator(bezTabsEl?.querySelector('.bez-tab.is-active'));
-    bezTabsEl?.classList.add('is-ready');
-    if (!sdmReduceMotion) bezTabsEl?.classList.add('bez-tab-hint');
-});
-
-window.addEventListener('resize', () => {
-    bezMoveIndicator(bezTabsEl?.querySelector('.bez-tab.is-active'));
-    moveTabIndicator(rkIndicatorEl, rkTabsEl?.querySelector('.bez-tab.is-active'));
-});
-
-bezRender();
+    window.SDM_DATA = @json($sdmJsData);
 </script>
-
+@vite(['resources/js/portal/sdm.js'])
 @endpush
