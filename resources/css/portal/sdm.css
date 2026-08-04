@@ -622,45 +622,29 @@
 }
 
 .rk-detail-wrap {
-    max-height: 320px; overflow-y: auto;
     border-top: 1px solid var(--sdm-border);
     margin: 0 16px 16px; padding-top: 12px;
 }
-.rk-detail-wrap::-webkit-scrollbar { width: 4px; }
-.rk-detail-wrap::-webkit-scrollbar-track { background: transparent; }
-.rk-detail-wrap::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.25); border-radius: 2px; }
 
-.rk-detail-list { display: flex; flex-direction: column; gap: 14px; }
-.rk-group { display: flex; flex-direction: column; gap: 6px; }
-.rk-group-hd {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 2px;
-}
-.rk-group-label {
-    font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-    color: var(--sdm-text-muted);
-}
+.rk-table-wrap { max-height: 300px; }
+.rk-table-wrap .bez-table { table-layout: auto; }
+.rk-row-hidden { display: none !important; }
 
-.rk-row-card {
-    background: var(--sdm-surface-alt);
-    border: 1px solid var(--sdm-border);
-    border-left: 3px solid var(--sdm-border);
-    border-radius: 10px;
-    padding: 8px 10px;
+/* ── TOOLBAR unit: search + filter status (Semua/Kritis/Waspada/Aman), reuse .bez-search-input-wrap/.bez-tabs ── */
+.rk-toolbar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 14px;
 }
-.rk-row-card.tone-red   { border-left-color: var(--accent-red); }
-.rk-row-card.tone-green { border-left-color: var(--accent-green); }
-.rk-row-card.tone-blue  { border-left-color: var(--accent-blue); }
-.rk-row-main {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    margin-bottom: 5px;
-}
-.rk-row-jabatan {
-    font-size: 12px; font-weight: 600; color: var(--sdm-text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.rk-row-formasi { flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: var(--sdm-text); }
-.rk-row-formasi span { font-weight: 500; color: var(--sdm-text-muted); }
+.rk-unit-search-wrap { flex: 1; min-width: 220px; max-width: 320px; margin-bottom: 0; }
+.rk-toolbar .bez-tabs { margin-bottom: 0; }
+
+/* Tone tambahan buat pill filter status unit (bez-tabs asalnya cuma red/green/blue) */
+.bez-tab-indicator[data-tone="amber"] { background: linear-gradient(135deg, var(--accent-amber), #d97706); box-shadow: 0 3px 10px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.25); }
+.bez-tab-indicator[data-tone="slate"] { background: linear-gradient(135deg, #94a3b8, #64748b); box-shadow: 0 3px 10px rgba(100,116,139,0.35), inset 0 1px 0 rgba(255,255,255,0.25); }
+.bez-tab:not(.is-active).t-kritis  .cnt { background: rgba(248,113,113,0.15); color: var(--accent-red); }
+.bez-tab:not(.is-active).t-waspada .cnt { background: rgba(245,158,11,0.15);  color: var(--accent-amber); }
+.bez-tab:not(.is-active).t-aman    .cnt { background: rgba(52,211,153,0.15);  color: var(--accent-green); }
+.bez-tab:not(.is-active).t-semua   .cnt { background: rgba(148,163,184,0.18); color: var(--sdm-text-muted); }
 
 .rk-badge {
     display: inline-block; font-size: 9.5px; font-weight: 700;
@@ -741,6 +725,8 @@
     .bez-tab { flex: 1; justify-content: center; padding: 6px 8px; }
     .bez-search { flex-wrap: wrap; }
     .bez-search select { flex: 1; min-width: 0; }
+    .rk-toolbar { flex-direction: column; align-items: stretch; }
+    .rk-unit-search-wrap { max-width: none; }
     .rk-grid { grid-template-columns: 1fr; }
     .rk-card-head { grid-template-columns: 52px 1fr auto; padding: 14px 12px; gap: 10px; }
     .rk-ring-wrap, .rk-ring { width: 52px; height: 52px; }

@@ -317,9 +317,44 @@
 
     </div>
 
-    {{-- ── DETAIL RASIO KECUKUPAN SDM PER UNIT (paling bawah, sumber: API SDM Per Jenis) ── --}}
+{{-- ── DETAIL RASIO KECUKUPAN SDM PER UNIT (paling bawah, sumber: API SDM Per Jenis) ── --}}
     <div class="mon-section" style="margin-top:20px">
         <div class="mon-section-title">Detail Rasio Kecukupan SDM per Unit</div>
+
+        @php
+            // Badge status per baris jabatan (dipakai di kolom "Status" tabel detail tiap unit)
+            $ketBadge = ['KURANG' => 'rk-badge-red', 'LEBIH' => 'rk-badge-blue', 'CUKUP' => 'rk-badge-green'];
+
+            // Rekap jumlah unit per status, buat angka di pill filter toolbar di bawah
+            $rkTotalUnit     = count($unitDetail);
+            $rkStatusCounts  = collect($unitDetail)->countBy('status');
+        @endphp
+
+        {{-- Toolbar: cari nama unit + filter status (pola sama kayak bez-tabs/bez-search Bezetting di atas) --}}
+        <div class="rk-toolbar">
+            <div class="bez-search-input-wrap rk-unit-search-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="rk-unit-search" placeholder="Cari nama unit / ruangan..." oninput="rkUnitRender()">
+            </div>
+            <div class="bez-tabs" data-role="rk-status-tabs">
+                <div class="bez-tab-indicator" data-role="rk-status-indicator"></div>
+                <button type="button" class="bez-tab t-semua is-active" data-tone="slate" onclick="rkSetStatusTab('', this)">
+                    Semua <span class="cnt">{{ $rkTotalUnit }}</span>
+                </button>
+                <button type="button" class="bez-tab t-kritis" data-tone="red" onclick="rkSetStatusTab('kritis', this)">
+                    Kritis <span class="cnt">{{ $rkStatusCounts->get('kritis', 0) }}</span>
+                </button>
+                <button type="button" class="bez-tab t-waspada" data-tone="amber" onclick="rkSetStatusTab('waspada', this)">
+                    Waspada <span class="cnt">{{ $rkStatusCounts->get('waspada', 0) }}</span>
+                </button>
+                <button type="button" class="bez-tab t-aman" data-tone="green" onclick="rkSetStatusTab('aman', this)">
+                    Aman <span class="cnt">{{ $rkStatusCounts->get('aman', 0) }}</span>
+                </button>
+            </div>
+        </div>
+
         <div class="rk-grid" id="sdm-unit-grid">
             @forelse ($unitDetail as $i => $u)
             @php
@@ -327,8 +362,15 @@
                 $rkRing   = 2 * M_PI * $rkRadius;
                 $rkOffset = $rkRing - ($u['pct'] / 100 * $rkRing);
                 $jumlahJabatan = count($u['detail']);
+
+                // Urutin baris jabatan: KURANG paling atas (paling perlu perhatian), lalu LEBIH, baru CUKUP.
+                // Di dalam status yang sama diurutin alfabetis biar gampang di-scan.
+                $ketPriority   = ['KURANG' => 0, 'LEBIH' => 1, 'CUKUP' => 2];
+                $sortedDetail  = collect($u['detail'])->sortBy(
+                    fn($d) => sprintf('%d-%s', $ketPriority[$d['keterangan']] ?? 3, $d['jabatan'])
+                )->values();
             @endphp
-            <div class="rk-card status-{{ $u['status'] }}" data-rk="{{ $i }}" id="unit-{{ $u['slug'] }}">
+            <div class="rk-card status-{{ $u['status'] }}" data-rk="{{ $i }}" data-status="{{ $u['status'] }}" data-unit="{{ strtolower($u['unit']) }}" id="unit-{{ $u['slug'] }}">
                 <button type="button" class="rk-card-head" onclick="rkToggle({{ $i }})" aria-expanded="false">
                     <div class="rk-ring-wrap">
                         <svg class="rk-ring" viewBox="0 0 64 64">
@@ -367,47 +409,45 @@
                             <span class="rk-kurang-tag">{{ $u['kurangCount'] }} formasi kurang</span>
                             @endif
                         </div>
+
+                        {{-- Tabel detail per jabatan — sedetail bezetting SI-OSMAR: PNS/PPPK/PPPK-PW/Non ASN/Jumlah/Kebutuhan/Status --}}
                         <div class="rk-detail-wrap" id="rk-detail-{{ $i }}">
-                            @php
-                                // Dikelompokin per status biar user gak perlu scan satu-satu di tabel padat —
-                                // yang KURANG ditaruh paling atas soalnya itu yang paling perlu diperhatikan.
-                                $grouped = collect($u['detail'])->groupBy('keterangan');
-                                $ketMeta = [
-                                    'KURANG' => ['label' => 'Kekurangan Formasi', 'badge' => 'rk-badge-red',   'tone' => 'red'],
-                                    'LEBIH'  => ['label' => 'Surplus Formasi',    'badge' => 'rk-badge-blue',  'tone' => 'blue'],
-                                    'CUKUP'  => ['label' => 'Formasi Cukup',      'badge' => 'rk-badge-green', 'tone' => 'green'],
-                                ];
-                                // Jaga-jaga kalau API kirim nilai keterangan lain di luar 3 di atas
-                                foreach ($grouped->keys() as $ketKey) {
-                                    if (!isset($ketMeta[$ketKey])) {
-                                        $ketMeta[$ketKey] = ['label' => ucfirst(strtolower($ketKey)), 'badge' => 'rk-badge-green', 'tone' => 'green'];
-                                    }
-                                }
-                            @endphp
-                            <div class="rk-detail-list">
-                                @foreach ($ketMeta as $ketKey => $meta)
-                                @php $groupRows = $grouped->get($ketKey, collect()); @endphp
-                                @if ($groupRows->isNotEmpty())
-                                <div class="rk-group">
-                                    <div class="rk-group-hd">
-                                        <span class="rk-group-label">{{ $meta['label'] }}</span>
-                                        <span class="rk-badge {{ $meta['badge'] }}">{{ $groupRows->count() }}</span>
-                                    </div>
-                                    @foreach ($groupRows as $d)
-                                    @php $rowPct = $d['kebutuhan'] > 0 ? min((int) round($d['jumlah'] / $d['kebutuhan'] * 100), 100) : 100; @endphp
-                                    <div class="rk-row-card tone-{{ $meta['tone'] }}" data-search="{{ strtolower($d['jabatan']) }}">
-                                        <div class="rk-row-main">
-                                            <span class="rk-row-jabatan">{{ $d['jabatan'] }}</span>
-                                            <span class="rk-row-formasi">{{ $d['jumlah'] }}<span>/{{ $d['kebutuhan'] }}</span></span>
-                                        </div>
-                                        <div class="mini-bar"><div class="mini-fill tone-{{ $meta['tone'] }}" style="width:{{ $rowPct }}%"></div></div>
-                                    </div>
-                                    @endforeach
-                                </div>
-                                @endif
-                                @endforeach
+                            <div class="bez-table-wrap rk-table-wrap">
+                                <table class="bez-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Jabatan</th>
+                                            <th class="c" style="width:46px">PNS</th>
+                                            <th class="c" style="width:50px">PPPK</th>
+                                            <th class="c" style="width:62px">PPPK-PW</th>
+                                            <th class="c" style="width:62px">Non ASN</th>
+                                            <th class="c" style="width:52px">Jumlah</th>
+                                            <th class="c" style="width:68px">Kebutuhan</th>
+                                            <th class="c" style="width:78px">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($sortedDetail as $d)
+                                        <tr data-search="{{ strtolower($d['jabatan']) }}">
+                                            <td>
+                                                <div style="font-weight:600">{{ $d['jabatan'] }}</div>
+                                                @if ($d['kualifikasi'] !== '-')
+                                                <div style="font-size:10px;color:var(--sdm-text-muted);margin-top:1px">{{ $d['kualifikasi'] }}</div>
+                                                @endif
+                                            </td>
+                                            <td class="c">{{ $d['pns'] }}</td>
+                                            <td class="c">{{ $d['pppk'] }}</td>
+                                            <td class="c">{{ $d['pppk_pw'] }}</td>
+                                            <td class="c">{{ $d['non_asn'] }}</td>
+                                            <td class="c" style="font-weight:700">{{ $d['jumlah'] }}</td>
+                                            <td class="c">{{ $d['kebutuhan'] }}</td>
+                                            <td class="c"><span class="rk-badge {{ $ketBadge[$d['keterangan']] ?? 'rk-badge-green' }}">{{ ucfirst(strtolower($d['keterangan'])) }}</span></td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="rk-empty" style="display:none">Tidak ada data yang cocok</div>
+                            <div class="rk-empty" id="rk-empty-{{ $i }}" style="display:none">Tidak ada jabatan yang cocok</div>
                         </div>
                     </div>
                 </div>
@@ -416,6 +456,7 @@
             <div class="rk-empty-state">Data detail per unit belum tersedia.</div>
             @endforelse
         </div>
+        <div class="rk-empty-state" id="rk-unit-empty" style="display:none">Tidak ada unit yang cocok dengan pencarian.</div>
     </div>
 
 </div>
@@ -451,23 +492,51 @@ function sdmScrollToUnit(slug) {
 function rkFilter(i, q) {
     q = q.trim().toLowerCase();
     const wrap = document.getElementById(`rk-detail-${i}`);
-    const rows = wrap.querySelectorAll('.rk-row-card');
+    const rows = wrap.querySelectorAll('tbody tr');
     let visible = 0;
 
     rows.forEach(row => {
         const match = !q || row.dataset.search.includes(q);
-        row.style.display = match ? '' : 'none';
+        row.classList.toggle('rk-row-hidden', !match);
         if (match) visible++;
     });
 
-    // Grup (Kekurangan/Cukup/Surplus) disembunyiin kalau semua row di dalamnya kena filter out
-    wrap.querySelectorAll('.rk-group').forEach(group => {
-        const anyVisible = [...group.querySelectorAll('.rk-row-card')].some(r => r.style.display !== 'none');
-        group.style.display = anyVisible ? '' : 'none';
+    document.getElementById(`rk-empty-${i}`).style.display = visible ? 'none' : 'block';
+}
+
+// ── TOOLBAR UNIT: cari nama unit + filter status (Semua/Kritis/Waspada/Aman) ──
+let rkStatusFilter = '';
+const rkTabsEl      = document.querySelector('[data-role="rk-status-tabs"]');
+const rkIndicatorEl = document.querySelector('[data-role="rk-status-indicator"]');
+
+function rkSetStatusTab(status, el) {
+    rkStatusFilter = status;
+    rkTabsEl.querySelectorAll('.bez-tab').forEach(t => t.classList.remove('is-active'));
+    el.classList.add('is-active');
+    moveTabIndicator(rkIndicatorEl, el);
+    rkUnitRender();
+}
+
+function rkUnitRender() {
+    const q = document.getElementById('rk-unit-search').value.trim().toLowerCase();
+    const cards = document.querySelectorAll('#sdm-unit-grid .rk-card');
+    let visible = 0;
+
+    cards.forEach(card => {
+        const match = (!rkStatusFilter || card.dataset.status === rkStatusFilter)
+                   && (!q || card.dataset.unit.includes(q));
+        card.classList.toggle('rk-row-hidden', !match);
+        if (match) visible++;
     });
 
-    wrap.querySelector('.rk-empty').style.display = visible ? 'none' : 'block';
+    const emptyEl = document.getElementById('rk-unit-empty');
+    if (emptyEl) emptyEl.style.display = visible ? 'none' : 'block';
 }
+
+requestAnimationFrame(() => {
+    moveTabIndicator(rkIndicatorEl, rkTabsEl?.querySelector('.bez-tab.is-active'));
+    rkTabsEl?.classList.add('is-ready');
+});
 
 // Animasi ring progress dari 0% ke nilai aslinya begitu card kebaca browser
 // (skip stagger kalau user set preferensi "reduce motion" di OS/browser-nya)
@@ -634,11 +703,17 @@ const bezTabsEl      = document.querySelector('[data-role="bez-tabs"]');
 const bezIndicatorEl = document.querySelector('[data-role="bez-tab-indicator"]');
 
 // Geser pill indicator ke tombol tab yang aktif + ganti warna sesuai tone (red/green/blue)
+// Geser pill indicator ke tombol tab yang aktif + ganti warna sesuai tone
+// Dipakai bareng oleh bez-tabs (Bezetting) dan rk-status-tabs (Detail Rasio Kecukupan) biar gak duplikat logic
+function moveTabIndicator(indicatorEl, btn) {
+    if (!indicatorEl || !btn) return;
+    indicatorEl.style.left   = btn.offsetLeft + 'px';
+    indicatorEl.style.width  = btn.offsetWidth + 'px';
+    indicatorEl.dataset.tone = btn.dataset.tone;
+}
+
 function bezMoveIndicator(btn) {
-    if (!bezIndicatorEl || !btn) return;
-    bezIndicatorEl.style.left   = btn.offsetLeft + 'px';
-    bezIndicatorEl.style.width  = btn.offsetWidth + 'px';
-    bezIndicatorEl.dataset.tone = btn.dataset.tone;
+    moveTabIndicator(bezIndicatorEl, btn);
 }
 
 function bezSetTab(tab, el) {
@@ -698,14 +773,16 @@ function bezRender() {
     }).join('');
 }
 
-// Posisi awal indicator + hint pulse 2x pas pertama kali kebaca browser
+// Posisi awal indicator dan hint pulse 
 requestAnimationFrame(() => {
     bezMoveIndicator(bezTabsEl?.querySelector('.bez-tab.is-active'));
     bezTabsEl?.classList.add('is-ready');
     if (!sdmReduceMotion) bezTabsEl?.classList.add('bez-tab-hint');
 });
+
 window.addEventListener('resize', () => {
     bezMoveIndicator(bezTabsEl?.querySelector('.bez-tab.is-active'));
+    moveTabIndicator(rkIndicatorEl, rkTabsEl?.querySelector('.bez-tab.is-active'));
 });
 
 bezRender();
