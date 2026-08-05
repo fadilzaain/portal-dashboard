@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/css/layout/app-shell.css',
+                'resources/css/portal/dashboard.css',
                 'resources/css/portal/pelayananpasien.css',
                 'resources/js/portal/pelayananpasien.js',
                 'resources/css/portal/indikator-mutu.css',

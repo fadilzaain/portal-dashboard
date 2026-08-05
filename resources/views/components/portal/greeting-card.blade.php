@@ -1,103 +1,53 @@
+{{--
+    Hero card halaman Beranda Portal (dulu bernama "greeting-card").
+    Style-nya ada di resources/css/portal/dashboard.css — komponen ini
+    murni markup + data, biar gampang dikembangkan tanpa nyari-nyari CSS.
+--}}
 @props(['bulan', 'tahun', 'bulanLabel'])
 
-<div class="greeting-card">
-    <div class="greeting-inner">
-        <div class="greeting-text-wrap">
-            <p class="greeting-time" id="greeting-time">—</p>
-            <h1 class="greeting-text">
-                Selamat datang, <span class="greeting-name-accent">{{ explode(' ', auth()->user()->name ?? 'Pengguna')[0] }}</span>
+<div class="hero">
+    <div class="hero-glow"></div>
+
+    <div class="hero-top">
+        <div>
+            <p class="hero-eyebrow" id="greeting-time">—</p>
+            <h1 class="hero-title">
+                Selamat datang, <span class="hero-name-accent">{{ explode(' ', auth()->user()->name ?? 'Pengguna')[0] }}</span>
             </h1>
-            <p class="greeting-sub">Ringkasan Dashboard Integrasi RSUD Jombang.</p>
+            <p class="hero-desc">Ringkasan Dashboard Integrasi RSUD Jombang.</p>
         </div>
 
         {{-- Filter Bulan & Tahun --}}
-        <div class="greeting-filter">
-            <div class="filter-group">
-                <span class="filter-label">Bulan</span>
-                <select class="filter-select" id="filter-bulan" onchange="applyFilter()">
-                    @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bln)
-                        <option value="{{ $i + 1 }}" {{ $bulan == $i + 1 ? 'selected' : '' }}>{{ $bln }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="filter-group">
-                <span class="filter-label">Tahun</span>
-                <select class="filter-select" id="filter-tahun" onchange="applyFilter()">
-                    @for($y = now()->year; $y >= now()->year - 4; $y--)
-                        <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
-                    @endfor
-                </select>
-            </div>
+        <div class="hero-filter">
+            <select class="hero-select" id="filter-bulan" onchange="applyFilter()">
+                @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bln)
+                    <option value="{{ $i + 1 }}" {{ $bulan == $i + 1 ? 'selected' : '' }}>{{ $bln }}</option>
+                @endforeach
+            </select>
+            <select class="hero-select" id="filter-tahun" onchange="applyFilter()">
+                @for($y = now()->year; $y >= now()->year - 4; $y--)
+                    <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
+                @endfor
+            </select>
         </div>
     </div>
 
-    <div class="greeting-stats">
-        <div class="g-stat">
-            <span class="g-stat-val">5</span>
-            <span class="g-stat-lbl">Total Dashboard</span>
+    <div class="hero-stats">
+        <div class="hstat">
+            <div class="hstat-val">5</div>
+            <div class="hstat-lbl">Total Dashboard</div>
         </div>
-        <div class="g-divider"></div>
-        <div class="g-stat">
-            <span class="g-stat-val" id="gs-date">—</span>
-            <span class="g-stat-lbl">Tanggal</span>
+        <div class="hstat">
+            <div class="hstat-val" id="gs-date">—</div>
+            <div class="hstat-lbl">Tanggal</div>
         </div>
-        <div class="g-divider"></div>
-        <div class="g-stat">
-            <span class="g-stat-val" id="gs-time">—</span>
-            <span class="g-stat-lbl">Waktu</span>
+        <div class="hstat">
+            <div class="hstat-val" id="gs-time">—</div>
+            <div class="hstat-lbl">Waktu</div>
+        </div>
+        <div class="hstat">
+            <div class="hstat-val" style="color:var(--champagne)">Aktif</div>
+            <div class="hstat-lbl">Status Sinkron</div>
         </div>
     </div>
 </div>
-
-@once
-@push('styles')
-<style>
-    /* Responsive overrides untuk greeting card */
-    .greeting-filter {
-        display: flex;
-        align-items: center;
-        gap: .75rem;
-        flex-wrap: wrap;
-    }
-
-    @media (max-width: 640px) {
-        .greeting-card { padding: 1.25rem 1rem; margin-bottom: 1.25rem; }
-
-        .greeting-inner {
-            flex-direction: column;
-            align-items: stretch;
-            gap: .85rem;
-        }
-
-        .greeting-text { font-size: 1.15rem; }
-        .greeting-sub  { font-size: .78rem; }
-
-        .greeting-filter {
-            width: 100%;
-            gap: .5rem;
-        }
-        .greeting-filter .filter-group {
-            flex: 1;
-            min-width: 0;
-        }
-        .greeting-filter .filter-select {
-            width: 100%;
-        }
-
-        .greeting-stats {
-            gap: 0;
-            justify-content: space-between;
-        }
-        .g-divider { display: none; }
-        .g-stat { flex: 1; text-align: center; }
-        .g-stat-val { font-size: .85rem; }
-    }
-
-    @media (max-width: 380px) {
-        .greeting-text { font-size: 1rem; }
-        .greeting-stats { flex-wrap: wrap; gap: .5rem; }
-        .g-stat { flex: 0 0 calc(50% - .25rem); }
-    }
-</style>
-@endpush
-@endonce
