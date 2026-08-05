@@ -8,7 +8,6 @@
 @vite('resources/css/portal/dashboard.css')
 @endpush
 
-
 @section('content')
 <div class="fade-up">
 
@@ -43,27 +42,9 @@
 
 @push('scripts')
 <script>
-    function updateGreeting() {
-        const now = new Date();
-        const h   = now.getHours();
-        const salam = h < 11 ? 'Selamat Pagi'
-                    : h < 15 ? 'Selamat Siang'
-                    : h < 18 ? 'Selamat Sore'
-                    :          'Selamat Malam';
-
-        document.getElementById('greeting-time').textContent = salam;
-        document.getElementById('gs-date').textContent =
-            now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-        document.getElementById('gs-time').textContent =
-            now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    }
-    updateGreeting();
-    setInterval(updateGreeting, 30_000);
-
-    function applyFilter() {
-        const bulan = document.getElementById('filter-bulan').value;
-        const tahun = document.getElementById('filter-tahun').value;
-        window.location.href = '{{ route("dashboard") }}?bulan=' + bulan + '&tahun=' + tahun;
-    }
+    window.DASHBOARD_DATA = {
+        dashboardRoute: @json(route('dashboard')),
+    };
 </script>
+@vite('resources/js/portal/dashboard.js')
 @endpush

@@ -1,10 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   DESIGN TOKENS — dipakai di seluruh shell (sidebar, topbar, dst)
-   Token baru (bg-*, glass, sb-*, teal/sky/violet/dst) mengikuti
-   gaya "DASH-i Premium". Token lama (--accent, --text-main, dst)
-   TETAP dipertahankan namanya (dipakai oleh modul lain kayak
-   klaimbpjs.css, sdm.css, portal-navbar.css) tapi nilainya
-   di-alias ke token baru biar semua modul otomatis ikut senada.
+   DESIGN TOKENS — dipakai di seluruh shell (sidebar, topbar, dll)
 ════════════════════════════════════════════════════════════ */
 :root {
     /* -- permukaan & aurora -- */
@@ -28,7 +23,7 @@
     --shadow-hover:   0 30px 68px -18px rgba(0,0,0,.72), 0 0 0 1px var(--border-hi), inset 0 1px 0 rgba(255,255,255,.07);
     --hero-shadow:    0 26px 64px -22px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.05);
 
-    /* -- palet aksen per-modul (dipakai lagi di M3 buat warna card) -- */
+    /* -- palet aksen per-modul -- */
     --champagne:      #e4c68f; --champagne-dim: rgba(228,198,143,.14);
     --teal:           #2dd4bf; --teal-dim:      rgba(45,212,191,.14);
     --sky:            #38bdf8; --sky-dim:       rgba(56,189,248,.14);
@@ -36,11 +31,11 @@
     --rose:           #fb7185; --rose-dim:      rgba(251,113,133,.14);
     --gold:           #fbbf24; --gold-dim:      rgba(251,191,36,.14);
 
-    --sidebar-w:      260px; /* lebar drawer mobile (dipakai app-shell + halaman lain) */
+    --sidebar-w:      260px; /* lebar drawer mobile */
     --font:           'Sora', sans-serif;
     --mono:           'JetBrains Mono', monospace;
 
-    /* -- alias token lama → token baru, biar CSS modul lain (klaimbpjs, sdm, dll) tetap jalan -- */
+    /* -- token baru biar modul lain ttp jalan -- */
     --accent:         var(--teal);
     --accent-dim:     var(--teal-dim);
     --accent-glow:    rgba(45,212,191,.25);
@@ -94,10 +89,9 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   BACKGROUND LAYER — aurora blur + vignette + noise
-   Fixed di belakang seluruh halaman, gak ganggu klik (pointer-events:none)
-════════════════════════════════════════════════════════════ */
+/* ════════════════════════
+   BACKGROUND LAYER 
+═══════════════════════════*/
 .bg-aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
 .bg-aurora::before, .bg-aurora::after, .bg-aurora i {
     content: ''; position: absolute; border-radius: 50%; filter: blur(100px); opacity: var(--aurora-op);
@@ -125,11 +119,9 @@ body {
 #sidebar-backdrop { display: none; position: fixed; inset: 0; z-index: 49; }
 body.sidebar-open #sidebar-backdrop { display: block; }
 
-/* ═══════════════════════════════════════════════════════════
-   SIDEBAR — floating pill, icon-only ↔ expand pas di-hover
-   Desktop: selalu terlihat (rail 74px), lebar 246px pas hover (murni CSS, gak perlu JS)
-   Mobile : disembunyikan off-canvas, muncul via tombol hamburger (JS toggle body.sidebar-open)
-════════════════════════════════════════════════════════════ */
+/* ══════════════════
+   SIDEBAR 
+═════════════════════ */
 #sidebar {
     position: fixed; top: .75rem; left: .75rem; bottom: .75rem; width: 74px;
     background: var(--sb-bg); border: 1px solid var(--sb-border); border-radius: 22px;
@@ -142,13 +134,15 @@ body.sidebar-open #sidebar-backdrop { display: block; }
 @keyframes sbIn { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
 #sidebar:hover { width: 246px; box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55); }
 
-/* Brand / logo RS */
+/* Brand logo rs */
 .sidebar-brand { display: flex; align-items: center; gap: .85rem; padding: 1.35rem 1.1rem 1.1rem; flex-shrink: 0; }
 .sidebar-brand-mark {
     width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0; overflow: hidden;
-    background: linear-gradient(135deg, var(--teal), var(--sky));
+    background: var(--glass-strong);
+    border: 1px solid var(--border);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset, 0 6px 18px -4px rgba(45,212,191,.55);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 6px 16px -6px rgba(0,0,0,.35);
+    transition: background .4s ease, border-color .4s ease;
 }
 .sidebar-brand-mark img { width: 100%; height: 100%; object-fit: contain; padding: 5px; }
 .sidebar-brand-word {
@@ -219,7 +213,7 @@ body.sidebar-open #sidebar-backdrop { display: block; }
 }
 .logout-btn:hover { color: var(--rose); background: var(--wash-2); }
 
-/* Elemen yang cuma muncul pas sidebar melebar (hover di desktop, atau drawer kebuka di mobile) */
+/* Elemen yang cuma muncul pas sidebar melebar */
 #sidebar:hover .sidebar-brand-word, body.sidebar-open #sidebar .sidebar-brand-word,
 #sidebar:hover .nav-label,         body.sidebar-open #sidebar .nav-label,
 #sidebar:hover .nav-txt,           body.sidebar-open #sidebar .nav-txt,
@@ -242,91 +236,41 @@ body.sidebar-open #sidebar-backdrop { display: block; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TOP BAR
+   MOBILE MENU BUTTON 
 ════════════════════════════════════════════════════════════ */
-#topbar {
-    background: color-mix(in srgb, var(--topbar-bg) 70%, transparent);
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    border-bottom: 1px solid var(--topbar-border);
-    padding: 0 2rem; height: 64px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 40;
-    transition: background .4s ease, border-color .4s ease;
-}
-.topbar-left { display: flex; align-items: center; gap: .85rem; }
-.topbar-logo-badge {
-    width: 34px; height: 34px; border-radius: 10px;
-    background: var(--wash-2); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.topbar-logo-badge img { width: 18px; height: 18px; object-fit: contain; }
-.topbar-divider { width: 1px; height: 18px; background: linear-gradient(180deg, transparent, var(--topbar-border) 50%, transparent); }
-.topbar-title {
-    font-family: var(--font); font-size: .9rem; font-weight: 600; color: var(--topbar-text);
-    display: flex; align-items: center; gap: .5rem; letter-spacing: -.005em;
-}
-.topbar-breadcrumb { display: flex; align-items: center; gap: .45rem; font-size: .76rem; color: var(--topbar-muted); font-weight: 400; }
-.topbar-breadcrumb::before { content: ''; width: 3px; height: 3px; border-radius: 50%; background: var(--topbar-muted); flex-shrink: 0; }
-.topbar-right { display: flex; align-items: center; gap: .6rem; }
-.topbar-date-pill {
-    display: flex; align-items: center; gap: .4rem;
-    font-size: .72rem; color: var(--topbar-muted); font-family: var(--mono);
-    background: var(--topbar-btn-bg); border: 1px solid var(--topbar-btn-brd);
-    padding: .42rem .75rem; border-radius: 20px;
-}
-.topbar-icon-btn {
-    position: relative; width: 34px; height: 34px; border-radius: 50%;
-    background: var(--topbar-btn-bg); border: 1px solid var(--topbar-btn-brd);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--topbar-muted);
-    transition: background .2s, color .2s, transform .2s, box-shadow .2s;
-}
-.topbar-icon-btn:hover {
-    background: var(--champagne-dim); color: var(--champagne);
-    border-color: color-mix(in srgb, var(--champagne) 30%, transparent);
-    transform: translateY(-1px);
-}
-.topbar-notif-dot {
-    position: absolute; top: 7px; right: 8px; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--champagne); box-shadow: 0 0 0 2px var(--topbar-bg);
-}
-
-/* Hamburger (mobile) */
 #mobile-menu-btn {
     display: none; align-items: center; justify-content: center;
-    width: 34px; height: 34px; border-radius: 9px;
-    background: var(--topbar-btn-bg); border: 1px solid var(--topbar-btn-brd);
-    cursor: pointer; color: var(--topbar-muted); flex-shrink: 0;
-    transition: background .15s, color .15s;
+    position: fixed; top: .85rem; right: .85rem; z-index: 55;
+    width: 40px; height: 40px; border-radius: 13px;
+    background: var(--sb-bg); border: 1px solid var(--sb-border);
+    backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%);
+    box-shadow: var(--shadow-rest);
+    cursor: pointer; color: var(--text-mid);
+    transition: background .25s ease, color .25s ease, box-shadow .25s ease;
 }
-#mobile-menu-btn:hover { background: var(--champagne-dim); color: var(--champagne); }
+#mobile-menu-btn:hover { background: var(--wash-2); color: var(--text-hi); }
+@media (max-width: 768px) { #mobile-menu-btn { display: flex; } }
 
 /* Page Content */
-#page-content { padding: 1.75rem 2rem 3rem; flex: 1; }
+#page-content { padding: 2.25rem 2rem 3rem; flex: 1; }
 
 /* Fade animation */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 .fade-up { animation: fadeUp .4s cubic-bezier(.4,0,.2,1) both; }
 
 /* ════════════════════
-   MOBILE — sidebar jadi drawer off-canvas
+   MOBILE — sidebar 
 ═══════════════════════ */
 @media (max-width: 768px) {
     #sidebar {
         left: .5rem; top: .5rem; bottom: .5rem; width: min(78vw, 280px);
         transform: translateX(calc(-100% - 1rem));
     }
-    #sidebar:hover { width: min(78vw, 280px); } /* di mobile gak ada hover asli, biar konsisten aja */
+    #sidebar:hover { width: min(78vw, 280px); } 
     body.sidebar-open #sidebar { transform: translateX(0); box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55); }
 
     #main-wrap { margin-left: 0 !important; }
-    #topbar { padding: 0 1rem; }
-    #mobile-menu-btn { display: flex; }
-    .topbar-date-pill { display: none; }
-    .topbar-title { font-size: .82rem; }
-    .topbar-breadcrumb { display: none; }
-    #page-content { padding: 1rem; }
+    #page-content { padding: 4.5rem 1rem 1rem; } 
 }
 
 /* ══════════════
@@ -334,25 +278,22 @@ body.sidebar-open #sidebar-backdrop { display: block; }
 ═════════════════ */
 @media (max-width: 480px) {
     :root { --sidebar-w: 85vw; }
-    #topbar { height: 56px; }
-    #page-content { padding: .75rem; }
+    #page-content { padding: 4.25rem .75rem .75rem; }
 }
 
 /* ══════════════════════════════════════
    TV / MONITOR BESAR — 1920px+
-   (kelas .greeting-card / .app-grid / .app-card dst masih dipakai
-   halaman dashboard — akan disesuaikan lagi pas milestone kartu/hero)
 ══════════════════════════════════════ */
 @media (min-width: 1920px) {
     #page-content {
         padding: .75rem 2rem;
-        height: calc(100vh - 64px);
+        height: 100vh;
         overflow: hidden;
         display: flex;
         flex-direction: column;
     }
 
-    /* Greeting card jauh lebih compact */
+    /* Greeting card lebih compact */
     .greeting-card {
         padding: .6rem 1.5rem;
         margin-bottom: .6rem;

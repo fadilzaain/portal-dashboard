@@ -24,7 +24,7 @@
     </head>
     <body>
 
-    {{-- Background layer: aurora blur + vignette + noise, statis di belakang semua konten --}}
+    {{-- Background layer --}}
     <div class="bg-aurora"><i></i></div>
     <div class="bg-vignette"></div>
     <div class="bg-noise"></div>
@@ -32,7 +32,12 @@
     {{-- Backdrop (mobile overlay) --}}
     <div id="sidebar-backdrop" onclick="closeSidebar()"></div>
 
-    {{-- Sidebar — floating pill, icon-only, expand pas di-hover (desktop) / drawer (mobile) --}}
+    {{-- Tombol buka sidebar --}}
+    <button id="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Buka menu">
+        <x-icon name="bars-3" width="18" height="18" />
+    </button>
+
+    {{-- Sidebar --}}
     <aside id="sidebar">
 
         <div class="sidebar-brand">
@@ -129,60 +134,15 @@
         </div>
     </aside>
 
-    {{-- ═══════════════ Main ═══════════════ --}}
+    {{-- ═══════════════ Main  ═══════════════ --}}
     <div id="main-wrap">
-
-        <header id="topbar">
-            <div class="topbar-left">
-                <button id="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Buka menu">
-                    <x-icon name="bars-3" width="18" height="18" />
-                </button>
-
-                <div class="topbar-logo-badge">
-                    <img src="{{ asset('images/logo-rsud-jombang.png') }}" alt="Logo RSUD">
-                </div>
-
-                <div class="topbar-divider"></div>
-
-                <div class="topbar-title">
-                    @yield('page_title', 'Dashboard')
-                    @hasSection('page_subtitle')
-                        <span class="topbar-breadcrumb">@yield('page_subtitle')</span>
-                    @endif
-                </div>
-            </div>
-            <div class="topbar-right">
-                <div class="topbar-date-pill">
-                    <x-icon name="clock" width="13" height="13" />
-                    <span id="clock"></span>
-                </div>
-
-                <div class="topbar-icon-btn">
-                    <x-icon name="bell" width="16" height="16" />
-                    <span class="topbar-notif-dot"></span>
-                </div>
-            </div>
-        </header>
-
         <main id="page-content">
             @yield('content')
         </main>
-
     </div>
 
     <script>
-        /* jam */
-        function updateClock() {
-            const now     = new Date();
-            const tanggal = now.toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short' });
-            const waktu   = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false });
-            document.getElementById('clock').textContent = `${tanggal} · ${waktu}`;
-        }
-        updateClock();
-        setInterval(updateClock, 1000);
-
-        /* sidebar — desktop: hover murni CSS (lihat #sidebar:hover di app-shell.css)
-           mobile : toggle manual via hamburger + swipe + backdrop */
+       
         const isMobile = () => window.innerWidth <= 768;
 
         function openSidebar()   { document.body.classList.add('sidebar-open'); }

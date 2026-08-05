@@ -17,8 +17,12 @@
             <p class="hero-desc">Ringkasan Dashboard Integrasi RSUD Jombang.</p>
         </div>
 
-        {{-- Filter Bulan & Tahun --}}
+        {{-- Jam (pindahan dari topbar) + Filter Bulan & Tahun --}}
         <div class="hero-filter">
+            <div class="hero-clock">
+                <x-icon name="clock" width="13" height="13" />
+                <span id="hero-clock-text">—</span>
+            </div>
             <select class="hero-select" id="filter-bulan" onchange="applyFilter()">
                 @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bln)
                     <option value="{{ $i + 1 }}" {{ $bulan == $i + 1 ? 'selected' : '' }}>{{ $bln }}</option>
@@ -36,14 +40,6 @@
         <div class="hstat">
             <div class="hstat-val">5</div>
             <div class="hstat-lbl">Total Dashboard</div>
-        </div>
-        <div class="hstat">
-            <div class="hstat-val" id="gs-date">—</div>
-            <div class="hstat-lbl">Tanggal</div>
-        </div>
-        <div class="hstat">
-            <div class="hstat-val" id="gs-time">—</div>
-            <div class="hstat-lbl">Waktu</div>
         </div>
         <div class="hstat">
             <div class="hstat-val" style="color:var(--champagne)">Aktif</div>
