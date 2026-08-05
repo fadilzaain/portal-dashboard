@@ -25,8 +25,11 @@
             <div class="auth-left-content h-full flex flex-col justify-center max-w-md mx-auto lg:mx-0">
 
                 {{-- Logo di atas tulisan --}}
-                <div class="w-11 h-11 lg:w-14 lg:h-14 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md flex items-center justify-center flex-shrink-0 auth-logo-glow auth-fade-up" style="animation-delay: .05s">
-                    <img src="{{ asset('images/logo-rsud-jombang.png') }}" alt="Logo RSUD Jombang" class="w-6 h-6 lg:w-7 lg:h-7 object-contain" />
+                <div class="auth-logo-wrap auth-fade-up" style="animation-delay: .05s">
+                    <div class="auth-logo-ring" aria-hidden="true"></div>
+                    <div class="auth-logo-badge">
+                        <img src="{{ asset('images/logo-rsud-jombang.png') }}" alt="Logo RSUD Jombang" class="auth-logo-img" />
+                    </div>
                 </div>
 
                 <div class="auth-left-divider mt-6 lg:mt-8 auth-fade-up" style="animation-delay: .1s"></div>

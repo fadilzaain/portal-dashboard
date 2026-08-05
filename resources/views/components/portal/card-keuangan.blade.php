@@ -17,10 +17,10 @@
     };
 @endphp
 
-<a href="{{ route('portal.keuangan') }}" class="app-card theme-green">
+<a href="{{ route('portal.keuangan') }}" class="app-card theme-blue">
     <div class="card-header-row">
         <div class="card-header-left">
-            <div class="app-icon icon-green">
+            <div class="app-icon icon-blue">
                 <x-icon name="currency-dollar" width="20" height="20" stroke-width="1.8" />
             </div>
             <div class="card-title-wrap">
@@ -28,7 +28,7 @@
                 <div class="app-sub">pendapatan &amp; belanja</div>
             </div>
         </div>
-            <span class="card-month-badge month-green">{{ $labelPeriode }} {{ $tahun }}</span>
+            <span class="card-month-badge month-blue">{{ $labelPeriode }} {{ $tahun }}</span>
     </div>
 
     <div class="fin-row">
@@ -41,7 +41,7 @@
             <span class="fin-val down">{{ $fmtRupiah($belanja) }}</span>
         </div>
         <div class="fin-selisih">
-            <span style="font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:{{ $isSurplus ? '#22c55e' : '#f43f5e' }}">
+            <span style="font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:{{ $isSurplus ? '#34d399' : '#fb7185' }}">
                 {{ $isSurplus ? '+' : '-' }} {{ $fmtRupiah(abs($selisih)) }}
             </span>
             @if($isSurplus)

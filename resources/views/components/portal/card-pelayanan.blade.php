@@ -19,10 +19,10 @@
     $btoLabel  = ($btoVal >= 40 && $btoVal <= 50) ? 'Ideal' : 'Periksa';
 @endphp
 
-<a href="{{ route('portal.pelayananpasien') }}" class="app-card theme-blue">
+<a href="{{ route('portal.pelayananpasien') }}" class="app-card theme-teal">
     <div class="card-header-row">
         <div class="card-header-left">
-            <div class="app-icon icon-blue">
+            <div class="app-icon icon-teal">
                 <x-icon name="heart" width="20" height="20" stroke-width="1.8" />
             </div>
             <div class="card-title-wrap">
@@ -30,7 +30,7 @@
                 <div class="app-sub">Ringkasan Pelayanan Pasien</div>
             </div>
         </div>
-            <span class="card-month-badge month-blue">{{ $bulanLabel }} {{ $tahun }}</span>
+            <span class="card-month-badge month-teal">{{ $bulanLabel }} {{ $tahun }}</span>
     </div>
 
     <div class="card-stats">
