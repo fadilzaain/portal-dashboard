@@ -129,10 +129,21 @@ body.sidebar-open #sidebar-backdrop { display: block; }
     box-shadow: var(--shadow-rest);
     display: flex; flex-direction: column; overflow: hidden; z-index: 55;
     transition: width .38s cubic-bezier(.16,1,.3,1), box-shadow .38s ease, transform .38s cubic-bezier(.4,0,.2,1);
-    animation: sbIn .6s cubic-bezier(.16,1,.3,1) both;
+    animation: sbFadeIn .5s ease both; /* cuma fade, gak ganggu posisi transform di mobile */
 }
-@keyframes sbIn { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes sbFadeIn { from { opacity: 0; } to { opacity: 1; } }
 #sidebar:hover { width: 246px; box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55); }
+
+/* Slide-in transform cuma dipakai di desktop, biar gak bentrok sama transform hidden di mobile */
+@media (min-width: 769px) {
+    #sidebar { animation: sbFadeIn .5s ease both, sbSlideIn .6s cubic-bezier(.16,1,.3,1) both; }
+    @keyframes sbSlideIn { from { transform: translateX(-16px); } to { transform: translateX(0); } }
+}
+
+/* ── Hover-reveal zone (khusus perangkat dengan mouse asli) ──
+   Strip tipis nempel di tepi kiri layar. Di-hover → sidebar mobile kebuka.
+   Disembunyikan dari layar sentuh (pointer: coarse) karena jari gak bisa "hover". */
+#sidebar-hover-zone { position: fixed; inset: 0 auto 0 0; width: 0; pointer-events: none; z-index: 54; }
 
 /* Brand logo rs */
 .sidebar-brand { display: flex; align-items: center; gap: .85rem; padding: 1.35rem 1.1rem 1.1rem; flex-shrink: 0; }
@@ -266,11 +277,21 @@ body.sidebar-open #sidebar-backdrop { display: block; }
         left: .5rem; top: .5rem; bottom: .5rem; width: min(78vw, 280px);
         transform: translateX(calc(-100% - 1rem));
     }
-    #sidebar:hover { width: min(78vw, 280px); } 
     body.sidebar-open #sidebar { transform: translateX(0); box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55); }
 
     #main-wrap { margin-left: 0 !important; }
     #page-content { padding: 4.5rem 1rem 1rem; } 
+}
+
+/* Hover-reveal: hanya aktif kalau perangkat punya mouse asli (pointer halus + support hover).
+   Layar sentuh gak dapet ini — mereka tetap pakai tombol hamburger / swipe di atas. */
+@media (max-width: 768px) and (hover: hover) and (pointer: fine) {
+    #sidebar-hover-zone { width: 26px; pointer-events: auto; }
+    #sidebar-hover-zone:hover ~ #sidebar,
+    #sidebar:hover {
+        transform: translateX(0);
+        box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55);
+    }
 }
 
 /* ══════════════

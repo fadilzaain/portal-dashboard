@@ -112,7 +112,7 @@
                     <span class="icon-sun"><x-icon name="sun" width="16" height="16" /></span>
                     <span class="icon-moon"><x-icon name="moon" width="16" height="16" /></span>
                 </span>
-                <span class="nav-txt">Ganti tema</span>
+                <span class="nav-txt">Tema</span>
             </button>
 
             <div class="user-card">
