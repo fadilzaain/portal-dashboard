@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>@yield('title', 'Dash-i') RSUD Jombang</title>
+        <title>@yield('title', 'Dash-i') | RSUD Jombang</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,13 +29,16 @@
     <div class="bg-vignette"></div>
     <div class="bg-noise"></div>
 
-    {{-- Backdrop (mobile overlay) --}}
+    {{-- Backdrop (overlay saat sidebar kebuka lewat tombol/swipe) --}}
     <div id="sidebar-backdrop" onclick="closeSidebar()"></div>
 
-    {{-- Tombol buka sidebar --}}
-    <button id="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Buka menu">
+    {{-- Tombol buka sidebar — cuma keliatan di device yang gak bisa hover --}}
+    <button id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Buka menu">
         <x-icon name="bars-3" width="18" height="18" />
     </button>
+
+    {{-- Hover-zone: strip tipis nempel di tepi kiri layar --}}
+    <div id="sidebar-hover-zone"></div>
 
     {{-- Sidebar --}}
     <aside id="sidebar">
@@ -142,19 +145,21 @@
     </div>
 
     <script>
-       
-        const isMobile = () => window.innerWidth <= 768;
+
+        /* Device yang gak bisa "hover" (HP/tablet/layar sentuh) — dipakai buat
+           nentuin kapan sidebar perlu ditutup manual & kapan swipe aktif */
+        const isTouchDevice = () => window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
         function openSidebar()   { document.body.classList.add('sidebar-open'); }
         function closeSidebar()  { document.body.classList.remove('sidebar-open'); }
         function toggleSidebar() { document.body.classList.toggle('sidebar-open'); }
-        function closeSidebarOnMobile() { if (isMobile()) closeSidebar(); }
+        function closeSidebarOnMobile() { if (isTouchDevice()) closeSidebar(); }
 
-        /* ── Swipe mobile ── */
+        /* ── Swipe buat device touch ── */
         let touchStartX = 0;
         document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
         document.addEventListener('touchend', e => {
-            if (!isMobile()) return;
+            if (!isTouchDevice()) return;
             const dx = e.changedTouches[0].clientX - touchStartX;
             if (touchStartX < 30 && dx > 60) openSidebar();
             if (dx < -60) closeSidebar();

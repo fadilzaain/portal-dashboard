@@ -2,7 +2,7 @@
      resources/views/portal/indikatormutu.blade.php
      ============================================================ --}}
 @extends('layouts.app')
-@section('title', 'Dashboard Indikator Mutu')
+@section('title', 'Indikator Mutu')
 
 @push('styles')
     @vite('resources/css/portal/indikator-mutu.css')

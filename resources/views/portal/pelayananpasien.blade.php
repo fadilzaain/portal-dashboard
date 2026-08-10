@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Portal Pelayanan Pasien')
+@section('title', 'Pelayanan Pasien')
 
 @push('styles')
 <link rel="preconnect" href="https://fonts.googleapis.com">

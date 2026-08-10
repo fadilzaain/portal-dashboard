@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   DESIGN TOKENS — dipakai di seluruh shell (sidebar, topbar, dll)
+   DESIGN TOKENS 
 ════════════════════════════════════════════════════════════ */
 :root {
     /* -- permukaan & aurora -- */
@@ -31,7 +31,8 @@
     --rose:           #fb7185; --rose-dim:      rgba(251,113,133,.14);
     --gold:           #fbbf24; --gold-dim:      rgba(251,191,36,.14);
 
-    --sidebar-w:      260px; /* lebar drawer mobile */
+    --sidebar-w:      264px;  /* lebar sidebar pas kebuka */
+    --sidebar-gap:    .75rem; /* jarak sidebar ke tepi layar (top/left/bottom) */
     --font:           'Sora', sans-serif;
     --mono:           'JetBrains Mono', monospace;
 
@@ -75,6 +76,14 @@
     --shadow-rest:    0 16px 36px -18px rgba(30,41,59,.14), inset 0 1px 0 rgba(255,255,255,.6);
     --shadow-hover:   0 24px 52px -16px rgba(30,41,59,.2), 0 0 0 1px var(--border-hi), inset 0 1px 0 rgba(255,255,255,.7);
     --hero-shadow:    0 22px 52px -20px rgba(30,41,59,.16), inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+/* ── Ukuran sidebar responsif ── */
+@media (max-width: 768px) {
+    :root { --sidebar-w: min(78vw, 280px); --sidebar-gap: .5rem; }
+}
+@media (max-width: 480px) {
+    :root { --sidebar-w: 85vw; }
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -122,28 +131,37 @@ body.sidebar-open #sidebar-backdrop { display: block; }
 /* ══════════════════
    SIDEBAR 
 ═════════════════════ */
+/* Sidebar defaultnya SELALU nyembunyi total di luar layar  */
 #sidebar {
-    position: fixed; top: .75rem; left: .75rem; bottom: .75rem; width: 74px;
+    position: fixed; top: var(--sidebar-gap); left: var(--sidebar-gap); bottom: var(--sidebar-gap);
+    width: var(--sidebar-w);
     background: var(--sb-bg); border: 1px solid var(--sb-border); border-radius: 22px;
     backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%);
     box-shadow: var(--shadow-rest);
     display: flex; flex-direction: column; overflow: hidden; z-index: 55;
-    transition: width .38s cubic-bezier(.16,1,.3,1), box-shadow .38s ease, transform .38s cubic-bezier(.4,0,.2,1);
-    animation: sbFadeIn .5s ease both; /* cuma fade, gak ganggu posisi transform di mobile */
+    transform: translateX(calc(-100% - var(--sidebar-gap)));
+    transition: transform .38s cubic-bezier(.16,1,.3,1), box-shadow .38s ease;
+    animation: sbFadeIn .5s ease both;
 }
 @keyframes sbFadeIn { from { opacity: 0; } to { opacity: 1; } }
-#sidebar:hover { width: 246px; box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55); }
 
-/* Slide-in transform cuma dipakai di desktop, biar gak bentrok sama transform hidden di mobile */
-@media (min-width: 769px) {
-    #sidebar { animation: sbFadeIn .5s ease both, sbSlideIn .6s cubic-bezier(.16,1,.3,1) both; }
-    @keyframes sbSlideIn { from { transform: translateX(-16px); } to { transform: translateX(0); } }
+/* ── Reveal trigger ──
+   Sidebar kebuka kalau salah satu dari 3 kondisi ini kejadian:
+   1. mouse nempel di hover-zone (strip tipis tepi kiri)
+   2. cursor lagi di atas sidebar itu sendiri (biar gak nutup pas lagi dipake)
+   3. body.sidebar-open ke-toggle */
+#sidebar-hover-zone:hover ~ #sidebar,
+#sidebar:hover,
+body.sidebar-open #sidebar {
+    transform: translateX(0);
+    box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55);
 }
 
-/* ── Hover-reveal zone (khusus perangkat dengan mouse asli) ──
-   Strip tipis nempel di tepi kiri layar. Di-hover → sidebar mobile kebuka.
-   Disembunyikan dari layar sentuh (pointer: coarse) karena jari gak bisa "hover". */
+/* ── Hover-reveal zone ── */
 #sidebar-hover-zone { position: fixed; inset: 0 auto 0 0; width: 0; pointer-events: none; z-index: 54; }
+@media (hover: hover) and (pointer: fine) {
+    #sidebar-hover-zone { width: 26px; pointer-events: auto; }
+}
 
 /* Brand logo rs */
 .sidebar-brand { display: flex; align-items: center; gap: .85rem; padding: 1.35rem 1.1rem 1.1rem; flex-shrink: 0; }
@@ -156,10 +174,7 @@ body.sidebar-open #sidebar-backdrop { display: block; }
     transition: background .4s ease, border-color .4s ease;
 }
 .sidebar-brand-mark img { width: 100%; height: 100%; object-fit: contain; padding: 5px; }
-.sidebar-brand-word {
-    min-width: 0; opacity: 0; transform: translateX(-6px); white-space: nowrap;
-    transition: opacity .25s ease .05s, transform .3s ease .05s;
-}
+.sidebar-brand-word { min-width: 0; white-space: nowrap; }
 .sidebar-brand-name { font-family: var(--font); font-weight: 700; font-size: .88rem; letter-spacing: .01em; color: var(--text-hi); line-height: 1.25; }
 .sidebar-brand-sub  { font-size: .62rem; color: var(--text-low); letter-spacing: .02em; }
 
@@ -167,7 +182,7 @@ body.sidebar-open #sidebar-backdrop { display: block; }
 .sidebar-nav { flex: 1; overflow: hidden; padding: .4rem .65rem; display: flex; flex-direction: column; gap: .15rem; }
 .nav-label {
     font-size: .6rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text-low);
-    padding: .9rem .6rem .35rem; white-space: nowrap; opacity: 0; height: 0; overflow: hidden; transition: opacity .2s ease;
+    padding: .9rem .6rem .35rem; white-space: nowrap;
 }
 .nav-item {
     position: relative; display: flex; align-items: center; gap: .9rem; padding: .62rem .68rem; border-radius: 13px;
@@ -186,8 +201,8 @@ body.sidebar-open #sidebar-backdrop { display: block; }
 }
 .nav-item.active .nav-icon-box { background: var(--champagne-dim); color: var(--champagne); }
 .nav-icon { width: 17px; height: 17px; }
-.nav-txt  { font-size: .82rem; font-weight: 500; opacity: 0; transform: translateX(-4px); transition: opacity .2s ease .04s, transform .25s ease .04s; }
-.nav-badge { margin-left: auto; font-size: .68rem; color: var(--text-low); opacity: 0; transition: opacity .2s ease; flex-shrink: 0; }
+.nav-txt  { font-size: .82rem; font-weight: 500; }
+.nav-badge { margin-left: auto; font-size: .68rem; color: var(--text-low); flex-shrink: 0; }
 
 /* Footer: toggle tema + user card */
 .sidebar-footer { padding: .75rem; border-top: 1px solid var(--sb-border); flex-shrink: 0; display: flex; flex-direction: column; gap: .5rem; }
@@ -215,41 +230,26 @@ body.sidebar-open #sidebar-backdrop { display: block; }
     font-family: var(--font); font-weight: 700; font-size: .72rem; color: #160a1c;
     box-shadow: 0 0 0 2px var(--sb-bg), 0 0 0 3px var(--border-hi);
 }
-.user-info { min-width: 0; opacity: 0; transform: translateX(-4px); transition: opacity .2s ease .04s, transform .25s ease .04s; flex: 1; }
+.user-info { min-width: 0; flex: 1; }
 .user-name { font-size: .78rem; font-weight: 600; color: var(--text-hi); overflow: hidden; text-overflow: ellipsis; }
 .user-role { font-size: .65rem; color: var(--text-low); overflow: hidden; text-overflow: ellipsis; }
 .logout-btn {
     margin-left: auto; flex-shrink: 0; background: none; border: none; color: var(--text-low); cursor: pointer;
-    padding: .3rem; border-radius: 8px; display: flex; opacity: 0; transition: opacity .2s ease, color .2s, background .2s;
+    padding: .3rem; border-radius: 8px; display: flex; transition: color .2s, background .2s;
 }
 .logout-btn:hover { color: var(--rose); background: var(--wash-2); }
 
-/* Elemen yang cuma muncul pas sidebar melebar */
-#sidebar:hover .sidebar-brand-word, body.sidebar-open #sidebar .sidebar-brand-word,
-#sidebar:hover .nav-label,         body.sidebar-open #sidebar .nav-label,
-#sidebar:hover .nav-txt,           body.sidebar-open #sidebar .nav-txt,
-#sidebar:hover .nav-badge,         body.sidebar-open #sidebar .nav-badge,
-#sidebar:hover .user-info,         body.sidebar-open #sidebar .user-info,
-#sidebar:hover .logout-btn,        body.sidebar-open #sidebar .logout-btn,
-#sidebar:hover .theme-toggle-btn .nav-txt, body.sidebar-open #sidebar .theme-toggle-btn .nav-txt {
-    opacity: 1; transform: translateX(0);
-}
-#sidebar:hover .nav-label, body.sidebar-open #sidebar .nav-label { height: auto; }
-
-/* ── Main Wrap ── */
+/* ── Main Wrap ──
+   Sidebar sekarang overlay tdk dorong konten utama */
 #main-wrap {
     position: relative; z-index: 2;
     min-height: 100vh; display: flex; flex-direction: column;
-    transition: margin-left .38s cubic-bezier(.16,1,.3,1);
-}
-@media (min-width: 769px) {
-    #main-wrap { margin-left: 106px; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MOBILE MENU BUTTON 
+   SIDEBAR TOGGLE BUTTON
 ════════════════════════════════════════════════════════════ */
-#mobile-menu-btn {
+#sidebar-toggle-btn {
     display: none; align-items: center; justify-content: center;
     position: fixed; top: .85rem; right: .85rem; z-index: 55;
     width: 40px; height: 40px; border-radius: 13px;
@@ -259,8 +259,10 @@ body.sidebar-open #sidebar-backdrop { display: block; }
     cursor: pointer; color: var(--text-mid);
     transition: background .25s ease, color .25s ease, box-shadow .25s ease;
 }
-#mobile-menu-btn:hover { background: var(--wash-2); color: var(--text-hi); }
-@media (max-width: 768px) { #mobile-menu-btn { display: flex; } }
+#sidebar-toggle-btn:hover { background: var(--wash-2); color: var(--text-hi); }
+@media (hover: none), (pointer: coarse) {
+    #sidebar-toggle-btn { display: flex; }
+}
 
 /* Page Content */
 #page-content { padding: 2.25rem 2rem 3rem; flex: 1; }
@@ -270,36 +272,13 @@ body.sidebar-open #sidebar-backdrop { display: block; }
 .fade-up { animation: fadeUp .4s cubic-bezier(.4,0,.2,1) both; }
 
 /* ════════════════════
-   MOBILE — sidebar 
+   LAYAR SEMPIT — padding konten dirapetin
 ═══════════════════════ */
 @media (max-width: 768px) {
-    #sidebar {
-        left: .5rem; top: .5rem; bottom: .5rem; width: min(78vw, 280px);
-        transform: translateX(calc(-100% - 1rem));
-    }
-    body.sidebar-open #sidebar { transform: translateX(0); box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55); }
-
-    #main-wrap { margin-left: 0 !important; }
-    #page-content { padding: 4.5rem 1rem 1rem; } 
+    #page-content { padding-left: 1rem; padding-right: 1rem; padding-top: 1.5rem; padding-bottom: 1rem; }
 }
-
-/* Hover-reveal: hanya aktif kalau perangkat punya mouse asli (pointer halus + support hover).
-   Layar sentuh gak dapet ini — mereka tetap pakai tombol hamburger / swipe di atas. */
-@media (max-width: 768px) and (hover: hover) and (pointer: fine) {
-    #sidebar-hover-zone { width: 26px; pointer-events: auto; }
-    #sidebar-hover-zone:hover ~ #sidebar,
-    #sidebar:hover {
-        transform: translateX(0);
-        box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55);
-    }
-}
-
-/* ══════════════
-   SMALL MOBILE
-═════════════════ */
 @media (max-width: 480px) {
-    :root { --sidebar-w: 85vw; }
-    #page-content { padding: 4.25rem .75rem .75rem; }
+    #page-content { padding-left: .75rem; padding-right: .75rem; }
 }
 
 /* ══════════════════════════════════════
@@ -307,14 +286,14 @@ body.sidebar-open #sidebar-backdrop { display: block; }
 ══════════════════════════════════════ */
 @media (min-width: 1920px) {
     #page-content {
-        padding: .75rem 2rem;
+        padding-left: 2rem; padding-right: 2rem; padding-top: .75rem; padding-bottom: .75rem;
         height: 100vh;
         overflow: hidden;
         display: flex;
         flex-direction: column;
     }
 
-    /* Greeting card lebih compact */
+    /* Greeting card bikin compact */
     .greeting-card {
         padding: .6rem 1.5rem;
         margin-bottom: .6rem;
@@ -364,4 +343,9 @@ body.sidebar-open #sidebar-backdrop { display: block; }
     .fin-val          { font-size: .78rem; }
     .fin-label        { font-size: .62rem; }
     .card-footer      { padding-top: .4rem; }
+}
+
+/* Device touch */
+@media (hover: none), (pointer: coarse) {
+    #page-content { padding-top: 4.5rem; }
 }

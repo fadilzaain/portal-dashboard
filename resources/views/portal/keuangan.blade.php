@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Dashboard Keuangan')
+@section('title', 'Keuangan')
 
 @push('styles')
     @vite('resources/css/portal/keuangan.css')
