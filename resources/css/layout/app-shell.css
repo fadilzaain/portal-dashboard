@@ -57,25 +57,35 @@
 
 /* ── LIGHT MODE ── */
 [data-theme="light"] {
-    --bg-0:           #eef1f7;
-    --bg-1:           #e6eaf2;
-    --glass:          rgba(255,255,255,.6);
-    --glass-strong:   rgba(255,255,255,.8);
-    --border:         rgba(15,23,42,.08);
-    --border-hi:      rgba(15,23,42,.15);
-    --text-hi:        #12172a;
-    --text-mid:       #5c6478;
-    --text-low:       #8b93a8;
-    --aurora-op:      .2;
-    --noise-op:       .018;
-    --shine:          rgba(15,23,42,.035);
-    --wash-1:         rgba(15,23,42,.028);
-    --wash-2:         rgba(15,23,42,.045);
-    --sb-bg:          linear-gradient(185deg,#ffffff,#f4f6fb 65%);
-    --sb-border:      rgba(15,23,42,.07);
-    --shadow-rest:    0 16px 36px -18px rgba(30,41,59,.14), inset 0 1px 0 rgba(255,255,255,.6);
-    --shadow-hover:   0 24px 52px -16px rgba(30,41,59,.2), 0 0 0 1px var(--border-hi), inset 0 1px 0 rgba(255,255,255,.7);
-    --hero-shadow:    0 22px 52px -20px rgba(30,41,59,.16), inset 0 1px 0 rgba(255,255,255,.7);
+    --bg-0:           #f8f6f1;
+    --bg-1:           #efe9dc;
+    --glass:          rgba(255,255,255,.68);
+    --glass-strong:   rgba(255,255,255,.88);
+    --border:         rgba(41,33,20,.10);
+    --border-hi:      rgba(41,33,20,.18);
+    --text-hi:        #211c14;
+    --text-mid:       #5b5344;
+    --text-low:       #857c68;
+    --aurora-op:      .26;
+    --noise-op:       .022;
+    --shine:          rgba(41,33,20,.05);
+    --wash-1:         rgba(41,33,20,.035);
+    --wash-2:         rgba(41,33,20,.055);
+    --sb-bg:          linear-gradient(185deg,#fffdf9,#f2ede1 65%);
+    --sb-border:      rgba(41,33,20,.09);
+    --shadow-rest:    0 16px 36px -18px rgba(64,50,20,.16), inset 0 1px 0 rgba(255,255,255,.7);
+    --shadow-hover:   0 26px 56px -18px rgba(64,50,20,.22), 0 0 0 1px var(--border-hi), inset 0 1px 0 rgba(255,255,255,.8);
+    --hero-shadow:    0 22px 52px -20px rgba(64,50,20,.18), inset 0 1px 0 rgba(255,255,255,.78);
+
+    /* -- palet aksen: versi jewel-tone (lebih dalem & lebih saturated
+       daripada versi dark mode) biar tetep kontras & "mewah" di atas bg terang -- */
+    --champagne:      #8c6d3f; --champagne-dim: rgba(140,109,63,.16);
+    --teal:           #0f766e; --teal-dim:      rgba(15,118,110,.16);
+    --sky:            #0369a1; --sky-dim:       rgba(3,105,161,.14);
+    --violet:         #6d28d9; --violet-dim:    rgba(109,40,217,.14);
+    --rose:           #be123c; --rose-dim:      rgba(190,18,60,.14);
+    --gold:           #b45309; --gold-dim:      rgba(180,83,9,.15);
+    --accent-glow:    rgba(15,118,110,.22);
 }
 
 /* ── Ukuran sidebar responsif ── */

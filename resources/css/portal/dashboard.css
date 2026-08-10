@@ -5,7 +5,7 @@
 /* Hero Card */
 .hero {
     position: relative; overflow: hidden; border-radius: 26px; padding: 2.1rem 2.4rem; margin-bottom: 1.85rem;
-    background: linear-gradient(155deg, rgba(45,212,191,.1), rgba(228,198,143,.05) 45%, rgba(255,255,255,.015));
+    background: linear-gradient(155deg, color-mix(in srgb, var(--teal) 14%, transparent), color-mix(in srgb, var(--champagne) 8%, transparent) 45%, var(--shine));
     border: 1px solid var(--border);
     backdrop-filter: blur(30px) saturate(160%); -webkit-backdrop-filter: blur(30px) saturate(160%);
     box-shadow: var(--hero-shadow);
@@ -56,8 +56,7 @@
 .hstat-lbl { font-size: .64rem; color: var(--text-low); text-transform: uppercase; letter-spacing: .08em; margin-top: .25rem; }
 .hero-glow {
     position: absolute; top: -90px; right: -70px; width: 300px; height: 300px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(228,198,143,.18), transparent 70%); pointer-events: none;
-}
+background: radial-gradient(circle, color-mix(in srgb, var(--champagne) 22%, transparent), transparent 70%); pointer-events: none;}
 
 @media (max-width: 640px) {
     .hero { padding: 1.35rem 1.15rem; margin-bottom: 1.25rem; border-radius: 18px; }
