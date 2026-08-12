@@ -91,10 +91,10 @@ async function loadAll() {
     reloadTimer = setTimeout(loadAll, RELOAD_MS);
 
     const params = buildParams();
-    await Promise.all([
-        loadCharts(params),
-        loadSummary(params),
-    ]);
+    // chart-jenis di-fetch sekali di sini, hasilnya dipakai bareng
+    // buat render chart (loadCharts) & ringkasan nominal (loadSummary)
+    const chartData = await loadCharts(params);
+    await loadSummary(params, chartData);
 }
 
 /* ══════════════════════════════════════════════
@@ -227,6 +227,8 @@ async function loadCharts(params) {
         // Donut komposisi
         renderDonut(d.summary ?? null);
 
+        return d; // dipakai ulang oleh loadSummary, gak perlu fetch chart-jenis lagi
+
     } catch (e) {
         console.error('[chartJenis] error:', e);
         setError('rinap',  true);
@@ -246,6 +248,9 @@ async function loadCharts(params) {
             { ...dummy, pengajuan:[25,20,35,28,40,30,22], terbayar_count:[18,14,28,22,32,24,16] },
             { pengajuan:'rgba(99,102,241,.65)', terbayar:'rgba(59,130,246,.65)' }
         );
+
+        return null; // gagal fetch — loadSummary bakal skip bagian rinap/rjalan
+
     } finally {
         setLoading('rinap',  false);
         setLoading('rjalan', false);
@@ -321,7 +326,7 @@ function renderDelta(elId, delta) {
     el.innerHTML = `<span class="delta-badge ${cls}">${icon} ${Math.abs(delta)}%</span>`;
 }
 
-async function loadSummary(params) {
+async function loadSummary(params, chartData) {
     try {
         // summary endpoint untuk terbayar/pending/tidak_layak
         const d = await apiFetch('summary', params);
@@ -338,17 +343,19 @@ async function loadSummary(params) {
         set('pending',    'pending');
         set('tidaklayak', 'tidak_layak');
 
-        // rinap & rjalan dari chart-jenis, ambil lagi untuk summary box
-        const c = await apiFetch('chart-jenis', params);
-        const rinapTotal  = (c.rinap?.pengajuan  ?? []).reduce((a, b) => a + b, 0);
-        const rjalanTotal = (c.rjalan?.pengajuan ?? []).reduce((a, b) => a + b, 0);
-        const rinapNom    = (c.rinap?.nominal    ?? []).reduce((a, b) => a + b, 0);
-        const rjalanNom   = (c.rjalan?.nominal   ?? []).reduce((a, b) => a + b, 0);
+        // rinap & rjalan diambil dari chartData yang udah di-fetch loadCharts,
+        // gak perlu request /chart-jenis lagi ke server
+        if (chartData) {
+            const rinapTotal  = (chartData.rinap?.pengajuan  ?? []).reduce((a, b) => a + b, 0);
+            const rjalanTotal = (chartData.rjalan?.pengajuan ?? []).reduce((a, b) => a + b, 0);
+            const rinapNom    = (chartData.rinap?.nominal    ?? []).reduce((a, b) => a + b, 0);
+            const rjalanNom   = (chartData.rjalan?.nominal   ?? []).reduce((a, b) => a + b, 0);
 
-        $('sum-rinap-rp').textContent    = fmtRp(rinapNom);
-        $('sum-rinap-kasus').textContent = fmtNum(rinapTotal) + ' kasus';
-        $('sum-rjalan-rp').textContent   = fmtRp(rjalanNom);
-        $('sum-rjalan-kasus').textContent = fmtNum(rjalanTotal) + ' kasus';
+            $('sum-rinap-rp').textContent     = fmtRp(rinapNom);
+            $('sum-rinap-kasus').textContent  = fmtNum(rinapTotal) + ' kasus';
+            $('sum-rjalan-rp').textContent    = fmtRp(rjalanNom);
+            $('sum-rjalan-kasus').textContent = fmtNum(rjalanTotal) + ' kasus';
+        }
 
     } catch (e) {
         console.error('[summary] error:', e);
@@ -366,8 +373,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         $('date-from').value = dateFrom;
         $('date-to').value   = dateTo;
 
-        //
-        // currentPeriod = 'custom';
         document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
         const label = `${dateFrom} → ${dateTo}`;
         ['label-rinap', 'label-rjalan', 'label-komposisi'].forEach(id => $(id).textContent = label);
@@ -381,13 +386,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         dateTo     = `${y}-${m}-${last}`;
         $('date-from').value = dateFrom;
         $('date-to').value   = dateTo;
-        // currentPeriod = 'custom'; 
     }
 
-    loadAll(); 
+    loadAll();
 });
-        // ══════════════════════════════════════════════
-        //   EXPOSE GLOBAL (required for inline onclick)
-        // ══════════════════════════════════════════════
-        window.setPeriod       = setPeriod;
-        window.applyCustomRange = applyCustomRange;
+
+// ══════════════════════════════════════════════
+//   EXPOSE GLOBAL (required for inline onclick)
+// ══════════════════════════════════════════════
+window.setPeriod        = setPeriod;
+window.applyCustomRange = applyCustomRange;

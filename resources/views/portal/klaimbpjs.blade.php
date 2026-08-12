@@ -1,39 +1,31 @@
 @extends('layouts.app')
 
 @section('title', 'Klaim BPJS')
-@section('page_title', 'Klaim BPJS')
-@section('page_subtitle', 'Data Pengajuan & Pembayaran')
 
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+@vite('resources/css/portal/portal-navbar.css')
 @vite('resources/css/portal/klaimbpjs.css')
 @endpush
 
 @section('content')
 
-{{-- ══════════════════════════════════════════
-     FILTER BAR
-══════════════════════════════════════════ --}}
-<div class="filter-wrap fade-up">
-    <a href="{{ url('dashboard') }}" class="btn-home" style="margin-bottom: 10px;">
-        <x-icon name="home" width="13" height="13" />
-        Home
-    </a>
-    <div class="filter-heading">
-        <h1>Dashboard Klaim BPJS</h1>
-        <p>Rawat Inap & Rawat Jalan — data terbayar per periode</p>
-    </div>
-    <div class="period-bar">
-        <button class="period-btn active" data-label="per Minggu"  onclick="setPeriod(this,'weekly')">Mingguan</button>
-        <button class="period-btn"        data-label="per Bulan"   onclick="setPeriod(this,'monthly')">Bulanan</button>
-        <button class="period-btn"        data-label="per Tahun"   onclick="setPeriod(this,'yearly')">Tahunan</button>
-        <div class="period-divider"></div>
-        <input type="date" id="date-from" class="date-input">
-        <span style="color:var(--text-muted);font-size:.75rem;">—</span>
-        <input type="date" id="date-to"   class="date-input">
+<x-portal.navbar title="Klaim BPJS">
+    <div class="bpjs-filter-pill fade-up">
+        <div class="bpjs-period-toggle">
+            <button class="period-btn active" data-label="per Minggu" onclick="setPeriod(this,'weekly')">Mingguan</button>
+            <button class="period-btn"        data-label="per Bulan"  onclick="setPeriod(this,'monthly')">Bulanan</button>
+            <button class="period-btn"        data-label="per Tahun"  onclick="setPeriod(this,'yearly')">Tahunan</button>
+        </div>
+        <div class="bpjs-filter-divider"></div>
+        <div class="bpjs-daterange">
+            <input type="date" id="date-from" class="date-input">
+            <span class="bpjs-daterange-sep">–</span>
+            <input type="date" id="date-to" class="date-input">
+        </div>
         <button class="filter-apply-btn" onclick="applyCustomRange()">Filter</button>
     </div>
-</div>
+</x-portal.navbar>
 
 {{-- ══════════════════════════════════════════
      GRAFIK 1 — RAWAT INAP

@@ -38,7 +38,7 @@ function sdmScrollToUnit(slug) {
 function rkFilter(i, q) {
     q = q.trim().toLowerCase();
     const wrap = document.getElementById(`rk-detail-${i}`);
-    const rows = wrap.querySelectorAll('tbody tr');
+    const rows = wrap.querySelectorAll('.rk-row');
     let visible = 0;
 
     rows.forEach(row => {

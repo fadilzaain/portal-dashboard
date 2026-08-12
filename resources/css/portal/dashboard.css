@@ -79,7 +79,7 @@ background: radial-gradient(circle, color-mix(in srgb, var(--champagne) 22%, tra
 }
 
 /* ═══════════════════════════════════════
-   SECTION HEADER (di atas grid dashboard)
+   SECTION HEADER 
 ════════════════════════════════════════ */
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.35rem; }
 .section-title  { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-mid); }

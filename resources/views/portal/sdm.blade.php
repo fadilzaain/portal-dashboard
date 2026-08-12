@@ -357,107 +357,11 @@
 
         <div class="rk-grid" id="sdm-unit-grid">
             @forelse ($unitDetail as $i => $u)
-            @php
-                $rkRadius = 26;
-                $rkRing   = 2 * M_PI * $rkRadius;
-                $rkOffset = $rkRing - ($u['pct'] / 100 * $rkRing);
-                $jumlahJabatan = count($u['detail']);
-
-                // Urutin baris jabatan: KURANG paling atas (paling perlu perhatian), lalu LEBIH, baru CUKUP.
-                // Di dalam status yang sama diurutin alfabetis biar gampang di-scan.
-                $ketPriority   = ['KURANG' => 0, 'LEBIH' => 1, 'CUKUP' => 2];
-                $sortedDetail  = collect($u['detail'])->sortBy(
-                    fn($d) => sprintf('%d-%s', $ketPriority[$d['keterangan']] ?? 3, $d['jabatan'])
-                )->values();
-            @endphp
-            <div class="rk-card status-{{ $u['status'] }}" data-rk="{{ $i }}" data-status="{{ $u['status'] }}" data-unit="{{ strtolower($u['unit']) }}" id="unit-{{ $u['slug'] }}">
-                <button type="button" class="rk-card-head" onclick="rkToggle({{ $i }})" aria-expanded="false">
-                    <div class="rk-ring-wrap">
-                        <svg class="rk-ring" viewBox="0 0 64 64">
-                            <circle class="rk-ring-track" cx="32" cy="32" r="{{ $rkRadius }}"></circle>
-                            <circle class="rk-ring-fill" cx="32" cy="32" r="{{ $rkRadius }}"
-                                style="stroke-dasharray:{{ $rkRing }};stroke-dashoffset:{{ $rkRing }}"
-                                data-target-offset="{{ $rkOffset }}"></circle>
-                        </svg>
-                        <svg class="rk-ring-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/>
-                        </svg>
-                    </div>
-                    <div class="rk-card-body">
-                        <div class="rk-card-top">
-                            <span class="rk-card-name">{{ $u['unit'] }}</span>
-                            <span class="rk-status-pill">{{ ucfirst($u['status']) }}</span>
-                        </div>
-                        <div class="rk-card-pct">{{ $u['pct'] }}<span>%</span></div>
-                        <div class="rk-card-sub">{{ number_format($u['tersedia']) }} / {{ number_format($u['kebutuhan']) }} orang &middot; {{ $jumlahJabatan }} jabatan</div>
-                    </div>
-                    <svg class="rk-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </button>
-
-                <div class="rk-expand">
-                    <div class="rk-expand-inner">
-                        <div class="rk-detail-toolbar">
-                            <div class="rk-search-wrap">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
-                                <input type="text" class="rk-search" placeholder="Cari jabatan..." oninput="rkFilter({{ $i }}, this.value)">
-                            </div>
-                            @if ($u['kurangCount'] > 0)
-                            <span class="rk-kurang-tag">{{ $u['kurangCount'] }} formasi kurang</span>
-                            @endif
-                        </div>
-
-                        {{-- Tabel detail per jabatan — sedetail bezetting SI-OSMAR: PNS/PPPK/PPPK-PW/Non ASN/Jumlah/Kebutuhan/Status --}}
-                        <div class="rk-detail-wrap" id="rk-detail-{{ $i }}">
-                            <div class="bez-table-wrap rk-table-wrap">
-                                <table class="bez-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Jabatan</th>
-                                            <th class="c" style="width:46px">PNS</th>
-                                            <th class="c" style="width:50px">PPPK</th>
-                                            <th class="c" style="width:62px">PPPK-PW</th>
-                                            <th class="c" style="width:62px">Non ASN</th>
-                                            <th class="c" style="width:52px">Jumlah</th>
-                                            <th class="c" style="width:68px">Kebutuhan</th>
-                                            <th class="c" style="width:78px">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($sortedDetail as $d)
-                                        <tr data-search="{{ strtolower($d['jabatan']) }}">
-                                            <td>
-                                                <div style="font-weight:600">{{ $d['jabatan'] }}</div>
-                                                @if ($d['kualifikasi'] !== '-')
-                                                <div style="font-size:10px;color:var(--sdm-text-muted);margin-top:1px">{{ $d['kualifikasi'] }}</div>
-                                                @endif
-                                            </td>
-                                            <td class="c">{{ $d['pns'] }}</td>
-                                            <td class="c">{{ $d['pppk'] }}</td>
-                                            <td class="c">{{ $d['pppk_pw'] }}</td>
-                                            <td class="c">{{ $d['non_asn'] }}</td>
-                                            <td class="c" style="font-weight:700">{{ $d['jumlah'] }}</td>
-                                            <td class="c">{{ $d['kebutuhan'] }}</td>
-                                            <td class="c"><span class="rk-badge {{ $ketBadge[$d['keterangan']] ?? 'rk-badge-green' }}">{{ ucfirst(strtolower($d['keterangan'])) }}</span></td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="rk-empty" id="rk-empty-{{ $i }}" style="display:none">Tidak ada jabatan yang cocok</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <x-portal.rk-unit-card :u="$u" :i="$i" :ket-badge="$ketBadge" />
             @empty
             <div class="rk-empty-state">Data detail per unit belum tersedia.</div>
             @endforelse
         </div>
-        <div class="rk-empty-state" id="rk-unit-empty" style="display:none">Tidak ada unit yang cocok dengan pencarian.</div>
-    </div>
 
 </div>
 @endsection

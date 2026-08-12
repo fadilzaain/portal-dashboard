@@ -531,7 +531,7 @@
 .rk-card-head {
     width: 100%;
     display: grid;
-    grid-template-columns: 64px 1fr auto;
+    grid-template-columns: 64px 1fr auto auto;
     align-items: center;
     gap: 14px;
     padding: 18px 16px;
@@ -614,19 +614,52 @@
     font-size: 12px; color: var(--sdm-text);
 }
 .rk-search::placeholder { color: var(--sdm-text-muted); }
-.rk-kurang-tag {
-    font-size: 10px; font-weight: 700; white-space: nowrap;
-    padding: 5px 10px; border-radius: 99px;
-    background: rgba(248,113,113,0.12); color: var(--accent-red);
-}
 
 .rk-detail-wrap {
     border-top: 1px solid var(--sdm-border);
     margin: 0 16px 16px; padding-top: 12px;
 }
+.rk-kurang-chip {
+    font-size: 10px; font-weight: 700; white-space: nowrap;
+    padding: 5px 10px; border-radius: 99px; align-self: center;
+    background: rgba(248,113,113,0.12); color: var(--accent-red);
+}
 
-.rk-table-wrap { max-height: 300px; }
-.rk-table-wrap .bez-table { table-layout: auto; }
+.rk-row-list {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 340px; overflow-y: auto; padding-right: 2px;
+}
+
+.rk-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    background: var(--sdm-surface-alt);
+    border: 1px solid var(--sdm-border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.rk-row:hover { border-color: var(--rk-accent, var(--accent-blue)); transform: translateX(2px); }
+
+.rk-row-main { min-width: 0; flex: 1; }
+.rk-row-name {
+    font-size: 12.5px; font-weight: 700; color: var(--sdm-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rk-row-kualifikasi { font-size: 10px; color: var(--sdm-text-muted); margin-top: 1px; }
+
+.rk-row-komposisi {
+    display: flex; height: 5px; border-radius: 99px; overflow: hidden;
+    background: var(--sdm-track); margin-top: 7px; max-width: 260px;
+}
+.rk-komposisi-seg { display: block; height: 100%; min-width: 2px; }
+.rk-komposisi-seg.tone-blue   { background: var(--accent-blue); }
+.rk-komposisi-seg.tone-teal   { background: var(--accent-teal); }
+.rk-komposisi-seg.tone-amber  { background: var(--accent-amber); }
+.rk-komposisi-seg.tone-purple { background: var(--accent-purple); }
+
+.rk-row-side { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.rk-row-jumlah { font-size: 13px; font-weight: 700; color: var(--sdm-text); white-space: nowrap; }
+.rk-row-jumlah-sep, .rk-row-jumlah-target { font-weight: 500; color: var(--sdm-text-muted); }
 .rk-row-hidden { display: none !important; }
 
 /* ── TOOLBAR unit: search + filter status (Semua/Kritis/Waspada/Aman) ── */
