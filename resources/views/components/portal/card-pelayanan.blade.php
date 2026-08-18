@@ -20,55 +20,46 @@
 @endphp
 
 <a href="{{ route('portal.pelayananpasien') }}" class="app-card theme-teal">
-    <div class="card-header-row">
-        <div class="card-header-left">
-            <div class="app-icon icon-teal">
-                <x-icon name="heart" width="20" height="20" stroke-width="1.8" />
-            </div>
-            <div class="card-title-wrap">
-                <div class="app-name">Pelayanan Pasien</div>
-                <div class="app-sub">Ringkasan Pelayanan Pasien</div>
-            </div>
-        </div>
-            <span class="card-month-badge month-teal">{{ $bulanLabel }} {{ $tahun }}</span>
-    </div>
+    <span class="card-shine"></span>
+
+    <x-portal.card-header
+        theme="teal"
+        icon="heart"
+        title="Pelayanan Pasien"
+        subtitle="Ringkasan Pelayanan Pasien"
+        :badge="$bulanLabel . ' ' . $tahun"
+    />
 
     <div class="card-stats">
         <div class="stat-box">
             <div class="stat-box-label">BOR</div>
-            <div class="stat-box-val">
-                {{ $borVal }}%
+            <div class="stat-box-val" data-count-target="{{ $borVal }}" data-count-decimal="1">
+                <span class="count-num">{{ number_format($borVal, 1, ',', '.') }}</span>%
                 <span class="stat-box-badge {{ $borStatus }}">{{ $borLabel }}</span>
             </div>
         </div>
         <div class="stat-box">
             <div class="stat-box-label">LOS</div>
-            <div class="stat-box-val">
-                {{ $losVal }} hr
+            <div class="stat-box-val" data-count-target="{{ $losVal }}" data-count-decimal="1">
+                <span class="count-num">{{ number_format($losVal, 1, ',', '.') }}</span> hr
                 <span class="stat-box-badge {{ $losStatus }}">{{ $losLabel }}</span>
             </div>
         </div>
         <div class="stat-box">
             <div class="stat-box-label">TOI</div>
-            <div class="stat-box-val">
-                {{ $toiVal }} hr
+            <div class="stat-box-val" data-count-target="{{ $toiVal }}" data-count-decimal="1">
+                <span class="count-num">{{ number_format($toiVal, 1, ',', '.') }}</span> hr
                 <span class="stat-box-badge {{ $toiStatus }}">{{ $toiLabel }}</span>
             </div>
         </div>
         <div class="stat-box">
             <div class="stat-box-label">BTO</div>
-            <div class="stat-box-val">
-                {{ $btoVal }}
+            <div class="stat-box-val" data-count-target="{{ $btoVal }}" data-count-decimal="1">
+                <span class="count-num">{{ number_format($btoVal, 1, ',', '.') }}</span>
                 <span class="stat-box-badge {{ $btoStatus }}">{{ $btoLabel }}</span>
             </div>
         </div>
     </div>
 
-    <div class="card-footer">
-        <span class="card-open-btn">
-            Lihat Detail
-            <x-icon name="chevron-right" width="14" height="14" stroke-width="2.5" />
-        </span>
-        <span class="card-status-dot"></span>
-    </div>
+    <x-portal.card-footer />
 </a>

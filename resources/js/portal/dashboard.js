@@ -1,8 +1,7 @@
+import { countUpAll } from './utils/count-up.js';
+
 // ── Data terinject dari blade ───────────────────────────────
 const { dashboardRoute = '' } = window.DASHBOARD_DATA ?? {};
-
-const dashReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const dashCanHover     = window.matchMedia('(hover: hover)').matches;
 
 // ════════════════════════════════════════════════════════════════
 // GREETING (Selamat Pagi/Siang/Sore/Malam) — ganti tiap 30 detik
@@ -56,19 +55,7 @@ function animateProgressBars() {
 window.addEventListener('load', animateProgressBars);
 
 // ════════════════════════════════════════════════════════════════
-// TILT-ON-MOUSEMOVE — miring halus ikutin posisi cursor
+// COUNT-UP ANGKA DI 5 CARD DASHBOARD (BOR, LOS, SDM, Mutu, dst)
 // ════════════════════════════════════════════════════════════════
-if (!dashReduceMotion && dashCanHover) {
-    document.querySelectorAll('.app-card').forEach((card) => {
-        card.addEventListener('mousemove', (e) => {
-            const r = card.getBoundingClientRect();
-            const x = ((e.clientX - r.left) / r.width - 0.5) * 6;
-            const y = ((e.clientY - r.top) / r.height - 0.5) * -6;
-            card.style.transform =
-                `translateY(-7px) perspective(800px) rotateX(${y}deg) rotateY(${x}deg)`;
-        });
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = '';
-        });
-    });
-}
+window.addEventListener('load', () => countUpAll());
+

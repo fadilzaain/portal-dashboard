@@ -19,78 +19,77 @@
 @endphp
 
 <a href="{{ route('sdm.portal.sdm') }}" class="app-card theme-purple">
-    <div class="card-header-row">
-        <div class="card-header-left">
-            <div class="app-icon icon-purple">
-                <x-icon name="users" width="20" height="20" stroke-width="1.8" />
-            </div>
-            <div class="card-title-wrap">
-                <div class="app-name">SDM</div>
-                <div class="app-sub">Ringkasan Pegawai</div>
-            </div>
-        </div>
-        <span class="card-month-badge month-purple">{{ $tahun }}</span>
-    </div>
+    <span class="card-shine"></span>
+
+    <x-portal.card-header
+        theme="purple"
+        icon="users"
+        title="SDM"
+        subtitle="Ringkasan Pegawai"
+        :badge="$tahun"
+    />
 
     {{-- Baris atas: angka + donut + legend --}}
     <div class="sdm-row">
         <div>
-            <div class="sdm-big-num">{{ number_format($totalSdm) }}</div>
+            <div class="sdm-big-num" data-count-target="{{ $totalSdm }}">
+                <span class="count-num">{{ number_format($totalSdm) }}</span>
+            </div>
             <div class="sdm-orang">Orang</div>
         </div>
 
         <div class="donut-wrap">
             <svg viewBox="0 0 64 64" width="64" height="64">
                 <circle cx="32" cy="32" r="{{ $r }}" fill="none"
-                    stroke="rgba(139,92,246,.15)" stroke-width="8"/>
+                    stroke="var(--wash-2)" stroke-width="8"/>
                 <circle cx="32" cy="32" r="{{ $r }}" fill="none"
-                    stroke="#3b82f6" stroke-width="8"
+                    stroke="var(--sky)" stroke-width="8"
                     stroke-dasharray="{{ $dash1 }} {{ $dash2 }}"
                     stroke-linecap="round"/>
                 <circle cx="32" cy="32" r="{{ $r }}" fill="none"
-                    stroke="#8b5cf6" stroke-width="8"
+                    stroke="var(--violet)" stroke-width="8"
                     stroke-dasharray="{{ $dash2 }} {{ $dash1 }}"
                     stroke-dashoffset="-{{ $dash1 }}"
                     stroke-linecap="round"/>
             </svg>
-            <div class="donut-center">{{ $pctMedis }}%</div>
+            <div class="donut-center" data-count-target="{{ $pctMedis }}">
+                <span class="count-num">{{ $pctMedis }}</span>%
+            </div>
         </div>
 
         <div class="sdm-legend">
             <div class="legend-row">
-                <span class="legend-dot" style="background:#3b82f6"></span>
+                <span class="legend-dot legend-dot-sky"></span>
                 Medis
-                <span class="legend-val">{{ number_format($medisSdm) }}</span>
+                <span class="legend-val" data-count-target="{{ $medisSdm }}">
+                    <span class="count-num">{{ number_format($medisSdm) }}</span>
+                </span>
             </div>
             <div class="legend-row">
-                <span class="legend-dot" style="background:#8b5cf6"></span>
+                <span class="legend-dot legend-dot-violet"></span>
                 Non Medis
-                <span class="legend-val">{{ number_format($nonSdm) }}</span>
+                <span class="legend-val" data-count-target="{{ $nonSdm }}">
+                    <span class="count-num">{{ number_format($nonSdm) }}</span>
+                </span>
             </div>
         </div>
     </div>
 
     {{-- Baris bawah: shift --}}
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;">
-        <div class="stat-box" style="text-align:center;">
-            <div class="stat-box-label" style="color:#f59e0b">Pagi</div>
-            <div class="stat-box-val" style="font-size:.85rem">{{ number_format($shiftPagi) }}</div>
+    <div class="sdm-shift-grid">
+        <div class="stat-box stat-box-compact">
+            <div class="stat-box-label shift-pagi">Pagi</div>
+            <div class="stat-box-val">{{ number_format($shiftPagi) }}</div>
         </div>
-        <div class="stat-box" style="text-align:center;">
-            <div class="stat-box-label" style="color:#fb923c">Siang</div>
-            <div class="stat-box-val" style="font-size:.85rem">{{ number_format($shiftSiang) }}</div>
+        <div class="stat-box stat-box-compact">
+            <div class="stat-box-label shift-siang">Siang</div>
+            <div class="stat-box-val">{{ number_format($shiftSiang) }}</div>
         </div>
-        <div class="stat-box" style="text-align:center;">
-            <div class="stat-box-label" style="color:#38bdf8">Malam</div>
-            <div class="stat-box-val" style="font-size:.85rem">{{ number_format($shiftMalam) }}</div>
+        <div class="stat-box stat-box-compact">
+            <div class="stat-box-label shift-malam">Malam</div>
+            <div class="stat-box-val">{{ number_format($shiftMalam) }}</div>
         </div>
     </div>
 
-    <div class="card-footer">
-        <span class="card-open-btn">
-            Lihat Detail
-            <x-icon name="chevron-right" width="14" height="14" stroke-width="2.5" />
-        </span>
-        <span class="card-status-dot"></span>
-    </div>
+    <x-portal.card-footer />
 </a>

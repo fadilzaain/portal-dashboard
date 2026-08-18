@@ -9,7 +9,7 @@
     $pctBelanja  = $pendapatan > 0 ? min(100, round($belanja / $pendapatan * 100)) : 0;
 
     $bulanNames = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-    $labelPeriode = 'Jan – ' . $bulanNames[$bulanAkhir]; //
+    $labelPeriode = 'Jan – ' . $bulanNames[$bulanAkhir];
     $fmtRupiah = function($n) {
         if ($n >= 1_000_000_000) return 'Rp ' . number_format($n / 1_000_000_000, 1, ',', '.') . ' M';
         if ($n >= 1_000_000)     return 'Rp ' . number_format($n / 1_000_000, 1, ',', '.') . ' Jt';
@@ -18,18 +18,15 @@
 @endphp
 
 <a href="{{ route('portal.keuangan') }}" class="app-card theme-blue">
-    <div class="card-header-row">
-        <div class="card-header-left">
-            <div class="app-icon icon-blue">
-                <x-icon name="currency-dollar" width="20" height="20" stroke-width="1.8" />
-            </div>
-            <div class="card-title-wrap">
-                <div class="app-name">Keuangan</div>
-                <div class="app-sub">pendapatan &amp; belanja</div>
-            </div>
-        </div>
-            <span class="card-month-badge month-blue">{{ $labelPeriode }} {{ $tahun }}</span>
-    </div>
+    <span class="card-shine"></span>
+
+    <x-portal.card-header
+        theme="blue"
+        icon="currency-dollar"
+        title="Keuangan"
+        subtitle="pendapatan & belanja"
+        :badge="$labelPeriode . ' ' . $tahun"
+    />
 
     <div class="fin-row">
         <div class="fin-item">
@@ -41,7 +38,7 @@
             <span class="fin-val down">{{ $fmtRupiah($belanja) }}</span>
         </div>
         <div class="fin-selisih">
-            <span style="font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:{{ $isSurplus ? '#34d399' : '#fb7185' }}">
+            <span class="fin-selisih-amount {{ $isSurplus ? 'text-success' : 'text-danger' }}">
                 {{ $isSurplus ? '+' : '-' }} {{ $fmtRupiah(abs($selisih)) }}
             </span>
             @if($isSurplus)
@@ -56,14 +53,10 @@
         <div class="progress-bar-wrap">
             <div class="progress-bar-fill" style="width:{{ $pctBelanja }}%"></div>
         </div>
-            <div class="progress-pct">{{ $pctBelanja }}% belanja dari pendapatan · {{ $tahun }}</div>
+        <div class="progress-pct" data-count-target="{{ $pctBelanja }}">
+            <span class="count-num">{{ $pctBelanja }}</span>% belanja dari pendapatan · {{ $tahun }}
+        </div>
     </div>
 
-    <div class="card-footer">
-        <span class="card-open-btn">
-            Lihat Detail
-            <x-icon name="chevron-right" width="14" height="14" stroke-width="2.5" />
-        </span>
-        <span class="card-status-dot"></span>
-    </div>
+    <x-portal.card-footer />
 </a>

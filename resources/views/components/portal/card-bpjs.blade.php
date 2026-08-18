@@ -24,18 +24,15 @@
 @endphp
 
 <a href="{{ route('portal.klaimbpjs') }}" class="app-card theme-amber bpjs-card">
-    <div class="card-header-row">
-        <div class="card-header-left">
-            <div class="app-icon icon-amber">
-                <x-icon name="shield-check" width="20" height="20" stroke-width="1.8" />
-            </div>
-            <div class="card-title-wrap">
-                <div class="app-name">Klaim BPJS</div>
-                <div class="app-sub">Ringkasan pengajuan klaim</div>
-            </div>
-        </div>
-        <span class="card-month-badge month-amber">{{ $bulanLabel }} {{ $tahun }}</span>
-    </div>
+    <span class="card-shine"></span>
+
+    <x-portal.card-header
+        theme="amber"
+        icon="shield-check"
+        title="Klaim BPJS"
+        subtitle="Ringkasan pengajuan klaim"
+        :badge="$bulanLabel . ' ' . $tahun"
+    />
 
     <div class="klaim-row">
         <div class="klaim-box">
@@ -44,7 +41,7 @@
                 <div class="klaim-val">{{ $juta($nominalRI) }}</div>
             </div>
             <div class="klaim-icon icon-blue">
-                <x-icon name="home" width="16" height="16" stroke="#3b82f6" stroke-width="1.8" />
+                <x-icon name="home" width="16" height="16" stroke-width="1.8" />
             </div>
         </div>
         <div class="klaim-box">
@@ -53,48 +50,48 @@
                 <div class="klaim-val">{{ $juta($nominalRJ) }}</div>
             </div>
             <div class="klaim-icon icon-amber">
-                <x-icon name="user" width="16" height="16" stroke="#f59e0b" stroke-width="1.8" />
+                <x-icon name="user" width="16" height="16" stroke-width="1.8" />
             </div>
         </div>
     </div>
 
     <div>
-        <div style="font-size:.6rem;color:#475569;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem;">Status Klaim</div>
+        <div class="klaim-section-label">Status Klaim</div>
         <div class="klaim-status">
-    <div class="ks-box">
-        <div class="ks-label">Terbayar</div>
-        <div class="ks-val" style="color:#22c55e">{{ $juta($nominalTB) }}</div>
-        <div style="font-size:.6rem;color:#22c55e;opacity:.7;font-family:'DM Mono',monospace;margin-top:.2rem;letter-spacing:.03em;">{{ number_format($bpjsTB) }}</div>
-    </div>
-    <div class="ks-box">
-        <div class="ks-label">Pending</div>
-        <div class="ks-val" style="color:#f59e0b">{{ $juta($nominalPD) }}</div>
-        <div style="font-size:.6rem;color:#f59e0b;opacity:.7;font-family:'DM Mono',monospace;margin-top:.2rem;letter-spacing:.03em;">{{ number_format($bpjsPD) }}</div>
-    </div>
-    <div class="ks-box">
-        <div class="ks-label">Tdk Layak</div>
-        <div class="ks-val" style="color:#f43f5e">{{ $juta($nominalTL) }}</div>
-        <div style="font-size:.6rem;color:#f43f5e;opacity:.7;font-family:'DM Mono',monospace;margin-top:.2rem;letter-spacing:.03em;">{{ number_format($bpjsTL) }}</div>
-    </div>
-</div>
+            <div class="ks-box">
+                <div class="ks-label">Terbayar</div>
+                <div class="ks-val text-success">{{ $juta($nominalTB) }}</div>
+                <div class="ks-count text-success" data-count-target="{{ $bpjsTB }}">
+                    <span class="count-num">{{ number_format($bpjsTB) }}</span>
+                </div>
+            </div>
+            <div class="ks-box">
+                <div class="ks-label">Pending</div>
+                <div class="ks-val text-warning">{{ $juta($nominalPD) }}</div>
+                <div class="ks-count text-warning" data-count-target="{{ $bpjsPD }}">
+                    <span class="count-num">{{ number_format($bpjsPD) }}</span>
+                </div>
+            </div>
+            <div class="ks-box">
+                <div class="ks-label">Tdk Layak</div>
+                <div class="ks-val text-danger">{{ $juta($nominalTL) }}</div>
+                <div class="ks-count text-danger" data-count-target="{{ $bpjsTL }}">
+                    <span class="count-num">{{ number_format($bpjsTL) }}</span>
+                </div>
+            </div>
+        </div>
 
         <div class="klaim-bar">
-            <div class="kb-seg" style="width:{{ $p1 }}%;background:#22c55e"></div>
-            <div class="kb-seg" style="width:{{ $p2 }}%;background:#f59e0b"></div>
-            <div class="kb-seg" style="width:{{ $p3 }}%;background:#f43f5e"></div>
+            <div class="kb-seg is-success" style="width:{{ $p1 }}%"></div>
+            <div class="kb-seg is-warning" style="width:{{ $p2 }}%"></div>
+            <div class="kb-seg is-danger"  style="width:{{ $p3 }}%"></div>
         </div>
         <div class="klaim-pct-row">
-            <span style="font-size:.55rem;color:#22c55e;font-family:'DM Mono',monospace">{{ $p1 }}%</span>
-            <span style="font-size:.55rem;color:#f59e0b;font-family:'DM Mono',monospace">{{ $p2 }}%</span>
-            <span style="font-size:.55rem;color:#f43f5e;font-family:'DM Mono',monospace">{{ $p3 }}%</span>
+            <span class="pct-label text-success" data-count-target="{{ $p1 }}"><span class="count-num">{{ $p1 }}</span>%</span>
+            <span class="pct-label text-warning" data-count-target="{{ $p2 }}"><span class="count-num">{{ $p2 }}</span>%</span>
+            <span class="pct-label text-danger"  data-count-target="{{ $p3 }}"><span class="count-num">{{ $p3 }}</span>%</span>
         </div>
     </div>
 
-    <div class="card-footer">
-        <span class="card-open-btn">
-            Lihat Detail
-            <x-icon name="chevron-right" width="14" height="14" stroke-width="2.5" />
-        </span>
-        <span class="card-status-dot"></span>
-    </div>
+    <x-portal.card-footer />
 </a>
