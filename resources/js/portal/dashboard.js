@@ -4,7 +4,7 @@ import { countUpAll } from './utils/count-up.js';
 const { dashboardRoute = '' } = window.DASHBOARD_DATA ?? {};
 
 // ════════════════════════════════════════════════════════════════
-// GREETING (Selamat Pagi/Siang/Sore/Malam) — ganti tiap 30 detik
+// GREETING (Selamat Pagi/Siang/Sore/Malam) - ganti tiap 30 detik
 // ════════════════════════════════════════════════════════════════
 function updateGreeting() {
     const h     = new Date().getHours();

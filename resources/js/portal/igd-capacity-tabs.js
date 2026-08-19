@@ -44,7 +44,7 @@ const IGDCapacity = (() => {
   let els = {};
   let tooltipEl = null;
 
-  // ── Helpers ──────────────────────────────────────────────────
+  // ── Helpers ────────────────────────
   function pct(terisi, kapasitas) {
     if (!kapasitas) return 0;
     return Math.round((terisi / kapasitas) * 100);
