@@ -41,7 +41,7 @@ return [
         'cache_ttl' => env('GOOGLESHEET_CACHE_TTL', 300),
     ],
 
-    'bor_api' => [
+        'bor_api' => [
     'url' => env('BOR_API_URL', 'http://192.168.10.8:8082'),
     ],
 
@@ -50,4 +50,26 @@ return [
     'url' => env('INFOTT_API_URL', 'http://192.168.10.29/wslokal/kominfo/realtime/infott'),
     ],
 
+    // API monitoring SDM per jenis (new-sikawan) 
+    'sdm_perjenis' => [
+        'url'         => env('API_SDM_PERJENIS_URL', ''),
+        'timeout'     => env('API_SDM_PERJENIS_TIMEOUT', 15),
+        'cache_ttl'   => env('API_SDM_PERJENIS_CACHE_TTL', 3600),
+        'verify_ssl'  => env('API_SDM_PERJENIS_VERIFY_SSL', true),
+    ],
+
+    // API bezetting SDM 
+    'bezetting' => [
+        'url'       => env('API_BEZETTING_URL', ''),
+        'timeout'   => env('API_BEZETTING_TIMEOUT', 15),
+        'cache_ttl' => env('API_BEZETTING_CACHE_TTL', 3600),
+    ],
+
+    // API SI KAWAN (internal) 
+    'sikawan' => [
+        'base_url' => env('API_SIKAWAN_BASE', 'http://192.168.10.8/sikawan-api/public/api/v1'),
+        'timeout'  => env('API_SIKAWAN_TIMEOUT', 10),
+    ],
+
 ];
+

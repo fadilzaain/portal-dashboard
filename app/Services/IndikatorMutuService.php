@@ -17,7 +17,7 @@ class IndikatorMutuService
 
     private function getBorApiUrl(): string
     {
-        return rtrim(config('services.bor_api.url', env('BOR_API_URL', 'http://192.168.10.8:8082')), '/');  
+        return rtrim(config('services.bor_api.url', 'http://192.168.10.8:8082'), '/');
     }
 
     /**

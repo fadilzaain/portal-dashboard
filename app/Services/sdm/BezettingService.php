@@ -15,9 +15,9 @@ class BezettingService
 
     public function __construct()
     {
-        $this->url      = env('API_BEZETTING_URL', '');
-        $this->timeout  = (int) env('API_BEZETTING_TIMEOUT', 15);
-        $this->cacheTtl = (int) env('API_BEZETTING_CACHE_TTL', 3600); 
+        $this->url      = config('services.bezetting.url', '');
+        $this->timeout  = (int) config('services.bezetting.timeout', 15);
+        $this->cacheTtl = (int) config('services.bezetting.cache_ttl', 3600);
     }
 
     //Ambil data bezetting

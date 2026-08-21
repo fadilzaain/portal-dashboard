@@ -12,8 +12,8 @@ class SikawanService
 
     public function __construct()
     {
-        $this->baseUrl = env('API_SIKAWAN_BASE', 'http://192.168.10.8/sikawan-api/public/api/v1');
-        $this->timeout = (int) env('API_SIKAWAN_TIMEOUT', 10);
+        $this->baseUrl = config('services.sikawan.base_url', 'http://192.168.10.8/sikawan-api/public/api/v1');
+        $this->timeout = (int) config('services.sikawan.timeout', 10);
     }
 
    // ambil data endpoint

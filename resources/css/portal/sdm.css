@@ -46,6 +46,9 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
     padding: 0 1.5rem 1.5rem;
     margin-top: -14px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1800px; /* layar TV/monitor ultra-wide gak bikin konten molor tipis */
     color: var(--sdm-text);
     overflow-x: hidden;
 }
@@ -428,12 +431,12 @@
 .kat-medis   { background: rgba(167,139,250,0.12); color: var(--accent-purple); }
 .kat-lainnya { background: rgba(148,163,184,0.12); color: var(--sdm-text-muted); }
 
+/* Dipakai di render JS-side tabel Bezetting (lihat renderBezTable() di sdm.js) */
 .mini-bar { width: 100%; height: 5px; background: var(--sdm-track); border-radius: 99px; overflow: hidden; margin-top: 3px; }
 .mini-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
 .mini-fill.tone-red    { background: var(--accent-red); }
 .mini-fill.tone-green  { background: var(--accent-green); }
 .mini-fill.tone-blue   { background: var(--accent-blue); }
-.mini-fill.tone-accent { background: var(--rk-accent, var(--accent-blue)); }
 
 .bez-empty-state {
     display: none; flex-direction: column; align-items: center; gap: 8px;
@@ -488,9 +491,9 @@
    RASIO KECUKUPAN SDM PER KATEGORI 
    ══════════════════════════════════════ */
 .rk-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .rk-card {
@@ -530,11 +533,11 @@
 
 .rk-card-head {
     width: 100%;
-    display: grid;
-    grid-template-columns: 64px 1fr auto auto;
+    display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 18px 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 18px;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -543,27 +546,26 @@
     color: inherit;
 }
 
-.rk-ring-wrap { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
-.rk-ring { width: 64px; height: 64px; transform: rotate(-90deg); }
-.rk-ring-track {
-    fill: none; stroke: var(--sdm-track); stroke-width: 5;
-}
-.rk-ring-fill {
-    fill: none; stroke: var(--rk-accent, var(--accent-blue)); stroke-width: 5;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.rk-ring-icon {
-    position: absolute; inset: 0; margin: auto;
-    width: 22px; height: 22px;
+.rk-card-icon {
+    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
     color: var(--rk-accent, var(--accent-blue));
 }
+.rk-card-icon svg { width: 18px; height: 18px; }
+.rk-card.status-aman    .rk-card-icon { background: rgba(52,211,153,0.15); }
+.rk-card.status-waspada .rk-card-icon { background: rgba(245,158,11,0.15); }
+.rk-card.status-kritis  .rk-card-icon { background: rgba(248,113,113,0.15); }
 
-.rk-card-body { min-width: 0; }
-.rk-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
 .rk-card-name {
-    font-size: 12.5px; font-weight: 700; color: var(--sdm-text);
+    font-size: 13px; font-weight: 700; color: var(--sdm-text);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    flex: 1 1 140px; min-width: 80px;
+}
+.rk-card-count-pill {
+    font-size: 11px; font-weight: 600; color: var(--sdm-text-muted);
+    background: var(--sdm-surface-alt); border: 1px solid var(--sdm-border);
+    border-radius: 99px; padding: 3px 10px;
+    white-space: nowrap; flex-shrink: 0;
 }
 .rk-status-pill {
     font-size: 9px; font-weight: 700; padding: 2px 7px;
@@ -574,17 +576,12 @@
 .rk-card.status-aman    .rk-status-pill { background: rgba(52,211,153,0.15); }
 .rk-card.status-waspada .rk-status-pill { background: rgba(245,158,11,0.15); }
 .rk-card.status-kritis  .rk-status-pill { background: rgba(248,113,113,0.15); }
-.rk-card-pct {
-    font-size: 26px; font-weight: 800; line-height: 1.15;
-    color: var(--rk-accent, var(--accent-blue));
-}
-.rk-card-pct span { font-size: 14px; font-weight: 700; opacity: 0.7; }
-.rk-card-sub { font-size: 10.5px; color: var(--sdm-text-muted); margin-top: 1px; }
 
 .rk-chevron {
     color: var(--sdm-text-muted);
     transition: transform 0.3s ease, color 0.2s ease;
     flex-shrink: 0;
+    margin-left: auto;
 }
 .rk-card.open .rk-chevron { transform: rotate(180deg); color: var(--rk-accent, var(--accent-blue)); }
 
@@ -621,54 +618,84 @@
 }
 .rk-kurang-chip {
     font-size: 10px; font-weight: 700; white-space: nowrap;
-    padding: 5px 10px; border-radius: 99px; align-self: center;
+    padding: 5px 10px; border-radius: 99px; flex-shrink: 0;
     background: rgba(248,113,113,0.12); color: var(--accent-red);
 }
 
-.rk-row-list {
-    display: flex; flex-direction: column; gap: 8px;
-    max-height: 340px; overflow-y: auto; padding-right: 2px;
+/* Tabel detail per jabatan di dalam card (kolom eksplisit PNS/PPPK/PPPK-PW/Non ASN/Jumlah/Kebutuhan/Status) */
+.rk-table-wrap {
+    max-height: 340px; overflow-y: auto; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
+.rk-table-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
+.rk-table-wrap::-webkit-scrollbar-track { background: transparent; }
+.rk-table-wrap::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.2); border-radius: 2px; }
 
-.rk-row {
-    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+.rk-table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 12px; }
+.rk-table thead th {
+    padding: 7px 8px;
+    font-size: 9.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px;
+    color: var(--sdm-text-muted);
+    border-bottom: 1px solid var(--sdm-border);
+    text-align: left;
     background: var(--sdm-surface-alt);
-    border: 1px solid var(--sdm-border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    position: sticky; top: 0; z-index: 1;
+    white-space: nowrap;
 }
-.rk-row:hover { border-color: var(--rk-accent, var(--accent-blue)); transform: translateX(2px); }
+.rk-table thead th.c { text-align: center; }
+.rk-table tbody td {
+    padding: 9px 8px;
+    border-bottom: 1px solid rgba(56,189,248,0.05);
+    color: var(--sdm-text);
+    vertical-align: middle;
+}
+.rk-table tbody tr:hover td { background: rgba(56,189,248,0.03); }
+.rk-table tbody tr:last-child td { border-bottom: none; }
+.rk-table td.c { text-align: center; }
 
-.rk-row-main { min-width: 0; flex: 1; }
+.rk-row-jabatan { min-width: 160px; }
 .rk-row-name {
     font-size: 12.5px; font-weight: 700; color: var(--sdm-text);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .rk-row-kualifikasi { font-size: 10px; color: var(--sdm-text-muted); margin-top: 1px; }
-
-.rk-row-komposisi {
-    display: flex; height: 5px; border-radius: 99px; overflow: hidden;
-    background: var(--sdm-track); margin-top: 7px; max-width: 260px;
-}
-.rk-komposisi-seg { display: block; height: 100%; min-width: 2px; }
-.rk-komposisi-seg.tone-blue   { background: var(--accent-blue); }
-.rk-komposisi-seg.tone-teal   { background: var(--accent-teal); }
-.rk-komposisi-seg.tone-amber  { background: var(--accent-amber); }
-.rk-komposisi-seg.tone-purple { background: var(--accent-purple); }
-
-.rk-row-side { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.rk-row-jumlah { font-size: 13px; font-weight: 700; color: var(--sdm-text); white-space: nowrap; }
-.rk-row-jumlah-sep, .rk-row-jumlah-target { font-weight: 500; color: var(--sdm-text-muted); }
+.rk-row-jumlah-cell { font-weight: 700; color: var(--sdm-text); }
 .rk-row-hidden { display: none !important; }
 
-/* ── TOOLBAR unit: search + filter status (Semua/Kritis/Waspada/Aman) ── */
+/* ── Legend arti badge status jabatan (di atas toolbar) ── */
+.rk-legend {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 10px;
+    font-size: 11px; color: var(--sdm-text-muted);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.rk-legend-label { font-weight: 600; }
+
+/* ── TOOLBAR unit: search + filter status (Semua/Kritis/Waspada/Aman) + aksi bulk ── */
 .rk-toolbar {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     margin-bottom: 14px;
 }
 .rk-unit-search-wrap { flex: 1; min-width: 220px; max-width: 320px; margin-bottom: 0; }
 .rk-toolbar .bez-tabs { margin-bottom: 0; }
+
+/* Tombol "Buka semua" / "Tutup semua", nempel di ujung kanan toolbar kalau masih muat 1 baris */
+.rk-toolbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.rk-bulk-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--sdm-surface-alt);
+    border: 1px solid var(--sdm-border);
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 12px; font-weight: 600; color: var(--sdm-text-muted);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+.rk-bulk-btn svg { flex-shrink: 0; }
+.rk-bulk-btn:hover { border-color: var(--accent-blue); color: var(--sdm-text); }
 
 /* Tone tambahan buat pill filter status unit (bez-tabs asalnya cuma red/green/blue) */
 .bez-tab-indicator[data-tone="amber"] { background: linear-gradient(135deg, var(--accent-amber), #d97706); box-shadow: 0 3px 10px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.25); }
@@ -733,8 +760,8 @@
 /* matiin animasi (aksesibilitas) */
 @media (prefers-reduced-motion: reduce) {
     .sdm-sc, .rk-card, .bez-sc { animation: none; }
-    .rk-ring-fill, .rk-expand, .rk-chevron, .bez-tab-indicator,
-    .mini-fill, .sdm-sc-bar-fill {
+    .rk-expand, .rk-chevron, .bez-tab-indicator,
+    .sdm-sc-bar-fill, .mini-fill {
         transition: none;
     }
     .bez-tabs.bez-tab-hint .bez-tab-indicator { animation: none; }
@@ -747,7 +774,6 @@
 }
 @media (max-width: 900px) {
     .sdm-bottom-row { grid-template-columns: 1fr; }
-    .rk-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
     .prio-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
@@ -759,11 +785,13 @@
     .bez-search select { flex: 1; min-width: 0; }
     .rk-toolbar { flex-direction: column; align-items: stretch; }
     .rk-unit-search-wrap { max-width: none; }
-    .rk-grid { grid-template-columns: 1fr; }
-    .rk-card-head { grid-template-columns: 52px 1fr auto; padding: 14px 12px; gap: 10px; }
-    .rk-ring-wrap, .rk-ring { width: 52px; height: 52px; }
-    .rk-ring-icon { width: 18px; height: 18px; }
-    .rk-card-pct { font-size: 22px; }
+    .rk-toolbar-actions { margin-left: 0; }
+    .rk-bulk-btn { flex: 1; justify-content: center; }
+    .rk-card-head { padding: 12px 14px; gap: 8px; }
+    .rk-card-icon { width: 28px; height: 28px; }
+    .rk-card-icon svg { width: 15px; height: 15px; }
+    .rk-card-name { font-size: 12px; }
+    .rk-card-count-pill { font-size: 10px; }
     .rk-detail-wrap { margin: 0 10px 12px; }
     .rk-detail-toolbar { padding: 0 10px 10px; flex-wrap: wrap; }
     .mon-card { padding: 16px; }
@@ -791,4 +819,17 @@
 
     /* Kurangin padding halaman biar konten dapet ruang lebih lega di hp */
     .sdm-wrap { padding: 0 12px 12px; }
+}
+
+/* Hp kecil (mis. iPhone SE, ~360-390px) — grid 2 kolom masih dipertahankan, cuma dipadetin */
+@media (max-width: 400px) {
+    .sdm-stat-grid { gap: 8px; }
+    .sdm-sc { padding: 8px 9px; gap: 6px; }
+    .sdm-sc-icon { width: 24px; height: 24px; }
+    .sdm-sc-icon svg { width: 12px; height: 12px; }
+    .sdm-sc-label { font-size: 8px; }
+    .sdm-sc-val { font-size: 13px; }
+    .mon-card { padding: 12px 14px; }
+    .sdm-panel { padding: 14px 16px; }
+    .uprio-chart-wrap { height: 220px; }
 }

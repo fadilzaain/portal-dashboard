@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Dashi-i')
+@section('title', 'Dashi')
 
 @section('content')
 <div class="w-full max-w-sm">

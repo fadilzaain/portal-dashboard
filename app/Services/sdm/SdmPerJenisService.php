@@ -21,14 +21,14 @@ class SdmPerJenisService
     private int $cacheTtl;
     private bool $verifySsl;
 
-    public function __construct()
+        public function __construct()
     {
-        $this->url       = env('API_SDM_PERJENIS_URL', '');
-        $this->timeout   = (int) env('API_SDM_PERJENIS_TIMEOUT', 15);
-        $this->cacheTtl  = (int) env('API_SDM_PERJENIS_CACHE_TTL', 3600);
+        $this->url       = config('services.sdm_perjenis.url', '');
+        $this->timeout   = (int) config('services.sdm_perjenis.timeout', 15);
+        $this->cacheTtl  = (int) config('services.sdm_perjenis.cache_ttl', 3600);
         // Default true (aman/verified). Set false di .env kalau server SI KAWAN
         // pakai sertifikat self-signed/internal yang gak lolos verifikasi cURL error 60.
-        $this->verifySsl = (bool) env('API_SDM_PERJENIS_VERIFY_SSL', true);
+        $this->verifySsl = (bool) config('services.sdm_perjenis.verify_ssl', true);
     }
 
     // Data mentah sudah diflat jadi 1 baris per (unit, jabatan), sudah di-cache

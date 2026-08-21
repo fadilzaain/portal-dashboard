@@ -1,6 +1,6 @@
 {{--
     Hero card halaman Beranda Portal (dulu bernama "greeting-card").
-    Style-nya ada di resources/css/portal/dashboard.css — komponen ini
+    Style-nya ada di resources/css/portal/dashboard.css.  komponen ini
     murni markup + data, biar gampang dikembangkan tanpa nyari-nyari CSS.
 --}}
 @props(['bulan', 'tahun', 'bulanLabel'])

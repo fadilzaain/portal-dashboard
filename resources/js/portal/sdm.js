@@ -20,6 +20,17 @@ function rkToggle(i) {
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
+// Buka/tutup semua card unit sekaligus (cuma yang lagi kefilter/kelihatan).
+// Sengaja gak set class .open manual — reuse rkToggle() yg udah ada biar
+// logic buka/tutup tetap 1 sumber, tinggal skip card yg state-nya udah sesuai target.
+function rkToggleAll(open) {
+    document.querySelectorAll('#sdm-unit-grid .rk-card:not(.rk-row-hidden)').forEach(card => {
+        if (card.classList.contains('open') !== open) {
+            rkToggle(card.dataset.rk);
+        }
+    });
+}
+
 // Dipanggil dari card "Unit & Jabatan Perlu Perhatian"
 function sdmScrollToUnit(slug) {
     const card = document.getElementById(`unit-${slug}`);
@@ -82,18 +93,6 @@ function rkUnitRender() {
 requestAnimationFrame(() => {
     moveTabIndicator(rkIndicatorEl, rkTabsEl?.querySelector('.bez-tab.is-active'));
     rkTabsEl?.classList.add('is-ready');
-});
-
-// Animasi ring progress dari 0% ke nilai aslinya
-document.querySelectorAll('.rk-ring-fill').forEach((ring, idx) => {
-    const target = ring.dataset.targetOffset;
-    if (sdmReduceMotion) {
-        ring.style.strokeDashoffset = target;
-        return;
-    }
-    requestAnimationFrame(() => {
-        setTimeout(() => { ring.style.strokeDashoffset = target; }, 80 * idx);
-    });
 });
 
 // Track ranking "Jabatan Perlu Perhatian" dari 0% ke nilai 
@@ -341,6 +340,7 @@ bezRender();
 // ── Expose ke global scope ──────────────────
 window.sdmScrollToUnit = sdmScrollToUnit;
 window.rkToggle        = rkToggle;
+window.rkToggleAll     = rkToggleAll;
 window.rkFilter        = rkFilter;
 window.rkSetStatusTab  = rkSetStatusTab;
 window.rkUnitRender    = rkUnitRender;

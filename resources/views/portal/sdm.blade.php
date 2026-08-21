@@ -330,7 +330,15 @@
             $rkStatusCounts  = collect($unitDetail)->countBy('status');
         @endphp
 
-        {{-- Toolbar: cari nama unit + filter status --}}
+        {{-- Legend: arti warna badge status jabatan, diloop dari $ketBadge biar 1 sumber kebenaran sama tabel detail --}}
+        <div class="rk-legend">
+            <span class="rk-legend-label">Keterangan status jabatan:</span>
+            @foreach ($ketBadge as $ket => $cls)
+                <span class="rk-badge {{ $cls }}">{{ ucfirst(strtolower($ket)) }}</span>
+            @endforeach
+        </div>
+
+        {{-- Toolbar: cari nama unit + filter status + bulk expand/collapse --}}
         <div class="rk-toolbar">
             <div class="bez-search-input-wrap rk-unit-search-wrap">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -344,13 +352,27 @@
                     Semua <span class="cnt">{{ $rkTotalUnit }}</span>
                 </button>
                 <button type="button" class="bez-tab t-kritis" data-tone="red" onclick="rkSetStatusTab('kritis', this)">
-                    Kritis <span class="cnt">{{ $rkStatusCounts->get('kritis', 0) }}</span>
+                    Kurang <span class="cnt">{{ $rkStatusCounts->get('kritis', 0) }}</span>
                 </button>
                 <button type="button" class="bez-tab t-waspada" data-tone="amber" onclick="rkSetStatusTab('waspada', this)">
                     Waspada <span class="cnt">{{ $rkStatusCounts->get('waspada', 0) }}</span>
                 </button>
                 <button type="button" class="bez-tab t-aman" data-tone="green" onclick="rkSetStatusTab('aman', this)">
                     Aman <span class="cnt">{{ $rkStatusCounts->get('aman', 0) }}</span>
+                </button>
+            </div>
+            <div class="rk-toolbar-actions">
+                <button type="button" class="rk-bulk-btn" onclick="rkToggleAll(true)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="7 8 12 13 17 8"></polyline><polyline points="7 15 12 20 17 15"></polyline>
+                    </svg>
+                    Buka semua
+                </button>
+                <button type="button" class="rk-bulk-btn" onclick="rkToggleAll(false)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="7 16 12 11 17 16"></polyline><polyline points="7 9 12 4 17 9"></polyline>
+                    </svg>
+                    Tutup semua
                 </button>
             </div>
         </div>
