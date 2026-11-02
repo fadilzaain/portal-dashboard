@@ -28,9 +28,15 @@
         $pengguna = auth()->user();
         $namaUser = $pengguna->name ?? 'User';
 
+        // Khusus admin: jumlah pendaftar yang menunggu persetujuan, ditampilkan sebagai angka di menu Kelola Pengguna
+        $jumlahMenunggu = $pengguna?->isAdmin()
+            ? \App\Models\User::where('status', \App\Models\User::STATUS_MENUNGGU)->count()
+            : 0;
+
         // Daftar menu dibuat SATU kali di sini, lalu digambar lewat perulangan (tidak ditulis berulang).
         // rute = nama route, cocok = pola route yang menandai menu aktif,
         // luar = true kalau menu membuka dashboard modul (muncul panah ↗ di kanan)
+        // admin = true kalau menu hanya untuk admin (disembunyikan dari akun lain)
         $menu = [
             'Menu Utama' => [
                 ['rute' => 'dashboard',              'cocok' => 'dashboard',                'nama' => 'Beranda Portal',   'ikon' => 'home',            'luar' => false],
@@ -41,6 +47,10 @@
                 ['rute' => 'sdm.portal.sdm',         'cocok' => 'sdm.*',                    'nama' => 'SDM',              'ikon' => 'users',           'luar' => true],
                 ['rute' => 'portal.indikatormutu',   'cocok' => 'portal.indikatormutu.*',   'nama' => 'Indikator Mutu',   'ikon' => 'document-text',   'luar' => true],
                 ['rute' => 'portal.klaimbpjs',       'cocok' => 'portal.klaimbpjs',         'nama' => 'Klaim BPJS',       'ikon' => 'shield-check',    'luar' => true],
+            ],
+            'Akun' => [
+                ['rute' => 'pengguna',               'cocok' => 'pengguna*',                'nama' => 'Kelola Pengguna',  'ikon' => 'user',            'luar' => false, 'admin' => true],
+                ['rute' => 'akun.password',          'cocok' => 'akun.password*',           'nama' => 'Ganti Password',   'ikon' => 'lock',            'luar' => false],
             ],
         ];
 
@@ -79,6 +89,12 @@
 
         <nav class="sidebar-nav">
             @foreach ($menu as $grup => $butir)
+                @php
+                    // Menu khusus admin disembunyikan dari akun lain (di route tetap dijaga juga lewat middleware role)
+                    $butir = array_filter($butir, fn ($m) => empty($m['admin']) || $pengguna?->isAdmin());
+                @endphp
+                @continue(empty($butir))
+
                 <div class="nav-label masuk" style="--i: {{ $urut++ }}">{{ $grup }}</div>
 
                 @foreach ($butir as $m)
@@ -92,6 +108,9 @@
                         <span class="nav-txt">{{ $m['nama'] }}</span>
                         @if ($m['luar'])
                             <span class="nav-badge">↗</span>
+                        @endif
+                        @if ($m['rute'] === 'pengguna' && $jumlahMenunggu > 0)
+                            <span class="nav-badge nav-badge--angka" title="Pendaftar menunggu persetujuan">{{ $jumlahMenunggu }}</span>
                         @endif
                     </a>
                 @endforeach

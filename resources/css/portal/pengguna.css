@@ -1,0 +1,121 @@
+/* ═══════════════════════════════════════════════════════════
+   Halaman Ganti Password + Kelola Pengguna
+   Memakai token warna dari layout/app-shell.css, jadi otomatis ikut tema terang/gelap.
+════════════════════════════════════════════════════════════ */
+
+.pgn-wrap { max-width: 1100px; margin: 0 auto; }
+.pgn-wrap--sempit { max-width: 520px; }
+
+/* ── Kepala halaman ── */
+.pgn-kepala { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
+.pgn-kepala h1 { font-family: var(--font); font-size: 1.35rem; font-weight: 700; letter-spacing: .01em; color: var(--text-hi); }
+.pgn-redup { color: var(--text-mid); font-size: .82rem; margin-top: .3rem; }
+
+/* ── Panel kaca ── */
+.pgn-panel {
+    background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 1.25rem;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--shadow-rest);
+}
+.pgn-petunjuk-atas { margin: 0 0 1rem; }
+
+/* ── Pesan ── */
+.pgn-pesan { padding: .75rem 1rem; border-radius: 14px; font-size: .82rem; margin-bottom: 1rem; border: 1px solid var(--border); color: var(--text-hi); }
+.pgn-pesan--ok   { background: var(--success-dim); border-color: rgba(34,197,94,.35); }
+.pgn-pesan--bad  { background: var(--danger-dim);  border-color: rgba(244,63,94,.35); }
+.pgn-pesan--warn { background: var(--warning-dim); border-color: rgba(245,158,11,.35); }
+
+/* Kotak password sementara hasil reset */
+.pgn-sandi { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.pgn-sandi code {
+    font-family: var(--mono); font-size: 1.05rem; letter-spacing: .08em; padding: .35rem .7rem; border-radius: 10px;
+    background: var(--wash-2); border: 1px dashed var(--border-hi); user-select: all;
+}
+.pgn-sandi small { flex-basis: 100%; color: var(--text-mid); font-size: .72rem; }
+
+/* ── Isian form ── */
+.pgn-field { margin-bottom: 1rem; }
+.pgn-field label { display: block; font-size: .78rem; color: var(--text-mid); margin-bottom: .4rem; }
+.pgn-galat { color: var(--rose); font-size: .72rem; margin-top: .35rem; }
+.pgn-petunjuk { color: var(--text-low); font-size: .72rem; margin-top: .35rem; }
+
+.pgn-input {
+    width: 100%; padding: .6rem .8rem; border-radius: 12px; font: inherit; font-size: .85rem;
+    background: var(--wash-2); border: 1px solid var(--border); color: var(--text-hi);
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.pgn-input:focus { outline: none; border-color: var(--champagne); box-shadow: 0 0 0 3px var(--champagne-dim); }
+.pgn-input:disabled { opacity: .55; cursor: not-allowed; }
+.pgn-input--salah { border-color: var(--danger); }
+select.pgn-input option { background: #0b0c12; color: #f5f6f9; }
+[data-theme="light"] select.pgn-input option { background: #ffffff; color: #211c14; }
+
+/* ── Tombol ── */
+.pgn-btn {
+    padding: .5rem .9rem; border-radius: 11px; font: inherit; font-size: .78rem; font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; white-space: nowrap;
+    transition: transform .2s var(--ease-sb), background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.pgn-btn:hover { transform: translateY(-1px); }
+.pgn-btn:active { transform: translateY(0); }
+.pgn-btn:focus-visible { outline: 2px solid var(--champagne); outline-offset: 2px; }
+.pgn-btn--utama { background: linear-gradient(135deg, var(--champagne), #c9a66b); color: #1b1408; box-shadow: 0 8px 20px -10px var(--champagne); }
+/* Mode terang: champagne-nya perunggu gelap, jadi teks tombol dibuat terang supaya kontrasnya cukup */
+[data-theme="light"] .pgn-btn--utama { background: linear-gradient(135deg, var(--champagne), #6f5530); color: #fffaf0; box-shadow: 0 8px 20px -10px rgba(111,85,48,.7); }
+.pgn-btn--garis { background: transparent; border-color: var(--border-hi); color: var(--text-hi); }
+.pgn-btn--garis:hover { background: var(--wash-2); }
+.pgn-btn--bahaya { border-color: rgba(244,63,94,.4); color: var(--rose); }
+.pgn-btn--bahaya:hover { background: var(--danger-dim); }
+
+/* ── Filter status ── */
+.pgn-filter { display: flex; align-items: center; gap: .6rem; }
+.pgn-filter label { font-size: .68rem; color: var(--text-low); text-transform: uppercase; letter-spacing: .1em; }
+.pgn-filter .pgn-input { width: auto; min-width: 150px; }
+
+/* ── Daftar akun ── */
+.pgn-daftar { display: flex; flex-direction: column; gap: .6rem; }
+.pgn-baris {
+    display: grid; grid-template-columns: minmax(0, 1fr) 84px 140px 340px; align-items: center; gap: .9rem;
+    padding: .8rem .9rem; border-radius: 16px; background: var(--wash-1); border: 1px solid var(--border);
+    animation: fadeUp .4s cubic-bezier(.4, 0, .2, 1) both; animation-delay: calc(var(--i, 0) * 40ms);
+    transition: border-color .25s ease, background-color .25s ease;
+}
+.pgn-baris:hover { border-color: var(--border-hi); background: var(--wash-2); }
+
+.pgn-info { display: flex; align-items: center; gap: .75rem; min-width: 0; }
+.pgn-info > div { min-width: 0; }
+.pgn-info strong { display: block; font-size: .86rem; color: var(--text-hi); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pgn-info small { display: block; font-size: .7rem; color: var(--text-low); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pgn-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--violet), var(--rose)); color: #160a1c;
+    font-family: var(--font); font-weight: 700; font-size: .72rem;
+}
+
+.pgn-badge {
+    padding: .2rem .65rem; border-radius: 999px; font-size: .68rem; font-weight: 600; letter-spacing: .03em; text-align: center;
+    background: var(--wash-2); border: 1px solid var(--border); color: var(--text-mid);
+}
+.pgn-badge--ok   { background: var(--success-dim); border-color: rgba(34,197,94,.35);  color: var(--success); }
+.pgn-badge--warn { background: var(--warning-dim); border-color: rgba(245,158,11,.35); color: var(--warning); }
+.pgn-badge--bad  { background: var(--danger-dim);  border-color: rgba(244,63,94,.35);  color: var(--danger); }
+
+.pgn-aksi { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: flex-end; }
+
+/* ── Layar sempit ── */
+@media (max-width: 1000px) {
+    .pgn-baris { grid-template-columns: auto 1fr; }
+    .pgn-info { grid-column: 1 / -1; }
+    .pgn-aksi { grid-column: 1 / -1; justify-content: flex-start; }
+}
+@media (max-width: 560px) {
+    .pgn-baris { grid-template-columns: 1fr; }
+    .pgn-badge { justify-self: start; }
+    .pgn-filter { width: 100%; }
+    .pgn-filter .pgn-input { flex: 1; }
+}
+
+/* Hormati pengguna yang mematikan animasi di perangkatnya */
+@media (prefers-reduced-motion: reduce) {
+    .pgn-baris, .pgn-btn, .pgn-input { animation: none !important; transition: none !important; }
+}

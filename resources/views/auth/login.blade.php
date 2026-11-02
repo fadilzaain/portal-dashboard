@@ -11,6 +11,13 @@
         <p class="text-sm text-slate-500 mt-1">Masuk Dengan Akun Yang Sudah Terdaftar</p>
     </div>
 
+    {{-- Pesan sukses (misalnya setelah mendaftar) --}}
+    @if (session('status'))
+        <div class="mb-4 rounded-xl border border-teal-200 bg-teal-50 px-3.5 py-2.5 text-sm text-teal-800 auth-fade-up" style="animation-delay: .14s">
+            {{ session('status') }}
+        </div>
+    @endif
+
     {{-- Card form --}}
     <div class="auth-card p-6 auth-fade-up" style="animation-delay: .18s">
         <form method="POST" action="{{ route('login.post') }}" novalidate>
@@ -55,7 +62,7 @@
             </div>
 
             <div class="text-right mb-4">
-                <a href="#" class="text-xs text-teal-600 hover:text-teal-700 hover:underline transition">Lupa password?</a>
+                <a href="#" class="text-xs text-teal-600 hover:text-teal-700 hover:underline transition">Reset Password dikelola Tim Simrs</a>
             </div>
 
             {{-- Ingat saya --}}
@@ -74,10 +81,14 @@
         </form>
     </div>
 
-    {{-- Catatan sistem private — pengganti link registrasi --}}
-    <div class="flex items-center justify-center gap-1.5 mt-5 text-xs text-slate-400 auth-fade-up" style="animation-delay: .28s">
+    {{-- Link daftar + catatan persetujuan admin --}}
+    <p class="mt-5 text-center text-sm text-slate-500 auth-fade-up" style="animation-delay: .28s">
+        Belum punya akun?
+        <a href="{{ route('register') }}" class="text-teal-600 hover:text-teal-700 hover:underline font-medium transition">Daftar</a>
+    </p>
+    <div class="flex items-center justify-center gap-1.5 mt-2 text-xs text-slate-400 auth-fade-up" style="animation-delay: .32s">
         <x-icon name="shield-check" class="w-3.5 h-3.5 text-slate-400" />
-        <span>Akses akun dikelola oleh SIMRS RSUD Jombang</span>
+        <span>Akun baru aktif setelah disetujui admin SIMRS RSUD Jombang</span>
     </div>
 
 </div>

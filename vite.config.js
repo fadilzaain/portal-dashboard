@@ -26,7 +26,8 @@ export default defineConfig({
                 'resources/css/portal/portal-navbar.css',
                 'resources/css/portal/sdm.css',
                 'resources/js/portal/sdm.js',
-                'resources/css/portal/auth.css'
+                'resources/css/portal/auth.css',
+                'resources/css/portal/pengguna.css'
             ],
             refresh: true,
         }),

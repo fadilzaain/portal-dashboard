@@ -1,110 +1,121 @@
 @extends('layouts.auth')
 
-@section('title', 'Register — Portal Dashboard')
+@section('title', 'Daftar')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-    <div class="w-full max-w-sm">
+<div class="w-full max-w-sm">
 
-        {{-- Header --}}
-        <div class="text-center mb-8">
-            <img src="{{ asset('images/logo-rsud-jombang.png') }}" 
-                alt="Logo RSUD Jombang" 
-                class="w-16 h-16 mx-auto mb-4 object-contain" />
-            <h1 class="text-2xl font-semibold text-gray-900">Selamat datang</h1>
-            <p class="text-sm text-gray-500 mt-1">Dashboard integrasi RSUD Jombang</p>
-        </div>
-
-        {{-- Card form --}}
-        <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <form method="POST" action="{{ route('register.post') }}">
-                @csrf
-
-                {{-- Nama --}}
-                <div class="mb-4">
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">
-                        Nama lengkap
-                    </label>
-                    <input type="text"
-                           id="name"
-                           name="name"
-                           value="{{ old('name') }}"
-                           required
-                           class="w-full px-3 py-2.5 text-sm border rounded-lg outline-none transition-colors
-                                  {{ $errors->has('name') ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white' }}
-                                  focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                           placeholder="Nama kamu" />
-                    @error('name')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Email --}}
-                <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">
-                        Email
-                    </label>
-                    <input type="email"
-                           id="email"
-                           name="email"
-                           value="{{ old('email') }}"
-                           required
-                           class="w-full px-3 py-2.5 text-sm border rounded-lg outline-none transition-colors
-                                  {{ $errors->has('email') ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white' }}
-                                  focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                           placeholder="kamu@email.com" />
-                    @error('email')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Password --}}
-                <div class="mb-4">
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">
-                        Password
-                    </label>
-                    <input type="password"
-                           id="password"
-                           name="password"
-                           required
-                           class="w-full px-3 py-2.5 text-sm border rounded-lg outline-none transition-colors
-                                  {{ $errors->has('password') ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white' }}
-                                  focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                           placeholder="Minimal 8 karakter" />
-                    @error('password')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Konfirmasi Password --}}
-                <div class="mb-5">
-                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1.5">
-                        Konfirmasi password
-                    </label>
-                    <input type="password"
-                           id="password_confirmation"
-                           name="password_confirmation"
-                           required
-                           class="w-full px-3 py-2.5 text-sm border rounded-lg outline-none transition-colors
-                                  border-gray-300 bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                           placeholder="Ulangi password" />
-                </div>
-
-                {{-- Tombol register --}}
-                <button type="submit"
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800
-                               text-white text-sm font-medium py-2.5 rounded-lg transition-colors">
-                    Daftar Sekarang
-                </button>
-            </form>
-        </div>
-
-        {{-- Link ke login --}}
-        <p class="text-center text-sm text-gray-500 mt-4">
-            Sudah punya akun?
-            <a href="{{ route('login') }}" class="text-indigo-600 hover:underline font-medium">Masuk di sini</a>
-        </p>
-
+    {{-- Judul --}}
+    <div class="mb-5 auth-fade-up" style="animation-delay: .1s">
+        <h1 class="text-xl font-semibold text-slate-900 tracking-tight">Daftar Akun</h1>
+        <p class="text-sm text-slate-500 mt-1">Akun baru bisa dipakai setelah disetujui admin</p>
     </div>
+
+    {{-- Card form --}}
+    <div class="auth-card p-6 auth-fade-up" style="animation-delay: .18s">
+        <form method="POST" action="{{ route('register.post') }}" novalidate>
+            @csrf
+
+            {{-- Nama lengkap --}}
+            <div class="mb-3.5">
+                <label for="name" class="block text-sm text-slate-600 mb-1.5">Nama lengkap</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <x-icon name="user" class="w-4 h-4" />
+                    </span>
+                    <input type="text" id="name" name="name" value="{{ old('name') }}" required
+                        autocomplete="name" placeholder="Nama kamu"
+                        class="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl outline-none transition text-slate-900 placeholder:text-slate-400
+                               bg-slate-50 border
+                               {{ $errors->has('name') ? 'border-red-300 bg-red-50' : 'border-slate-200' }}
+                               focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:bg-white" />
+                </div>
+                @error('name') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Email --}}
+            <div class="mb-3.5">
+                <label for="email" class="block text-sm text-slate-600 mb-1.5">Email</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <x-icon name="envelope" class="w-4 h-4" />
+                    </span>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required
+                        autocomplete="username" placeholder="kamu@email.com"
+                        class="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl outline-none transition text-slate-900 placeholder:text-slate-400
+                               bg-slate-50 border
+                               {{ $errors->has('email') ? 'border-red-300 bg-red-50' : 'border-slate-200' }}
+                               focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:bg-white" />
+                </div>
+                @error('email') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Password --}}
+            <div class="mb-3.5">
+                <label for="password" class="block text-sm text-slate-600 mb-1.5">Password</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <x-icon name="lock" class="w-4 h-4" />
+                    </span>
+                    <input type="password" id="password" name="password" required
+                        autocomplete="new-password" placeholder="Minimal 8 karakter"
+                        class="w-full pl-9 pr-10 py-2.5 text-sm rounded-xl outline-none transition text-slate-900 placeholder:text-slate-400
+                               bg-slate-50 border
+                               {{ $errors->has('password') ? 'border-red-300 bg-red-50' : 'border-slate-200' }}
+                               focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:bg-white" />
+                    <button type="button" onclick="togglePw('password', 'eye-icon')" aria-label="Tampilkan password"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                        <x-icon name="eye" id="eye-icon" class="w-4 h-4" />
+                    </button>
+                </div>
+                @error('password') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Konfirmasi password --}}
+            <div class="mb-5">
+                <label for="password_confirmation" class="block text-sm text-slate-600 mb-1.5">Ulangi password</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <x-icon name="lock" class="w-4 h-4" />
+                    </span>
+                    <input type="password" id="password_confirmation" name="password_confirmation" required
+                        autocomplete="new-password" placeholder="Ketik ulang password"
+                        class="w-full pl-9 pr-10 py-2.5 text-sm rounded-xl outline-none transition text-slate-900 placeholder:text-slate-400
+                               bg-slate-50 border border-slate-200
+                               focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:bg-white" />
+                    <button type="button" onclick="togglePw('password_confirmation', 'eye-icon-2')" aria-label="Tampilkan password"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                        <x-icon name="eye" id="eye-icon-2" class="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit"
+                class="w-full text-white text-sm font-medium py-2.5 rounded-xl transition auth-shine
+                       bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400
+                       shadow-lg shadow-teal-500/25 hover:shadow-teal-400/35 hover:-translate-y-0.5">
+                Kirim Pendaftaran
+            </button>
+        </form>
+    </div>
+
+    {{-- Link ke login --}}
+    <p class="mt-5 text-center text-sm text-slate-500 auth-fade-up" style="animation-delay: .28s">
+        Sudah punya akun?
+        <a href="{{ route('login') }}" class="text-teal-600 hover:text-teal-700 hover:underline font-medium transition">Masuk di sini</a>
+    </p>
+
 </div>
+
+<script>
+/* Tampilkan/sembunyikan password. Dipakai untuk dua kolom, jadi id kolom dan id ikonnya dikirim lewat parameter */
+function togglePw(idInput, idIkon) {
+    const inp = document.getElementById(idInput);
+    const isText = inp.type === 'text';
+    inp.type = isText ? 'password' : 'text';
+    document.getElementById(idIkon).innerHTML = isText
+        ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+        : '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}
+</script>
 @endsection

@@ -9,6 +9,9 @@ use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\PelayananPasienController;
 use App\Http\Controllers\SdmController;
 use App\Http\Controllers\IndikatorMutuController;
+use App\Http\Controllers\GantiPasswordController;
+use App\Http\Controllers\PenggunaController;
+use App\Http\Controllers\DaftarController;
 
 // Root redirect
 Route::get('/', function () {
@@ -23,6 +26,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/login',    [AuthController::class, 'showLogin'])->name('login');
     // Dibatasi 10 percobaan per menit untuk mencegah tebak password
     Route::post('/login',   [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.post');
+
+    // Pendaftaran akun baru (status "menunggu" sampai disetujui admin).
+    // Dibatasi 5 kali per 10 menit per alamat IP supaya tidak dibanjiri akun palsu.
+    Route::get('/daftar',  [DaftarController::class, 'form'])->name('register');
+    Route::post('/daftar', [DaftarController::class, 'proses'])->middleware('throttle:5,10')->name('register.post');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])
@@ -32,10 +40,20 @@ Route::post('/logout', [AuthController::class, 'logout'])
 // Protected (auth required)
 Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
 
+    // Ganti password sendiri: semua role. Dibatasi 6 percobaan per menit supaya password lama tidak bisa ditebak.
+    Route::get('/akun/password', [GantiPasswordController::class, 'form'])->name('akun.password');
+    Route::put('/akun/password', [GantiPasswordController::class, 'simpan'])
+        ->middleware('throttle:6,1')
+        ->name('akun.password.simpan');
 
 
-    // Rute cek database untuk pengecekan manual: khusus admin (dulu terbuka tanpa login)
+
+    // Khusus admin: kelola pengguna dan rute cek database untuk pengecekan manual
     Route::middleware('role:admin')->group(function () {
+        // Setujui pendaftar baru, ubah role, reset password, nonaktifkan akun
+        Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna');
+        Route::patch('/pengguna/{pengguna}', [PenggunaController::class, 'perbarui'])->name('pengguna.perbarui');
+
         Route::get('/cek-db', function () {
             $status = DB::connection('klaim_bpjs')->select("
                 SELECT DISTINCT status FROM mon_klaim_rinap
