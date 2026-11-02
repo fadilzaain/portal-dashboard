@@ -110,7 +110,7 @@ return [
             'strict'        => false,
             'engine'        => null,
             'options'       => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -135,7 +135,7 @@ return [
             'port'     => env('DB_PEGAWAI_PORT', '3306'),
             'database' => env('DB_PEGAWAI_DATABASE', 'pegawai'),
             'username' => env('DB_PEGAWAI_USERNAME', 'rsudjombang911'),
-            'password' => env('DB_PEGAWAI_PASSWORD', 'Simrs$1038jombang'),
+            'password' => env('DB_PEGAWAI_PASSWORD'),
             'charset'  => 'utf8mb4',
             'collation'=> 'utf8mb4_unicode_ci',
             'prefix'   => '',
@@ -149,7 +149,7 @@ return [
             'port'      => env('DB_DASHI_PORT', '3306'),
             'database'  => env('DB_DASHI_DATABASE', 'dashi'),
             'username'  => env('DB_DASHI_USERNAME', 'sawit'),
-            'password'  => env('DB_DASHI_PASSWORD', 'nyawitye'),
+            'password'  => env('DB_DASHI_PASSWORD'),
             'charset'   => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix'    => '',

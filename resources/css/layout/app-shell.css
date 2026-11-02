@@ -36,6 +36,8 @@
 
     --sidebar-w:      264px;  /* lebar sidebar pas kebuka */
     --sidebar-gap:    .75rem; /* jarak sidebar ke tepi layar (top/left/bottom) */
+    --ease-sb:        cubic-bezier(.22, 1, .36, 1); /* kurva animasi sidebar (halus, melambat di ujung) */
+    --scrim:          rgba(2,3,5,.55);            /* tirai gelap di belakang sidebar (layar sentuh) */
     --font:           'Sora', sans-serif;
     --mono:           'JetBrains Mono', monospace;
 
@@ -80,8 +82,7 @@
     --shadow-hover:   0 26px 56px -18px rgba(64,50,20,.22), 0 0 0 1px var(--border-hi), inset 0 1px 0 rgba(255,255,255,.8);
     --hero-shadow:    0 22px 52px -20px rgba(64,50,20,.18), inset 0 1px 0 rgba(255,255,255,.78);
 
-    /* -- palet aksen: versi jewel-tone (lebih dalem & lebih saturated
-       daripada versi dark mode) biar tetep kontras & "mewah" di atas bg terang -- */
+    /* -- palet aksen: versi jewel-tone  -- */
     --champagne:      #8c6d3f; --champagne-dim: rgba(140,109,63,.16);
     --teal:           #0f766e; --teal-dim:      rgba(15,118,110,.16);
     --sky:            #0369a1; --sky-dim:       rgba(3,105,161,.14);
@@ -92,6 +93,7 @@
     --warning:        #b45309; --warning-dim:   rgba(180,83,9,.16);
     --danger:         #be123c; --danger-dim:    rgba(190,18,60,.14);
     --accent-glow:    rgba(15,118,110,.22);
+    --scrim:          rgba(33,28,20,.35);
 }
 
 /* ── Ukuran sidebar responsif ── */
@@ -140,47 +142,62 @@ body {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ── Overlay backdrop (mobile) ── */
-#sidebar-backdrop { display: none; position: fixed; inset: 0; z-index: 49; }
-body.sidebar-open #sidebar-backdrop { display: block; }
+/* ── Overlay backdrop (cuma kepake di layar sentuh) — fade halus, bukan langsung muncul ── */
+#sidebar-backdrop {
+    position: fixed; inset: 0; z-index: 49; background: var(--scrim);
+    opacity: 0; pointer-events: none; transition: opacity .35s ease;
+}
+body.sidebar-open #sidebar-backdrop { opacity: 1; pointer-events: auto; }
 
 /* ══════════════════
-   SIDEBAR 
+   SIDEBAR
 ═════════════════════ */
-/* Sidebar defaultnya SELALU nyembunyi total di luar layar  */
+/* Sidebar defaultnya SELALU nyembunyi total di luar layar.
+   Ukuran vertikalnya ngecil halus ngikutin tinggi layar (clamp), jadi semua menu selalu muat tanpa scroll.
+   Di layar tinggi, nilainya berhenti di ukuran maksimal (sama kayak sebelumnya). */
 #sidebar {
+    --sb-kotak:  clamp(30px, 4.8vh, 36px);       /* kotak ikon menu */
+    --sb-napas:  clamp(.2rem, .9vh, .62rem);     /* ruang atas-bawah tiap menu */
+    --sb-label:  clamp(.3rem, 1.5vh, .9rem);     /* jarak di atas judul grup */
+
     position: fixed; top: var(--sidebar-gap); left: var(--sidebar-gap); bottom: var(--sidebar-gap);
     width: var(--sidebar-w);
     background: var(--sb-bg); border: 1px solid var(--sb-border); border-radius: 22px;
     backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%);
     box-shadow: var(--shadow-rest);
     display: flex; flex-direction: column; overflow: hidden; z-index: 55;
-    transform: translateX(calc(-100% - var(--sidebar-gap)));
-    transition: transform .38s cubic-bezier(.16,1,.3,1), box-shadow .38s ease;
-    animation: sbFadeIn .5s ease both;
+
+    /* Tertutup: geser keluar layar + transparan. Ada jeda .3 detik biar gak langsung ilang
+       pas mouse geser dikit; visibility baru dimatiin setelah animasi geser selesai. */
+    transform: translateX(calc(-100% - var(--sidebar-gap))); opacity: 0; visibility: hidden;
+    transition: transform .5s var(--ease-sb) .3s, opacity .35s ease .3s, visibility 0s linear .8s, box-shadow .38s ease;
 }
-@keyframes sbFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* ── Reveal trigger ──
    Sidebar kebuka kalau salah satu dari 3 kondisi ini kejadian:
    1. mouse nempel di hover-zone (strip tipis tepi kiri)
    2. cursor lagi di atas sidebar itu sendiri (biar gak nutup pas lagi dipake)
-   3. body.sidebar-open ke-toggle */
-#sidebar-hover-zone:hover ~ #sidebar,
-#sidebar:hover,
-body.sidebar-open #sidebar {
-    transform: translateX(0);
+   3. body.sidebar-open ke-toggle (tombol menu / swipe di layar sentuh)
+   Selektor :is(...) ini dipake ulang di bawah supaya kondisinya cuma ditulis sekali. */
+:is(body:has(#sidebar-hover-zone:hover, #sidebar:hover), body.sidebar-open) #sidebar {
+    transform: none; opacity: 1; visibility: visible; transition-delay: 0s;
     box-shadow: var(--shadow-hover), 0 40px 90px -30px rgba(0,0,0,.55);
 }
 
-/* ── Hover-reveal zone ── */
+/* ── Hover-reveal zone + gagang kecil sebagai petunjuk "ada menu di sini" ── */
 #sidebar-hover-zone { position: fixed; inset: 0 auto 0 0; width: 0; pointer-events: none; z-index: 54; }
+#sidebar-hover-zone::after {
+    content: ''; display: none; position: absolute; left: 5px; top: 50%; width: 4px; height: 72px; margin-top: -36px;
+    border-radius: 4px; background: linear-gradient(var(--champagne), var(--teal)); opacity: .6; transition: opacity .3s ease;
+}
 @media (hover: hover) and (pointer: fine) {
     #sidebar-hover-zone { width: 26px; pointer-events: auto; }
+    #sidebar-hover-zone::after { display: block; }
 }
+:is(body:has(#sidebar-hover-zone:hover, #sidebar:hover), body.sidebar-open) #sidebar-hover-zone::after { opacity: 0; }
 
 /* Brand logo rs */
-.sidebar-brand { display: flex; align-items: center; gap: .85rem; padding: 1.35rem 1.1rem 1.1rem; flex-shrink: 0; }
+.sidebar-brand { display: flex; align-items: center; gap: .85rem; padding: clamp(.7rem, 2.4vh, 1.35rem) 1.1rem clamp(.5rem, 1.6vh, 1.1rem); flex-shrink: 0; }
 .sidebar-brand-mark {
     width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0; overflow: hidden;
     background: var(--glass-strong);
@@ -194,14 +211,15 @@ body.sidebar-open #sidebar {
 .sidebar-brand-name { font-family: var(--font); font-weight: 700; font-size: .88rem; letter-spacing: .01em; color: var(--text-hi); line-height: 1.25; }
 .sidebar-brand-sub  { font-size: .62rem; color: var(--text-low); letter-spacing: .02em; }
 
-/* Nav */
-.sidebar-nav { flex: 1; overflow: hidden; padding: .4rem .65rem; display: flex; flex-direction: column; gap: .15rem; }
+/* Nav (cadangan buat layar sangat pendek: bisa digulir tapi tanpa batang scroll) */
+.sidebar-nav { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: .4rem .65rem; display: flex; flex-direction: column; gap: .15rem; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
 .nav-label {
     font-size: .6rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text-low);
-    padding: .9rem .6rem .35rem; white-space: nowrap;
+    padding: var(--sb-label) .6rem .35rem; white-space: nowrap;
 }
 .nav-item {
-    position: relative; display: flex; align-items: center; gap: .9rem; padding: .62rem .68rem; border-radius: 13px;
+    position: relative; display: flex; align-items: center; gap: .9rem; padding: var(--sb-napas) .68rem; border-radius: 13px;
     color: var(--text-mid); text-decoration: none; white-space: nowrap; overflow: hidden;
     transition: background .25s ease, color .25s ease;
 }
@@ -212,19 +230,22 @@ body.sidebar-open #sidebar {
     background: linear-gradient(180deg, var(--champagne), var(--teal)); box-shadow: 0 0 10px var(--champagne);
 }
 .nav-icon-box {
-    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    width: var(--sb-kotak); height: var(--sb-kotak); border-radius: 10px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; background: var(--wash-1);
+    transition: transform .3s var(--ease-sb), background-color .25s ease, color .25s ease;
 }
 .nav-item.active .nav-icon-box { background: var(--champagne-dim); color: var(--champagne); }
+/* Ikon goyang kecil pas di-hover */
+.nav-item:hover .nav-icon-box, .theme-toggle-btn:hover .nav-icon-box { transform: scale(1.08) rotate(-4deg); }
 .nav-icon { width: 17px; height: 17px; }
 .nav-txt  { font-size: .82rem; font-weight: 500; }
 .nav-badge { margin-left: auto; font-size: .68rem; color: var(--text-low); flex-shrink: 0; }
 
 /* Footer: toggle tema + user card */
-.sidebar-footer { padding: .75rem; border-top: 1px solid var(--sb-border); flex-shrink: 0; display: flex; flex-direction: column; gap: .5rem; }
+.sidebar-footer { padding: clamp(.4rem, 1.2vh, .75rem) .75rem; border-top: 1px solid var(--sb-border); flex-shrink: 0; display: flex; flex-direction: column; gap: clamp(.15rem, .8vh, .5rem); }
 
 .theme-toggle-btn {
-    display: flex; align-items: center; gap: .9rem; padding: .55rem .68rem; border-radius: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: .9rem; padding: clamp(.2rem, .9vh, .55rem) .68rem; border-radius: 13px; cursor: pointer;
     color: var(--text-mid); background: none; border: none; width: 100%; text-align: left; overflow: hidden; white-space: nowrap;
     transition: background .25s, color .25s; font-family: inherit;
 }
@@ -238,7 +259,7 @@ body.sidebar-open #sidebar {
 [data-theme="light"] .theme-toggle-btn .icon-sun  { opacity: 1; transform: rotate(0) scale(1); }
 [data-theme="light"] .theme-toggle-btn .icon-moon { opacity: 0; transform: rotate(40deg) scale(.6); }
 
-.user-card { display: flex; align-items: center; gap: .75rem; padding: .5rem .55rem; border-radius: 13px; overflow: hidden; white-space: nowrap; }
+.user-card { display: flex; align-items: center; gap: .75rem; padding: clamp(.2rem, .8vh, .5rem) .55rem; border-radius: 13px; overflow: hidden; white-space: nowrap; }
 .user-avatar {
     width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
     background: linear-gradient(135deg, var(--violet), var(--rose));
@@ -254,6 +275,23 @@ body.sidebar-open #sidebar {
     padding: .3rem; border-radius: 8px; display: flex; transition: color .2s, background .2s;
 }
 .logout-btn:hover { color: var(--rose); background: var(--wash-2); }
+
+/* ── Item sidebar muncul satu per satu (jeda mengikuti --i dari layout) ──
+   Blok ini sengaja ditaruh SETELAH aturan .nav-item dkk, supaya transition-nya yang menang. */
+.masuk {
+    opacity: 0; transform: translateX(-16px);
+    transition: opacity .4s ease, transform .5s var(--ease-sb), background-color .25s ease, color .25s ease;
+}
+:is(body:has(#sidebar-hover-zone:hover, #sidebar:hover), body.sidebar-open) .masuk {
+    opacity: 1; transform: none;
+    /* 4 nilai = urutan properti di atas: opacity, transform, background-color, color */
+    transition-delay: calc(var(--i, 0) * 45ms + 120ms), calc(var(--i, 0) * 45ms + 120ms), 0s, 0s;
+}
+
+/* Hormati pengguna yang mematikan animasi di perangkatnya (cuma sidebar, modul lain gak ikut kena) */
+@media (prefers-reduced-motion: reduce) {
+    #sidebar, #sidebar *, #sidebar-backdrop, #sidebar-hover-zone::after { animation: none !important; transition: none !important; }
+}
 
 /* ── Main Wrap ──
    Sidebar sekarang overlay tdk dorong konten utama */

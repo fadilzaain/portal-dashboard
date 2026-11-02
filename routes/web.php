@@ -18,36 +18,11 @@ Route::get('/', function () {
 });
 
 
-Route::get('/cek-db', function () {
-    $status = DB::connection('klaim_bpjs')->select("
-        SELECT DISTINCT status FROM mon_klaim_rinap
-    ");
-    $statusRjalan = DB::connection('klaim_bpjs')->select("
-        SELECT DISTINCT status FROM mon_klaim_rjalan
-    ");
-    return response()->json(['rinap' => $status, 'rjalan' => $statusRjalan]);
-});
-
-Route::get('/cek-tanggal', function () {
-    $rinap = DB::connection('klaim_bpjs')->selectOne("
-        SELECT MIN(tglPulang) as min_tgl, MAX(tglPulang) as max_tgl, COUNT(*) as total 
-        FROM mon_klaim_rinap
-    ");
-    $rjalan = DB::connection('klaim_bpjs')->selectOne("
-        SELECT MIN(tglSep) as min_tgl, MAX(tglSep) as max_tgl, COUNT(*) as total 
-        FROM mon_klaim_rjalan
-    ");
-    return response()->json([
-        'rinap'  => $rinap,
-        'rjalan' => $rjalan,
-        'server_now' => now()->toDateTimeString(),
-    ]);
-});
-
 // Auth 
 Route::middleware('guest')->group(function () {
     Route::get('/login',    [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login',   [AuthController::class, 'login'])->name('login.post');
+    // Dibatasi 10 percobaan per menit untuk mencegah tebak password
+    Route::post('/login',   [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.post');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])
@@ -55,9 +30,38 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 // Protected (auth required)
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
 
 
+
+    // Rute cek database untuk pengecekan manual: khusus admin (dulu terbuka tanpa login)
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/cek-db', function () {
+            $status = DB::connection('klaim_bpjs')->select("
+                SELECT DISTINCT status FROM mon_klaim_rinap
+            ");
+            $statusRjalan = DB::connection('klaim_bpjs')->select("
+                SELECT DISTINCT status FROM mon_klaim_rjalan
+            ");
+            return response()->json(['rinap' => $status, 'rjalan' => $statusRjalan]);
+        });
+
+        Route::get('/cek-tanggal', function () {
+            $rinap = DB::connection('klaim_bpjs')->selectOne("
+                SELECT MIN(tglPulang) as min_tgl, MAX(tglPulang) as max_tgl, COUNT(*) as total 
+                FROM mon_klaim_rinap
+            ");
+            $rjalan = DB::connection('klaim_bpjs')->selectOne("
+                SELECT MIN(tglSep) as min_tgl, MAX(tglSep) as max_tgl, COUNT(*) as total 
+                FROM mon_klaim_rjalan
+            ");
+            return response()->json([
+                'rinap'  => $rinap,
+                'rjalan' => $rjalan,
+                'server_now' => now()->toDateTimeString(),
+            ]);
+        });
+    });
 
     // Portal utama 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -132,5 +136,3 @@ Route::middleware('auth')->group(function () {
 Route::post('/api/portal/verify', [PortalController::class, 'apiVerify'])
     ->name('api.portal.verify')
     ->middleware('throttle:60,1');
-
-    

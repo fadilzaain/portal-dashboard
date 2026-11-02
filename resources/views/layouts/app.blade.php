@@ -1,35 +1,59 @@
 <!DOCTYPE html>
-    <html lang="id" class="h-full">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>@yield('title', 'Dash-i') | RSUD Jombang</title>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Dash-i') | RSUD Jombang</title>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-        <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 
-        {{-- Inject theme sebelum render untuk hindari flash --}}
-        <script>
-            (function() {
-                const saved = localStorage.getItem('dash-theme') || 'light';
-                document.documentElement.setAttribute('data-theme', saved);
-            })();
-        </script>
+    {{-- Inject theme sebelum render untuk hindari flash --}}
+    <script>
+        (function() {
+            const saved = localStorage.getItem('dash-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
 
-        @vite(['resources/css/layout/app-shell.css'])
-        @stack('styles')
-    </head>
-    <body>
+    @vite(['resources/css/layout/app-shell.css'])
+    @stack('styles')
+</head>
+<body>
+
+    @php
+        $pengguna = auth()->user();
+        $namaUser = $pengguna->name ?? 'User';
+
+        // Daftar menu dibuat SATU kali di sini, lalu digambar lewat perulangan (tidak ditulis berulang).
+        // rute = nama route, cocok = pola route yang menandai menu aktif,
+        // luar = true kalau menu membuka dashboard modul (muncul panah ↗ di kanan)
+        $menu = [
+            'Menu Utama' => [
+                ['rute' => 'dashboard',              'cocok' => 'dashboard',                'nama' => 'Beranda Portal',   'ikon' => 'home',            'luar' => false],
+            ],
+            'Dashboard' => [
+                ['rute' => 'portal.pelayananpasien', 'cocok' => 'portal.pelayananpasien',   'nama' => 'Pelayanan Pasien', 'ikon' => 'heart',           'luar' => true],
+                ['rute' => 'portal.keuangan',        'cocok' => 'portal.keuangan',          'nama' => 'Keuangan',         'ikon' => 'currency-dollar', 'luar' => true],
+                ['rute' => 'sdm.portal.sdm',         'cocok' => 'sdm.*',                    'nama' => 'SDM',              'ikon' => 'users',           'luar' => true],
+                ['rute' => 'portal.indikatormutu',   'cocok' => 'portal.indikatormutu.*',   'nama' => 'Indikator Mutu',   'ikon' => 'document-text',   'luar' => true],
+                ['rute' => 'portal.klaimbpjs',       'cocok' => 'portal.klaimbpjs',         'nama' => 'Klaim BPJS',       'ikon' => 'shield-check',    'luar' => true],
+            ],
+        ];
+
+        // Nomor urut dipakai untuk jeda animasi masuk tiap item sidebar (muncul satu per satu)
+        $urut = 0;
+    @endphp
 
     {{-- Background layer --}}
     <div class="bg-aurora"><i></i></div>
     <div class="bg-vignette"></div>
     <div class="bg-noise"></div>
 
-    {{-- Backdrop (overlay saat sidebar kebuka lewat tombol/swipe) --}}
+    {{-- Backdrop (tirai gelap saat sidebar kebuka lewat tombol/swipe) --}}
     <div id="sidebar-backdrop" onclick="closeSidebar()"></div>
 
     {{-- Tombol buka sidebar — cuma keliatan di device yang gak bisa hover --}}
@@ -37,13 +61,13 @@
         <x-icon name="bars-3" width="18" height="18" />
     </button>
 
-    {{-- Hover-zone: strip tipis nempel di tepi kiri layar --}}
-    <div id="sidebar-hover-zone"></div>
+    {{-- Hover-zone: strip tipis nempel di tepi kiri layar (gagang kecilnya digambar lewat CSS) --}}
+    <div id="sidebar-hover-zone" aria-hidden="true"></div>
 
     {{-- Sidebar --}}
-    <aside id="sidebar">
+    <aside id="sidebar" aria-label="Menu samping">
 
-        <div class="sidebar-brand">
+        <div class="sidebar-brand masuk" style="--i: {{ $urut++ }}">
             <div class="sidebar-brand-mark">
                 <img src="{{ asset('images/logo-rsud-jombang.png') }}" alt="Logo RSUD">
             </div>
@@ -54,61 +78,27 @@
         </div>
 
         <nav class="sidebar-nav">
+            @foreach ($menu as $grup => $butir)
+                <div class="nav-label masuk" style="--i: {{ $urut++ }}">{{ $grup }}</div>
 
-            <div class="nav-label">Menu Utama</div>
-
-            <a href="{{ route('dashboard') }}"
-            class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"
-            onclick="closeSidebarOnMobile()">
-                <span class="nav-icon-box"><x-icon name="home" class="nav-icon" /></span>
-                <span class="nav-txt">Beranda Portal</span>
-            </a>
-
-            <div class="nav-label">Dashboard</div>
-
-            <a href="{{ route('portal.pelayananpasien') }}"
-            class="nav-item {{ request()->routeIs('portal.pelayananpasien') ? 'active' : '' }}"
-            onclick="closeSidebarOnMobile()">
-                <span class="nav-icon-box"><x-icon name="heart" class="nav-icon" /></span>
-                <span class="nav-txt">Pelayanan Pasien</span>
-                <span class="nav-badge">↗</span>
-            </a>
-
-            <a href="{{ route('portal.keuangan') }}"
-            class="nav-item {{ request()->routeIs('portal.keuangan') ? 'active' : '' }}"
-            onclick="closeSidebarOnMobile()">
-                <span class="nav-icon-box"><x-icon name="currency-dollar" class="nav-icon" /></span>
-                <span class="nav-txt">Keuangan</span>
-                <span class="nav-badge">↗</span>
-            </a>
-
-            <a href="{{ route('sdm.portal.sdm') }}"
-            class="nav-item {{ request()->routeIs('sdm.*') ? 'active' : '' }}"
-            onclick="closeSidebarOnMobile()">
-                <span class="nav-icon-box"><x-icon name="users" class="nav-icon" /></span>
-                <span class="nav-txt">SDM</span>
-                <span class="nav-badge">↗</span>
-            </a>
-
-            <a href="{{ route('portal.indikatormutu') }}"
-            class="nav-item {{ request()->routeIs('portal.indikatormutu.*') ? 'active' : '' }}"
-            onclick="closeSidebarOnMobile()">
-                <span class="nav-icon-box"><x-icon name="document-text" class="nav-icon" /></span>
-                <span class="nav-txt">Indikator Mutu</span>
-                <span class="nav-badge">↗</span>
-            </a>
-
-            <a href="{{ route('portal.klaimbpjs') }}"
-            class="nav-item {{ request()->routeIs('portal.klaimbpjs') ? 'active' : '' }}"
-            onclick="closeSidebarOnMobile()">
-                <span class="nav-icon-box"><x-icon name="shield-check" class="nav-icon" /></span>
-                <span class="nav-txt">Klaim BPJS</span>
-                <span class="nav-badge">↗</span>
-            </a>
-
+                @foreach ($butir as $m)
+                    @php $aktif = request()->routeIs($m['cocok']); @endphp
+                    <a href="{{ route($m['rute']) }}"
+                       class="nav-item masuk {{ $aktif ? 'active' : '' }}"
+                       style="--i: {{ $urut++ }}"
+                       @if ($aktif) aria-current="page" @endif
+                       onclick="closeSidebarOnMobile()">
+                        <span class="nav-icon-box"><x-icon :name="$m['ikon']" class="nav-icon" /></span>
+                        <span class="nav-txt">{{ $m['nama'] }}</span>
+                        @if ($m['luar'])
+                            <span class="nav-badge">↗</span>
+                        @endif
+                    </a>
+                @endforeach
+            @endforeach
         </nav>
 
-        <div class="sidebar-footer">
+        <div class="sidebar-footer masuk" style="--i: {{ $urut++ }}">
 
             <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Ganti tema">
                 <span class="nav-icon-box">
@@ -120,15 +110,15 @@
 
             <div class="user-card">
                 <div class="user-avatar">
-                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
+                    {{ mb_strtoupper(mb_substr($namaUser, 0, 2)) }}
                 </div>
                 <div class="user-info">
-                    <div class="user-name">{{ auth()->user()->name ?? 'User' }}</div>
-                    <div class="user-role">{{ auth()->user()->email ?? '' }}</div>
+                    <div class="user-name">{{ $namaUser }}</div>
+                    <div class="user-role">{{ $pengguna->email ?? '' }}</div>
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="logout-btn" title="Logout">
+                    <button type="submit" class="logout-btn" title="Logout" aria-label="Logout">
                         <x-icon name="arrow-right-on-rectangle" width="15" height="15" />
                     </button>
                 </form>
@@ -155,6 +145,9 @@
         function toggleSidebar() { document.body.classList.toggle('sidebar-open'); }
         function closeSidebarOnMobile() { if (isTouchDevice()) closeSidebar(); }
 
+        /* Tombol Esc nutup sidebar yang kebuka lewat tombol menu */
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
         /* ── Swipe buat device touch ── */
         let touchStartX = 0;
         document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
@@ -175,5 +168,5 @@
     </script>
 
     @stack('scripts')
-    </body>
-    </html>
+</body>
+</html>

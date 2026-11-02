@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    
+
     public function showLogin()
     {
         return view('auth.login');
@@ -20,7 +22,8 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Hanya akun berstatus "aktif" yang bisa masuk
+        if (Auth::attempt($credentials + ['status' => User::STATUS_AKTIF], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             if (Auth::user()->isDirektur()) {
@@ -33,10 +36,17 @@ class AuthController extends Controller
             return redirect()->intended(route('dashboard'));
         }
 
+        // Gagal: kalau password-nya benar tapi akun belum aktif, beri tahu alasannya.
+        // Pesan khusus ini hanya muncul untuk yang tahu password, jadi tidak membocorkan data.
+        $user = User::where('email', $credentials['email'])->first();
+        $pesan = ($user && Hash::check($credentials['password'], $user->password))
+            ? (User::PESAN_STATUS[$user->status] ?? null)
+            : null;
+
         return back()
             ->withInput($request->only('email'))
             ->withErrors([
-                'email' => 'Email atau password yang kamu masukkan salah.',
+                'email' => $pesan ?? 'Email atau password yang kamu masukkan salah.',
             ]);
     }
 

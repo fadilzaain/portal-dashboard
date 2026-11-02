@@ -497,6 +497,8 @@
 }
 
 .rk-card {
+    /* Warna netral tunggal buat SEMUA card unit (gak dibedain per status) */
+    --rk-accent: #64748b;
     position: relative;
     background: linear-gradient(160deg, var(--sdm-surface) 0%, var(--sdm-surface-alt) 130%);
     border: 1px solid var(--sdm-border);
@@ -508,17 +510,16 @@
 .rk-card::before {
     content: '';
     position: absolute; inset: 0 0 auto 0; height: 3px;
-    background: var(--rk-accent, var(--accent-blue));
-    opacity: 0.9;
+    background: var(--rk-accent);
+    opacity: 0.55;
 }
 .rk-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 28px -12px rgba(15,23,42,0.18);
-    border-color: var(--rk-accent, var(--accent-blue));
+    border-color: var(--rk-accent);
 }
-.rk-card.status-aman    { --rk-accent: var(--accent-green); }
-.rk-card.status-waspada { --rk-accent: var(--accent-amber); }
-.rk-card.status-kritis  { --rk-accent: var(--accent-red); }
+/* Varian warna per status (aman/waspada/kritis) sengaja dihapus.
+   Info status tetap muncul lewat teks di .rk-status-pill */
 
 /* Dipicu sdmScrollToUnit() pas user klik item di "Perlu Perhatian" */
 @keyframes rkHighlightPulse {
@@ -546,15 +547,21 @@
     color: inherit;
 }
 
+/* Style netral bersama: ikon, pill jumlah, pill status, chip kurang (satu sumber, gak diulang) */
+.rk-card-icon,
+.rk-card-count-pill,
+.rk-status-pill,
+.rk-kurang-chip {
+    background: var(--sdm-surface-alt);
+    border: 1px solid var(--sdm-border);
+}
+
 .rk-card-icon {
     width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    color: var(--rk-accent, var(--accent-blue));
+    color: var(--sdm-text-muted);
 }
 .rk-card-icon svg { width: 18px; height: 18px; }
-.rk-card.status-aman    .rk-card-icon { background: rgba(52,211,153,0.15); }
-.rk-card.status-waspada .rk-card-icon { background: rgba(245,158,11,0.15); }
-.rk-card.status-kritis  .rk-card-icon { background: rgba(248,113,113,0.15); }
 
 .rk-card-name {
     font-size: 13px; font-weight: 700; color: var(--sdm-text);
@@ -563,19 +570,15 @@
 }
 .rk-card-count-pill {
     font-size: 11px; font-weight: 600; color: var(--sdm-text-muted);
-    background: var(--sdm-surface-alt); border: 1px solid var(--sdm-border);
     border-radius: 99px; padding: 3px 10px;
     white-space: nowrap; flex-shrink: 0;
 }
 .rk-status-pill {
     font-size: 9px; font-weight: 700; padding: 2px 7px;
     border-radius: 99px; text-transform: uppercase; letter-spacing: 0.3px;
-    color: var(--rk-accent, var(--accent-blue));
+    color: var(--sdm-text);
     flex-shrink: 0;
 }
-.rk-card.status-aman    .rk-status-pill { background: rgba(52,211,153,0.15); }
-.rk-card.status-waspada .rk-status-pill { background: rgba(245,158,11,0.15); }
-.rk-card.status-kritis  .rk-status-pill { background: rgba(248,113,113,0.15); }
 
 .rk-chevron {
     color: var(--sdm-text-muted);
@@ -583,7 +586,7 @@
     flex-shrink: 0;
     margin-left: auto;
 }
-.rk-card.open .rk-chevron { transform: rotate(180deg); color: var(--rk-accent, var(--accent-blue)); }
+.rk-card.open .rk-chevron { transform: rotate(180deg); color: var(--sdm-text); }
 
 /* Expand pakai grid-template-rows trick biar smooth */
 .rk-expand {
@@ -619,7 +622,7 @@
 .rk-kurang-chip {
     font-size: 10px; font-weight: 700; white-space: nowrap;
     padding: 5px 10px; border-radius: 99px; flex-shrink: 0;
-    background: rgba(248,113,113,0.12); color: var(--accent-red);
+    color: var(--sdm-text-muted);
 }
 
 /* Tabel detail per jabatan di dalam card (kolom eksplisit PNS/PPPK/PPPK-PW/Non ASN/Jumlah/Kebutuhan/Status) */
@@ -821,7 +824,7 @@
     .sdm-wrap { padding: 0 12px 12px; }
 }
 
-/* Hp kecil (mis. iPhone SE, ~360-390px) — grid 2 kolom masih dipertahankan, cuma dipadetin */
+/* Small Mobile Device */
 @media (max-width: 400px) {
     .sdm-stat-grid { gap: 8px; }
     .sdm-sc { padding: 8px 9px; gap: 6px; }
