@@ -27,7 +27,7 @@
         <x-portal.card-keuangan  :keuangan="$keuangan"   :bulanLabel="$bulanLabel ?? 'Mei'" :tahun="$tahun ?? now()->year" />
         <x-portal.card-sdm       :sdm="$sdm"             :tahun="$tahun ?? now()->year" />
         <x-portal.card-mutu      :mutu="$mutu"            :bulanLabel="$bulanLabel ?? 'Mei'" :tahun="$tahun ?? now()->year" />
-        <x-portal.card-bpjs      :bpjs="$bpjs"            :bulanLabel="$bulanLabel ?? 'Mei'" :tahun="$tahun ?? now()->year" />
+        <x-portal.card-bpjs      :bpjs="$bpjs"            :bulanLabel="$bulanLabelBpjs ?? $bulanLabel ?? 'Mei'" :tahun="$tahunBpjs ?? $tahun ?? now()->year" />
     </div>
 
     <p class="text-xs text-center mt-8" style="color:#334155">

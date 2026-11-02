@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -25,25 +27,41 @@ class DashboardController extends Controller
         'Desember',
     ];
 
+    /**
+     * true  = pendapatan & belanja dihitung sampai bulan data TERAKHIR yang ada di KEDUA sumber,
+     *         jadi surplus/defisit sebanding dan label "Jan – X" jujur.
+     * false = perilaku lama (sampai bulan berjalan, walau salah satu sumber belum terisi).
+     */
+    private const SELARASKAN_PERIODE_KEUANGAN = true;
+
     public function index(Request $request)
     {
-        $bulan = (int) $request->input('bulan', now()->month);
+        $bulan = max(1, min(12, (int) $request->input('bulan', now()->month)));
         $tahun = (int) $request->input('tahun', now()->year);
 
         $bulanLabel     = self::BULAN_NAMES[$bulan] ?? self::BULAN_NAMES[now()->month];
         $bulanLabelData = self::BULAN_NAMES[$bulan] ?? $bulanLabel;
 
-        // ── Rentang card pelayanan bulan baru kurangi 1 ──
-        $namaBulanPendek = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+        // Rentang card pelayanan: Jan sampai bulan data terakhir yang benar-benar ada
+        $namaBulanPendek = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
         [$tahunPelayanan, $sampaibulanPelayanan] = $this->periodePelayanan();
         $bulanLabelPelayanan = 'Jan – ' . $namaBulanPendek[$sampaibulanPelayanan];
-        // ─────────────────────────────────────────────────────────
 
         $pelayanan = $this->getPelayananSummary($tahunPelayanan, $sampaibulanPelayanan);
         $keuangan  = $this->getKeuanganSummary($tahun);
         $sdm       = $this->getSdmSummary();
         $mutu      = $this->getMutuSummary($tahun, $bulan);
-        $bpjs      = $this->getBpjsSummary($tahun, $bulan);
+
+        // Kartu BPJS: tanpa filter eksplisit, pakai bulan terakhir yang datanya ada
+        // (bulan berjalan biasanya belum terisi). Kalau user memilih bulan/tahun, ikut pilihan itu.
+        if ($request->filled('bulan') || $request->filled('tahun')) {
+            [$tahunBpjs, $bulanBpjs] = [$tahun, $bulan];
+        } else {
+            [$tahunBpjs, $bulanBpjs] = $this->periodeBpjsTerakhir();
+        }
+        $bulanLabelBpjs = self::BULAN_NAMES[$bulanBpjs] ?? $bulanLabel;
+        $bpjs           = $this->getBpjsSummary($tahunBpjs, $bulanBpjs);
+
         $apps      = config('portal.apps');
 
         return view('dashboard.index', compact(
@@ -52,32 +70,47 @@ class DashboardController extends Controller
             'bulanLabelData',
             'bulanLabelPelayanan',
             'tahunPelayanan',
-            'pelayanan', 'keuangan', 'sdm', 'mutu', 'bpjs'
+            'pelayanan', 'keuangan', 'sdm', 'mutu', 'bpjs',
+            'bulanLabelBpjs', 'tahunBpjs'
         ));
     }
 
-   
+    /**
+     * Cari bulan terakhir yang punya data BOR (> 0), dengan batas sampai bulan lalu
+     * (bulan berjalan belum lengkap, jadi tidak ikut dihitung).
+     * Return: [tahun, sampai_bulan]
+     */
     private function periodePelayanan(): array
     {
         $now = Carbon::now();
 
-        $tahun       = $now->month === 1 ? $now->year - 1 : $now->year;
-        $sampaibulan = $now->month === 1 ? 12 : $now->month - 1;
+        // Batas atas = bulan lalu
+        $batasTahun  = $now->month === 1 ? $now->year - 1 : $now->year;
+        $batasBulan  = $now->month === 1 ? 12 : $now->month - 1;
 
-        $adaData = DB::connection('dashi')
-            ->table('borlosttoiall_thn')
-            ->where('tahun', $tahun)
-            ->whereBetween('bulan', [1, $sampaibulan])
-            ->where('bor', '>', 0)
-            ->exists();
+        try {
+            $terakhir = DB::connection('dashi')
+                ->table('borlosttoiall_thn')
+                ->where('bor', '>', 0)
+                ->where(function ($q) use ($batasTahun, $batasBulan) {
+                    $q->where('tahun', '<', $batasTahun)
+                      ->orWhere(function ($q2) use ($batasTahun, $batasBulan) {
+                          $q2->where('tahun', $batasTahun)
+                             ->where('bulan', '<=', $batasBulan);
+                      });
+                })
+                ->orderByDesc('tahun')
+                ->orderByDesc('bulan')
+                ->first(['tahun', 'bulan']);
 
-        if (!$adaData) {
-            // fallback data ke bulan baru kurang 1
-            $tahun       -= 1;
-            $sampaibulan  = 12;
+            if ($terakhir) {
+                return [(int) $terakhir->tahun, max(1, min(12, (int) $terakhir->bulan))];
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard: gagal cek periode pelayanan', ['error' => $e->getMessage()]);
         }
 
-        return [$tahun, $sampaibulan];
+        return [$batasTahun, $batasBulan];
     }
 
     private function getPelayananSummary(int $tahun, int $sampaibulan): array
@@ -98,7 +131,8 @@ class DashboardController extends Controller
                 'toi' => round($data->avg('toi'), 1),
                 'bto' => round($data->avg('bto'), 1),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard: ringkasan pelayanan gagal', ['error' => $e->getMessage()]);
             return $this->emptyPelayanan();
         }
     }
@@ -110,13 +144,39 @@ class DashboardController extends Controller
 
     private function getKeuanganSummary(int $tahun): array
     {
+        // Tahun lalu = setahun penuh, tahun berjalan = sampai bulan berjalan
+        $batas = $tahun < now()->year ? 12 : now()->month;
+
         try {
-            $bulanTerbaru = now()->month;
+            $bulanAkhir = $batas;
+
+            if (self::SELARASKAN_PERIODE_KEUANGAN) {
+                $tglPendapatan = DB::connection('mysql3')
+                    ->table('tr_mutasirekbank')
+                    ->whereYear('effective_date', $tahun)
+                    ->whereNotNull('credit')
+                    ->where('credit', '>', 0)
+                    ->max('effective_date');
+
+                $tglBelanja = DB::connection('mysql2')
+                    ->table('cheque')
+                    ->whereYear('tanggal', $tahun)
+                    ->max('tanggal');
+
+                $bulanData = array_filter([
+                    $tglPendapatan ? Carbon::parse($tglPendapatan)->month : null,
+                    $tglBelanja    ? Carbon::parse($tglBelanja)->month    : null,
+                ]);
+
+                if (!empty($bulanData)) {
+                    $bulanAkhir = min($batas, ...$bulanData);
+                }
+            }
 
             $pendapatan = (float) DB::connection('mysql3')
                 ->table('tr_mutasirekbank')
                 ->whereYear('effective_date', $tahun)
-                ->whereMonth('effective_date', '<=', $bulanTerbaru)
+                ->whereMonth('effective_date', '<=', $bulanAkhir)
                 ->whereNotNull('credit')
                 ->where('credit', '>', 0)
                 ->sum('credit');
@@ -124,17 +184,18 @@ class DashboardController extends Controller
             $belanja = (float) DB::connection('mysql2')
                 ->table('cheque')
                 ->whereYear('tanggal', $tahun)
-                ->whereMonth('tanggal', '<=', $bulanTerbaru)
+                ->whereMonth('tanggal', '<=', $bulanAkhir)
                 ->sum('jumlah');
 
             return [
-                'pendapatan'   => $pendapatan,
-                'belanja'      => $belanja,
-                'bulan_awal'   => 1,
-                'bulan_akhir'  => $bulanTerbaru,
+                'pendapatan'  => $pendapatan,
+                'belanja'     => $belanja,
+                'bulan_awal'  => 1,
+                'bulan_akhir' => $bulanAkhir,
             ];
-        } catch (\Exception $e) {
-            return ['pendapatan' => 0, 'belanja' => 0, 'bulan_awal' => 1, 'bulan_akhir' => now()->month];
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard: ringkasan keuangan gagal', ['error' => $e->getMessage()]);
+            return ['pendapatan' => 0, 'belanja' => 0, 'bulan_awal' => 1, 'bulan_akhir' => $batas];
         }
     }
 
@@ -143,7 +204,12 @@ class DashboardController extends Controller
         try {
             $apiBase  = env('API_SIKAWAN_BASE', 'http://192.168.10.8/sikawan-api/public/api/v1');
             $response = Http::timeout(10)->get("{$apiBase}/sikawan");
-            $data     = $response->successful() ? ($response->json('data') ?? []) : [];
+
+            if (!$response->successful()) {
+                Log::warning('Dashboard: API Sikawan tidak sukses', ['status' => $response->status()]);
+            }
+
+            $data = $response->successful() ? ($response->json('data') ?? []) : [];
 
             return [
                 'total'       => (int) ($data['total_pegawai'] ?? 0),
@@ -153,7 +219,8 @@ class DashboardController extends Controller
                 'shift_siang' => (int) ($data['total_shift_siang'] ?? 0),
                 'shift_malam' => (int) ($data['total_shift_malam'] ?? 0),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard: ringkasan SDM gagal', ['error' => $e->getMessage()]);
             return [
                 'total'       => 0,
                 'medis'       => 0,
@@ -179,8 +246,43 @@ class DashboardController extends Controller
                 'tercapai'       => collect($tabel)->where('status', 'tercapai')->count(),
                 'tidak_tercapai' => collect($tabel)->where('status', 'belum')->count(),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard: ringkasan mutu gagal', ['error' => $e->getMessage()]);
             return ['total' => 0, 'tercapai' => 0, 'tidak_tercapai' => 0];
+        }
+    }
+
+    /**
+     * Bulan terakhir yang punya data klaim (rawat inap atau rawat jalan, mana yang lebih baru).
+     * Di-cache 10 menit supaya MAX() ke tabel besar tidak jalan di setiap muat halaman.
+     * Return: [tahun, bulan]
+     */
+    private function periodeBpjsTerakhir(): array
+    {
+        try {
+            return Cache::remember('dashboard_bpjs_periode_terakhir', 600, function () {
+                $rinap = DB::connection('klaim_bpjs')
+                    ->table('mon_klaim_rinap')
+                    ->where('tglPulang', '<=', now())
+                    ->max('tglPulang');
+
+                $rjalan = DB::connection('klaim_bpjs')
+                    ->table('mon_klaim_rjalan')
+                    ->where('tglSep', '<=', now())
+                    ->max('tglSep');
+
+                $tgl = max((string) $rinap, (string) $rjalan);
+
+                if ($tgl !== '') {
+                    $c = Carbon::parse($tgl);
+                    return [(int) $c->year, (int) $c->month];
+                }
+
+                return [now()->year, now()->month];
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard: gagal cek periode BPJS', ['error' => $e->getMessage()]);
+            return [now()->year, now()->month];
         }
     }
 
@@ -190,33 +292,34 @@ class DashboardController extends Controller
             $from = Carbon::create($tahun, $bulan, 1)->startOfMonth();
             $to   = Carbon::create($tahun, $bulan, 1)->endOfMonth();
 
-            $rinapRaw = $this->getKlaimBpjsRow('mon_klaim_rinap', 'tglPulang', $from, $to);
+            $rinapRaw  = $this->getKlaimBpjsRow('mon_klaim_rinap', 'tglPulang', $from, $to);
             $rjalanRaw = $this->getKlaimBpjsRow('mon_klaim_rjalan', 'tglSep', $from, $to);
 
             return [
-                'rawat_inap'            => (int)   ($rinapRaw->total    ?? 0),
-                'rawat_jalan'           => (int)   ($rjalanRaw->total   ?? 0),
-                'nominal_rinap'         => (float) ($rinapRaw->nominal  ?? 0),
-                'nominal_rjalan'        => (float) ($rjalanRaw->nominal ?? 0),
-                'nominal_terbayar'      => (float)($rinapRaw->nominal_terbayar  ?? 0) + (float)($rjalanRaw->nominal_terbayar  ?? 0),
-                'nominal_pending'       => (float)($rinapRaw->nominal_pending   ?? 0) + (float)($rjalanRaw->nominal_pending   ?? 0),
-                'nominal_tidak_layak'   => (float)($rinapRaw->nominal_tidak_layak ?? 0) + (float)($rjalanRaw->nominal_tidak_layak ?? 0),
-                'terbayar'              => (int)   ($rinapRaw->terbayar    ?? 0) + (int) ($rjalanRaw->terbayar    ?? 0),
-                'pending'               => (int)   ($rinapRaw->pending     ?? 0) + (int) ($rjalanRaw->pending     ?? 0),
-                'tidak_layak'           => (int)   ($rinapRaw->tidak_layak ?? 0) + (int) ($rjalanRaw->tidak_layak ?? 0),
+                'rawat_inap'          => (int)   ($rinapRaw->total    ?? 0),
+                'rawat_jalan'         => (int)   ($rjalanRaw->total   ?? 0),
+                'nominal_rinap'       => (float) ($rinapRaw->nominal  ?? 0),
+                'nominal_rjalan'      => (float) ($rjalanRaw->nominal ?? 0),
+                'nominal_terbayar'    => (float) ($rinapRaw->nominal_terbayar    ?? 0) + (float) ($rjalanRaw->nominal_terbayar    ?? 0),
+                'nominal_pending'     => (float) ($rinapRaw->nominal_pending     ?? 0) + (float) ($rjalanRaw->nominal_pending     ?? 0),
+                'nominal_tidak_layak' => (float) ($rinapRaw->nominal_tidak_layak ?? 0) + (float) ($rjalanRaw->nominal_tidak_layak ?? 0),
+                'terbayar'            => (int)   ($rinapRaw->terbayar    ?? 0) + (int) ($rjalanRaw->terbayar    ?? 0),
+                'pending'             => (int)   ($rinapRaw->pending     ?? 0) + (int) ($rjalanRaw->pending     ?? 0),
+                'tidak_layak'         => (int)   ($rinapRaw->tidak_layak ?? 0) + (int) ($rjalanRaw->tidak_layak ?? 0),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard: ringkasan BPJS gagal', ['error' => $e->getMessage()]);
             return [
-                'rawat_inap' => 0,
-                'rawat_jalan' => 0,
-                'nominal_rinap' => 0,
-                'nominal_rjalan' => 0,
-                'nominal_terbayar' => 0,
-                'nominal_pending' => 0,
+                'rawat_inap'          => 0,
+                'rawat_jalan'         => 0,
+                'nominal_rinap'       => 0,
+                'nominal_rjalan'      => 0,
+                'nominal_terbayar'    => 0,
+                'nominal_pending'     => 0,
                 'nominal_tidak_layak' => 0,
-                'terbayar' => 0,
-                'pending' => 0,
-                'tidak_layak' => 0,
+                'terbayar'            => 0,
+                'pending'             => 0,
+                'tidak_layak'         => 0,
             ];
         }
     }
