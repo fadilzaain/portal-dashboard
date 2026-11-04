@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    // Koneksi diambil dari config/iku.php
+    // Koneksi diambil dari config/iku.php (bawaan 'dashi')
     private function db(): \Illuminate\Database\Schema\Builder
     {
         return Schema::connection(config('iku.connection'));
