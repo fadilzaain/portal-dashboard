@@ -28,7 +28,8 @@ export default defineConfig({
                 'resources/js/portal/sdm.js',
                 'resources/css/portal/auth.css',
                 'resources/css/portal/pengguna.css',
-                'resources/css/portal/iku.css'
+                'resources/css/portal/iku.css',
+                'resources/js/portal/iku.js'
             ],
             refresh: true,
         }),

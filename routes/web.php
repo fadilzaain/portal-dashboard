@@ -124,9 +124,12 @@ Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
     Route::get('/portal/indikator-mutu/gdr-ndr', [IndikatorMutuController::class, 'getGdrNdr'])
         ->name('portal.indikatormutu.gdrndr');
 
-    // Dashboard IKU (Indikator Kinerja Utama) — halaman lihat terbuka untuk semua role
+    // Dashboard IKU (Indikator Kinerja Utama) 
     Route::get('/portal/iku', [IkuController::class, 'index'])
         ->name('portal.iku');
+    Route::get('/portal/iku/{indikator}', [IkuController::class, 'detail'])
+        ->whereNumber('indikator')
+        ->name('portal.iku.detail');
 
  
 

@@ -1,5 +1,5 @@
 {{-- ============================================================
-     Dashboard IKU (Indikator Kinerja Utama) 
+     Dashboard IKU 
      ============================================================ --}}
 @extends('layouts.app')
 
@@ -41,8 +41,8 @@
     {{-- JUDUL HALAMAN --}}
     <header class="iku-head">
         <div>
-            <h1 class="iku-title">Dashboard IKU</h1>
-            <p class="iku-sub">Pencapaian indikator kinerja utama RSUD Jombang terhadap target tahunan</p>
+            <h1 class="iku-title">Indikator Kinerja Utama</h1>
+            <p class="iku-sub">Dashboard Laporan pencapaian indikator kinerja utama RSUD Jombang terhadap target tahunan</p>
         </div>
         @if ($data)
             <div class="iku-periode">
@@ -73,9 +73,9 @@
         @php
             $r = $data['ringkasan'];
             $kartu = [
-                ['label' => 'Total Indikator',       'nilai' => $r['total'],              'sub' => $r['berdata'] . ' berdata · ' . $r['belum_ada_data'] . ' belum ada data', 'ikon' => 'clipboard',    'warna' => 'sky'],
-                ['label' => 'Indikator Tercapai',    'nilai' => $r['tercapai'],           'sub' => 'dari ' . $r['berdata'] . ' indikator berdata',                          'ikon' => 'check-circle', 'warna' => 'success'],
-                ['label' => 'Belum Tercapai',        'nilai' => $r['belum_tercapai'],     'sub' => 'termasuk ' . $r['perlu_perhatian'] . ' perlu perhatian',                 'ikon' => 'x-circle',     'warna' => 'danger'],
+                ['label' => 'Total Indikator',        'nilai' => $r['total'],              'sub' => $r['berdata'] . ' berdata · ' . $r['belum_ada_data'] . ' belum ada data', 'ikon' => 'clipboard',    'warna' => 'sky'],
+                ['label' => 'Indikator Tercapai',     'nilai' => $r['tercapai'],           'sub' => 'dari ' . $r['berdata'] . ' indikator berdata',                          'ikon' => 'check-circle', 'warna' => 'success'],
+                ['label' => 'Belum Tercapai',         'nilai' => $r['belum_tercapai'],     'sub' => 'termasuk ' . $r['perlu_perhatian'] . ' perlu perhatian',                 'ikon' => 'x-circle',     'warna' => 'danger'],
                 ['label' => 'Persentase Capaian IKU', 'nilai' => $r['persen_capaian_fmt'], 'sub' => 'rata-rata capaian indikator berdata',                                    'ikon' => 'gauge',        'warna' => 'teal'],
             ];
         @endphp
@@ -110,13 +110,18 @@
                             <th>Persentase Capaian</th>
                             <th>Status</th>
                             <th>Periode</th>
+                            <th class="iku-col-aksi"><span class="iku-sr">Detail</span></th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($data['baris'] as $b)
+                            @php
+                                // Link ke halaman detail, membawa filter yang sedang dipilih
+                                $urlDetail = route('portal.iku.detail', ['indikator' => $b['id'], 'tahun' => $data['tahun'], 'triwulan' => $data['triwulan']]);
+                            @endphp
                             <tr>
                                 <td class="iku-col-nama">
-                                    <div class="iku-nama">{{ $b['nama'] }}</div>
+                                    <a href="{{ $urlDetail }}" class="iku-nama iku-nama--link">{{ $b['nama'] }}</a>
                                     @if ($b['catatan'])
                                         <div class="iku-catatan">{{ $b['catatan'] }}</div>
                                     @endif
@@ -132,13 +137,88 @@
                                 </td>
                                 <td><span class="iku-badge iku-badge--{{ $b['status'] }}">{{ $b['status_label'] }}</span></td>
                                 <td class="iku-col-periode">{{ $b['periode'] }}</td>
+                                <td class="iku-col-aksi">
+                                    <a href="{{ $urlDetail }}" class="iku-aksi" aria-label="Lihat detail {{ $b['nama'] }}" title="Lihat detail">
+                                        <x-icon name="chevron-right" width="16" height="16" />
+                                    </a>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
         </section>
+
+        {{-- GRAFIK --}}
+        @if ($data['grafik']['ada_data'])
+            <section class="iku-grid-2">
+                <div class="iku-panel" style="--i: 5">
+                    <div class="iku-panel-head">
+                        <h2 class="iku-panel-title">Capaian terhadap Target</h2>
+                        <span class="iku-panel-meta">{{ $data['periode_singkat'] }}</span>
+                    </div>
+                    <div class="iku-chart-body">
+                        <div class="iku-chart iku-chart--bar" style="--n: {{ count($data['grafik']['capaian']['nilai']) }}">
+                            <canvas id="ikuChartCapaian" role="img" aria-label="Grafik capaian tiap indikator terhadap target"></canvas>
+                        </div>
+                        <p class="iku-chart-note">Garis putus-putus = target (100%). Nilai mentah target dan realisasi ada di tooltip.</p>
+                    </div>
+                </div>
+
+                <div class="iku-panel" style="--i: 6">
+                    <div class="iku-panel-head">
+                        <h2 class="iku-panel-title">Tren Capaian per Triwulan</h2>
+                        <span class="iku-panel-meta">{{ $data['tahun'] }}</span>
+                    </div>
+                    <div class="iku-chart-body">
+                        <div class="iku-chart iku-chart--bar" style="--n: {{ count($data['grafik']['capaian']['nilai']) }}">
+                            <canvas id="ikuChartTren" role="img" aria-label="Grafik tren capaian indikator per triwulan"></canvas>
+                        </div>
+                        <p class="iku-chart-note">Triwulan yang belum berdata dibiarkan kosong, bukan dihitung 0.</p>
+                    </div>
+                </div>
+            </section>
+        @else
+            <div class="iku-state iku-state--inline" style="--i: 5">
+                <x-icon name="activity" width="22" height="22" />
+                <div class="iku-state-title">Belum ada realisasi pada periode ini</div>
+                <div class="iku-state-text">Grafik muncul setelah ada indikator yang punya realisasi dan target pada {{ $data['periode_label'] }}.</div>
+            </div>
+        @endif
+
+        {{-- REKAP PER SASARAN STRATEGIS --}}
+        <section class="iku-panel" style="--i: 7">
+            <div class="iku-panel-head">
+                <h2 class="iku-panel-title">Rekap per Sasaran Strategis</h2>
+                <span class="iku-panel-meta">{{ $data['periode_singkat'] }}</span>
+            </div>
+            <ul class="iku-sasaran">
+                @foreach ($data['sasaran'] as $s)
+                    <li class="iku-sasaran-item">
+                        <div class="iku-sasaran-top">
+                            <span class="iku-sasaran-nama">{{ $s['nama'] }}</span>
+                            <span class="iku-sasaran-val">{{ $s['persen_fmt'] }}</span>
+                        </div>
+                        <div class="iku-bar iku-bar--{{ $s['status'] }}" style="--w: {{ $s['bar'] }}%"><span></span></div>
+                        <div class="iku-sasaran-sub">
+                            {{ $s['tercapai'] }} dari {{ $s['berdata'] }} indikator berdata tercapai
+                            @if ($s['berdata'] < $s['total'])
+                                · {{ $s['total'] - $s['berdata'] }} belum ada data
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
     @endif
 
 </div>
 @endsection
+
+{{-- Data grafik dikirim sebagai JSON; @json meng-escape karakter berbahaya untuk dipakai di dalam <script> --}}
+@if (! $error && ! empty($data['grafik']['ada_data']))
+    @push('scripts')
+    <script>window.IKU_DATA = @json($data['grafik']);</script>
+    @vite('resources/js/portal/iku.js')
+    @endpush
+@endif
