@@ -12,6 +12,7 @@ use App\Http\Controllers\IndikatorMutuController;
 use App\Http\Controllers\GantiPasswordController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\DaftarController;
+use App\Http\Controllers\IkuController;
 
 // Root redirect
 Route::get('/', function () {
@@ -122,6 +123,10 @@ Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
     ->name('portal.indikatormutu.ndr');
     Route::get('/portal/indikator-mutu/gdr-ndr', [IndikatorMutuController::class, 'getGdrNdr'])
         ->name('portal.indikatormutu.gdrndr');
+
+    // Dashboard IKU (Indikator Kinerja Utama) — halaman lihat terbuka untuk semua role
+    Route::get('/portal/iku', [IkuController::class, 'index'])
+        ->name('portal.iku');
 
  
 

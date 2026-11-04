@@ -46,6 +46,7 @@
                 ['rute' => 'portal.keuangan',        'cocok' => 'portal.keuangan',          'nama' => 'Keuangan',         'ikon' => 'currency-dollar', 'luar' => true],
                 ['rute' => 'sdm.portal.sdm',         'cocok' => 'sdm.*',                    'nama' => 'SDM',              'ikon' => 'users',           'luar' => true],
                 ['rute' => 'portal.indikatormutu',   'cocok' => 'portal.indikatormutu.*',   'nama' => 'Indikator Mutu',   'ikon' => 'document-text',   'luar' => true],
+                ['rute' => 'portal.iku',             'cocok' => 'portal.iku*',              'nama' => 'Dashboard IKU',    'ikon' => 'gauge',           'luar' => true],
                 ['rute' => 'portal.klaimbpjs',       'cocok' => 'portal.klaimbpjs',         'nama' => 'Klaim BPJS',       'ikon' => 'shield-check',    'luar' => true],
             ],
             'Akun' => [
