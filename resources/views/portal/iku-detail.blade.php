@@ -122,7 +122,7 @@
                 <dd>{{ $ind['satuan'] }}</dd>
             </div>
             <div class="iku-info-item">
-                <dt>Periode Pengukuran</dt>
+                <dd>{{ $ind['pengukuran'] }}</dd>
                 <dd>Per triwulan, kumulatif tahun berjalan</dd>
             </div>
             <div class="iku-info-item">
@@ -184,22 +184,6 @@
         </div>
     </section>
 
-    {{-- EVALUASI & TINDAK LANJUT (periode yang dipilih) --}}
-    <section class="iku-panel" style="--i: 6">
-        <div class="iku-panel-head">
-            <h2 class="iku-panel-title">Evaluasi dan Tindak Lanjut</h2>
-            <span class="iku-panel-meta">{{ $data['periode_singkat'] }}</span>
-        </div>
-        <dl class="iku-info">
-            <div class="iku-info-item">
-                <dt>Catatan Evaluasi</dt>
-                <dd class="iku-teks">{!! $isi($data['evaluasi']['catatan']) !!}</dd>
-            </div>
-            <div class="iku-info-item">
-                <dt>Rencana Tindak Lanjut</dt>
-                <dd class="iku-teks">{!! $isi($data['evaluasi']['rencana']) !!}</dd>
-            </div>
-        </dl>
     </section>
 
 </div>

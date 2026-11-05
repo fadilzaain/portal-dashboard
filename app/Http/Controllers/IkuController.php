@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\IkuIndikator;
 use App\Services\IkuService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -38,17 +37,24 @@ class IkuController extends Controller
         return view('portal.iku', compact('data', 'error', 'tahun', 'triwulan', 'tahunList', 'triwulanOpsi'));
     }
 
-    // Halaman detail satu indikator. {indikator} otomatis dicari lewat route model binding (tidak ketemu = 404).
-    public function detail(Request $request, IkuIndikator $indikator): View
+    // Halaman detail satu indikator. {indikator} adalah id tabel `iku` di SPM Track (route dibatasi angka).
+    public function detail(Request $request, int $indikator): View
     {
-        // Indikator yang sudah dinonaktifkan tidak ditampilkan
-        abort_unless($indikator->is_active, 404);
-
         $triwulanOpsi = IkuService::ROMAWI;
 
-        [$tahunList, $tahun, $triwulan] = $this->filter($request);
+        try {
+            [$tahunList, $tahun, $triwulan] = $this->filter($request);
 
-        $data = $this->service->detail($indikator, $tahun, $triwulan);
+            $item = $this->service->indikator($indikator);
+            $data = $item ? $this->service->detail($item, $tahun, $triwulan) : null;
+        } catch (\Throwable $e) {
+            Log::error('Detail IKU gagal dimuat: ' . $e->getMessage());
+
+            abort(503, 'Data IKU belum bisa dimuat. Coba muat ulang halaman, atau hubungi admin kalau masih berulang.');
+        }
+
+        // Indikator tidak ada di SPM Track = 404
+        abort_if($data === null, 404);
 
         return view('portal.iku-detail', compact('data', 'tahun', 'triwulan', 'tahunList', 'triwulanOpsi'));
     }

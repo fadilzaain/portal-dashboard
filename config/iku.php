@@ -1,12 +1,41 @@
 <?php
 
 // Dashboard IKU (Indikator Kinerja Utama).
-// Semua angka batas disini biar gak ditulis hardcode di Blade/JS.
 
 return [
 
-    // Koneksi database untuk semua tabel iku_*.
-    'connection' => env('IKU_DB_CONNECTION', 'dashi'),
+    // Sumber data IKU sekarang: koneksi ke database SPM Track read ONLY
+    'sumber' => env('IKU_SUMBER_CONNECTION', 'spm'),
+
+    // Data yang tidak disimpan di SPM Track, dicocokkan lewat NAMA indikator (harus sama persis dengan
+    // kolom nama_indikator di SPM Track). Indikator baru tanpa entri di sini memakai 'metadata_bawaan'
+    // dan dicatat sebagai peringatan di storage/logs.
+    'metadata' => [
+        'Nilai NDR' => [
+            'satuan'           => '‰',
+            'jenis_penilaian'  => 'lower', // semakin kecil semakin baik
+            'definisi'         => null,
+            'rumus'            => null,
+            'penanggung_jawab' => null,
+        ],
+        'Persentase Capaian Indikator Nasional Mutu (INM) RS' => [
+            'satuan'          => '%',
+            'jenis_penilaian' => 'higher',
+        ],
+        'Status Akreditasi' => [
+            'satuan'          => '%',
+            'jenis_penilaian' => 'higher',
+        ],
+        'Indeks Reformasi Birokrasi Perangkat Daerah (IRB PD)' => [
+            'satuan'          => 'skor',
+            'jenis_penilaian' => 'higher',
+        ],
+    ],
+
+    'metadata_bawaan' => [
+        'satuan'          => '%',
+        'jenis_penilaian' => 'higher',
+    ],
 
     // Batas status capaian persenan
     //  capaian >= tercapai                 - "Tercapai"
@@ -23,6 +52,13 @@ return [
         'higher' => 'Higher is Better (semakin tinggi semakin baik)',
         'lower'  => 'Lower is Better (semakin rendah semakin baik)',
         'range'  => 'Target Range (harus berada dalam rentang)',
+    ],
+
+    // Cara indikator diisi di SPM Track dan bagaimana dashboard menampilkannya (kunci = kolom `frekuensi` di tabel iku)
+    'frekuensi' => [
+        'triwulan' => 'Diisi per triwulan, kumulatif tahun berjalan',
+        'bulanan'  => 'Diisi per bulan, ditampilkan pada akhir triwulan (Mar, Jun, Sep, Des)',
+        'tahunan'  => 'Diisi sekali setahun, ditampilkan pada triwulan IV',
     ],
 
     // Bulan akhir tiap triwulan. Realisasi IKU diisi per triwulan dan bersifat kumulatif tahun berjalan,

@@ -42,7 +42,7 @@
     <header class="iku-head">
         <div>
             <h1 class="iku-title">Indikator Kinerja Utama</h1>
-            <p class="iku-sub">Dashboard Laporan pencapaian indikator kinerja utama RSUD Jombang terhadap target tahunan</p>
+            <p class="iku-sub">Dashboard Laporan pencapaian indikator kinerja utama RSUD Jombang terhadap target tahunan. Data di Input di SPM TRACK</p>
         </div>
         @if ($data)
             <div class="iku-periode">
@@ -52,7 +52,7 @@
         @endif
     </header>
 
-    {{-- STATE ERROR: tabel belum dimigrate / database tidak terjangkau --}}
+    {{-- STATE ERROR: database SPM Track tidak terjangkau / tabel IKU belum ada --}}
     @if ($error)
         <div class="iku-state iku-state--error" role="alert">
             <x-icon name="alert-triangle" width="26" height="26" />
@@ -60,7 +60,7 @@
             <div class="iku-state-text">{{ $error }}</div>
         </div>
 
-    {{-- STATE KOSONG: belum ada indikator sama sekali --}}
+    {{-- STATE KOSONG: Indikator akan tampil di sini setelah ditambahkan di SPM TRACK --}}
     @elseif (empty($data['baris']))
         <div class="iku-state">
             <x-icon name="clipboard" width="26" height="26" />

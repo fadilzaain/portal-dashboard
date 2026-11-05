@@ -2,13 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\IkuIndikator;
-use App\Models\IkuRealisasi;
-use App\Models\IkuTarget;
-use App\Models\IkuTindakLanjut;
+use App\Services\Iku\Indikator;
+use App\Services\Iku\IkuSumber;
 
-// Semua perhitungan Dashboard IKU ada di sini
-// ambil data, hitung capaian sesuai jenis indikator, tentukan status, susun data grafik, dan format angka tampilan.
+// Semua perhitungan Dashboard IKU ada di sini:
+// hitung capaian sesuai jenis indikator, tentukan status, susun data grafik, dan format angka tampilan.
+// Data mentah (SPM Track) dibaca oleh IkuSumber, service ini tidak tahu skema tabelnya.
 class IkuService
 {
     // Nomor triwulan angka romawi
@@ -25,33 +24,37 @@ class IkuService
         'kosong'    => 'Belum Ada Data',
     ];
 
+    public function __construct(
+        private IkuSumber $sumber
+    ) {}
+
     // ─── Filter ───────────────────────────────────────────────────────────────
 
     // Daftar tahun yang punya target atau realisasi, terbaru di depan. Kalau belum ada data sama sekali: tahun ini.
     public function tahunTersedia(): array
     {
-        $tahun = IkuTarget::query()->distinct()->pluck('tahun')
-            ->merge(IkuRealisasi::query()->distinct()->pluck('tahun'))
-            ->map(fn ($t) => (int) $t)
-            ->unique()
-            ->sortDesc()
-            ->values()
-            ->all();
-
-        return $tahun ?: [(int) now()->year];
+        return $this->sumber->tahunTersedia() ?: [(int) now()->year];
     }
 
     // Triwulan terakhir yang sudah ada realisasinya di tahun itu (default filter). Kalau belum ada: triwulan 1.
     public function triwulanTerakhir(int $tahun): int
     {
-        $bulan = IkuRealisasi::where('tahun', $tahun)->max('bulan');
+        $bulan = collect($this->sumber->realisasi($tahun))
+            ->flatMap(fn ($perBulan) => array_keys($perBulan))
+            ->max();
 
         return $bulan ? (int) ceil($bulan / 3) : 1;
     }
 
+    // Satu indikator berdasarkan id di SPM Track (null kalau tidak ada)
+    public function indikator(int $id): ?Indikator
+    {
+        return $this->sumber->cari($id);
+    }
+
     // ─── Halaman utama ────────────────────────────────────────────────────────
 
-    // data untuk halaman utama: baris tabel, ringkasan KPI, rekap per sasaran, dan data grafik.
+    // Data untuk halaman utama: baris tabel, ringkasan KPI, rekap per sasaran, dan data grafik.
     // Realisasi bersifat kumulatif tahun berjalan, jadi yang dipakai adalah nilai PADA akhir triwulan terpilih.
     // Kalau pada periode itu belum ada nilai, indikator ditampilkan "Belum Ada Data" (bukan 0, bukan nilai periode lain).
     public function dataDashboard(int $tahun, int $triwulan): array
@@ -59,10 +62,10 @@ class IkuService
         $m     = $this->muat($tahun);
         $bulan = $this->bulanTriwulan($triwulan);
 
-        $baris = $m['daftar']->map(fn (IkuIndikator $i) => $this->susunBaris(
+        $baris = $m['daftar']->map(fn (Indikator $i) => $this->susunBaris(
             $i,
-            $m['target']->get($i->id),
-            $m['realisasi']->get($i->id)?->get($bulan),
+            $m['target'][$i->id] ?? null,
+            $m['realisasi'][$i->id][$bulan] ?? null,
             $tahun,
             $triwulan
         ))->all();
@@ -77,30 +80,25 @@ class IkuService
 
     // ─── Halaman detail satu indikator ────────────────────────────────────────
 
-    public function detail(IkuIndikator $i, int $tahun, int $triwulan): array
+    public function detail(Indikator $i, int $tahun, int $triwulan): array
     {
-        $i->loadMissing('sasaran');
-
-        $target    = IkuTarget::where('indikator_id', $i->id)->where('tahun', $tahun)->first();
-        $realisasi = IkuRealisasi::where('indikator_id', $i->id)->where('tahun', $tahun)->get()->keyBy('bulan');
+        $target    = $this->sumber->target($tahun)[$i->id] ?? null;
+        $realisasi = $this->sumber->realisasi($tahun)[$i->id] ?? [];
         $bulan     = $this->bulanTriwulan($triwulan);
 
-        // Evaluasi & tindak lanjut untuk periode yang sedang dipilih
-        $tl = IkuTindakLanjut::where('indikator_id', $i->id)->where('tahun', $tahun)->where('bulan', $bulan)->first();
-
-        $riwayat = [];
-        $label   = [];
-        $nilai   = [];
+        $riwayat  = [];
+        $label    = [];
+        $nilai    = [];
         $nilaiFmt = [];
 
         foreach (array_keys(self::ROMAWI) as $n) {
-            $r = $realisasi->get($this->bulanTriwulan($n));
+            $r = $realisasi[$this->bulanTriwulan($n)] ?? null;
             $c = $this->capaianPada($i, $target, $r);
             $s = $this->tentukanStatus($c);
 
             $riwayat[] = [
                 'periode'       => 'TW ' . self::ROMAWI[$n] . ' ' . $tahun,
-                'realisasi_fmt' => $this->formatNilai($r?->nilai, $i->satuan),
+                'realisasi_fmt' => $this->formatNilai($r, $i->satuan),
                 'capaian_fmt'   => $c === null ? '–' : $this->angka($c, 1) . '%',
                 'status'        => $s,
                 'status_label'  => self::LABEL_STATUS[$s],
@@ -108,35 +106,32 @@ class IkuService
             ];
 
             $label[]    = 'TW ' . self::ROMAWI[$n];
-            $nilai[]    = $r?->nilai;
-            $nilaiFmt[] = $this->formatNilai($r?->nilai, $i->satuan);
+            $nilai[]    = $r;
+            $nilaiFmt[] = $this->formatNilai($r, $i->satuan);
         }
 
         return $this->periode($tahun, $triwulan) + [
             'indikator' => [
                 'id'               => $i->id,
                 'nama'             => $i->nama,
-                'sasaran'          => $i->sasaran?->nama ?? '–',
+                'sasaran'          => $i->sasaran,
                 'satuan'           => $i->satuan,
-                'jenis_label'      => $i->label_jenis_penilaian,
+                'jenis_label'      => $i->labelJenis(),
+                'pengukuran'       => config('iku.frekuensi.' . $i->frekuensi, 'Per triwulan'),
                 'definisi'         => $i->definisi,
                 'rumus'            => $i->rumus,
                 'penanggung_jawab' => $i->penanggung_jawab,
             ],
-            'baris'    => $this->susunBaris($i, $target, $realisasi->get($bulan), $tahun, $triwulan),
+            'baris'    => $this->susunBaris($i, $target, $realisasi[$bulan] ?? null, $tahun, $triwulan),
             'riwayat'  => $riwayat,
             'grafik'   => [
                 'nama'          => $i->nama,
                 'labels'        => $label,
                 'realisasi'     => $nilai,
                 'realisasi_fmt' => $nilaiFmt,
-                'target'        => $target?->target,
-                'target_fmt'    => $this->formatNilai($target?->target, $i->satuan),
+                'target'        => $target,
+                'target_fmt'    => $this->formatNilai($target, $i->satuan),
                 'ada_data'      => collect($nilai)->contains(fn ($v) => $v !== null),
-            ],
-            'evaluasi' => [
-                'catatan' => $tl?->catatan_evaluasi,
-                'rencana' => $tl?->rencana_tindak_lanjut,
             ],
         ];
     }
@@ -208,28 +203,27 @@ class IkuService
         return max(0.0, 100 - ($jarak / $acuan * 100));
     }
 
-    // Capaian dari sepasang target + realisasi (null kalau salah satunya belum ada)
-    private function capaianPada(IkuIndikator $i, ?IkuTarget $t, ?IkuRealisasi $r): ?float
+    // Capaian dari sepasang target + realisasi (null kalau salah satunya belum ada).
+    // SPM Track belum menyimpan rentang target, jadi jenis "range" akan menghasilkan null.
+    private function capaianPada(Indikator $i, ?float $target, ?float $realisasi): ?float
     {
-        if ($t === null || $r === null) {
+        if ($target === null || $realisasi === null) {
             return null;
         }
 
-        return $this->hitungCapaian($i->jenis_penilaian, $t->target, $r->nilai, $t->batas_bawah, $t->batas_atas);
+        return $this->hitungCapaian($i->jenis_penilaian, $target, $realisasi);
     }
 
     // ─── Pengambilan data ─────────────────────────────────────────────────────
 
-    // 3 query saja untuk satu tahun (tidak ada N+1): indikator + sasaran, target, dan seluruh realisasi tahun itu.
-    // realisasi dipetakan [indikator_id][bulan] supaya tiap triwulan bisa diambil tanpa query tambahan.
+    // 3 pembacaan saja untuk satu tahun (tidak ada N+1): indikator + sasaran, target, dan seluruh realisasi tahun itu.
+    // target dipetakan [iku_id], realisasi [iku_id][bulan] supaya tiap triwulan bisa diambil tanpa query tambahan.
     private function muat(int $tahun): array
     {
         return [
-            'daftar'    => IkuIndikator::aktif()->urut()->with('sasaran')->get(),
-            'target'    => IkuTarget::where('tahun', $tahun)->get()->keyBy('indikator_id'),
-            'realisasi' => IkuRealisasi::where('tahun', $tahun)->get()
-                ->groupBy('indikator_id')
-                ->map(fn ($grup) => $grup->keyBy('bulan')),
+            'daftar'    => $this->sumber->indikator(),
+            'target'    => $this->sumber->target($tahun),
+            'realisasi' => $this->sumber->realisasi($tahun),
         ];
     }
 
@@ -252,18 +246,15 @@ class IkuService
 
     // ─── Penyusunan baris, ringkasan, rekap, grafik ───────────────────────────
 
-    private function susunBaris(IkuIndikator $i, ?IkuTarget $t, ?IkuRealisasi $r, int $tahun, int $triwulan): array
+    private function susunBaris(Indikator $i, ?float $target, ?float $nilai, int $tahun, int $triwulan): array
     {
-        $target = $t?->target;
-        $nilai  = $r?->nilai;
-
-        $capaian = $this->capaianPada($i, $t, $r);
+        $capaian = $this->capaianPada($i, $target, $nilai);
         $status  = $this->tentukanStatus($capaian);
 
         // Catatan kecil di bawah nama indikator kalau datanya belum lengkap
         $catatan = null;
         if ($nilai !== null && $target === null) {
-            $catatan = 'Target tahun ' . $tahun . ' belum diatur';
+            $catatan = 'Target tahun ' . $tahun . ' data belum diisi di SPM TRACK';
         } elseif ($nilai !== null && $capaian === null) {
             $catatan = 'Rentang target belum diatur';
         }
@@ -271,7 +262,7 @@ class IkuService
         return [
             'id'            => $i->id,
             'nama'          => $i->nama,
-            'sasaran'       => $i->sasaran?->nama ?? '–',
+            'sasaran'       => $i->sasaran,
             'satuan'        => $i->satuan,
             'jenis'         => $i->jenis_penilaian,
             'target'        => $target,
@@ -364,16 +355,16 @@ class IkuService
         // Grafik 2: tren capaian tiap triwulan sepanjang tahun (triwulan tanpa data = celah, bukan 0)
         $seri = [];
         foreach ($m['daftar'] as $i) {
-            $t    = $m['target']->get($i->id);
+            $t    = $m['target'][$i->id] ?? null;
             $data = [];
             $tip  = [];
 
             foreach (array_keys(self::ROMAWI) as $n) {
-                $r = $m['realisasi']->get($i->id)?->get($this->bulanTriwulan($n));
+                $r = $m['realisasi'][$i->id][$this->bulanTriwulan($n)] ?? null;
                 $c = $this->capaianPada($i, $t, $r);
 
                 $data[] = $c === null ? null : round($c, 1);
-                $tip[]  = $c === null ? null : 'Target ' . $this->formatNilai($t->target, $i->satuan) . ' · Realisasi ' . $this->formatNilai($r->nilai, $i->satuan);
+                $tip[]  = $c === null ? null : 'Target ' . $this->formatNilai($t, $i->satuan) . ' · Realisasi ' . $this->formatNilai($r, $i->satuan);
             }
 
             if (collect($data)->contains(fn ($v) => $v !== null)) {
