@@ -19,7 +19,7 @@
 
     <div class="section-header">
         <span class="section-title">Dashboards Tersedia</span>
-        <span class="section-count">5 aplikasi</span>
+        <span class="section-count">6 aplikasi</span>
     </div>
 
     <div class="app-grid">
@@ -28,6 +28,7 @@
         <x-portal.card-sdm       :sdm="$sdm"             :tahun="$tahun ?? now()->year" />
         <x-portal.card-mutu      :mutu="$mutu"            :bulanLabel="$bulanLabel ?? 'Mei'" :tahun="$tahun ?? now()->year" />
         <x-portal.card-bpjs      :bpjs="$bpjs"            :bulanLabel="$bulanLabelBpjs ?? $bulanLabel ?? 'Mei'" :tahun="$tahunBpjs ?? $tahun ?? now()->year" />
+        <x-portal.card-iku       :iku="$iku ?? []" />
     </div>
 
     <p class="text-xs text-center mt-8" style="color:#334155">

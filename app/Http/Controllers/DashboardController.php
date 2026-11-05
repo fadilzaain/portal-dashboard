@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\IkuService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +63,9 @@ class DashboardController extends Controller
         $bulanLabelBpjs = self::BULAN_NAMES[$bulanBpjs] ?? $bulanLabel;
         $bpjs           = $this->getBpjsSummary($tahunBpjs, $bulanBpjs);
 
+        // Card IKU: periodenya otomatis (tahun terbaru & triwulan terakhir berdata), tidak ikut filter bulan/tahun
+        $iku            = $this->getIkuSummary();
+
         $apps      = config('portal.apps');
 
         return view('dashboard.index', compact(
@@ -70,7 +74,7 @@ class DashboardController extends Controller
             'bulanLabelData',
             'bulanLabelPelayanan',
             'tahunPelayanan',
-            'pelayanan', 'keuangan', 'sdm', 'mutu', 'bpjs',
+            'pelayanan', 'keuangan', 'sdm', 'mutu', 'bpjs', 'iku',
             'bulanLabelBpjs', 'tahunBpjs'
         ));
     }
@@ -249,6 +253,57 @@ class DashboardController extends Controller
         } catch (\Throwable $e) {
             Log::warning('Dashboard: ringkasan mutu gagal', ['error' => $e->getMessage()]);
             return ['total' => 0, 'tercapai' => 0, 'tidak_tercapai' => 0];
+        }
+    }
+
+    /**
+     * Ringkasan IKU untuk card dashboard (data dibaca langsung dari SPM Track, jadi selalu mengikuti isian terbaru).
+     * Periodenya sama dengan default halaman IKU (tahun terbaru, triwulan terakhir yang sudah berdata),
+     * supaya angka di card sama persis dengan yang tampil saat card dibuka.
+     * Kalau SPM Track tidak terjangkau: card tampil kosong dan errornya masuk log (tidak bikin halaman 500).
+     */
+    private function getIkuSummary(): array
+    {
+        try {
+            $service  = app(IkuService::class);
+            $tahun    = $service->tahunTersedia()[0];
+            $triwulan = $service->triwulanTerakhir($tahun);
+            $data     = $service->dataDashboard($tahun, $triwulan);
+            $r        = $data['ringkasan'];
+
+            return [
+                'tahun'      => $tahun,
+                'triwulan'   => $triwulan,
+                'total'      => $r['total'],
+                'tercapai'   => $r['tercapai'],
+                'perhatian'  => $r['perlu_perhatian'],
+                // "Belum tercapai" murni (tanpa yang perlu perhatian, karena itu dihitung terpisah)
+                'belum'      => $r['belum_tercapai'] - $r['perlu_perhatian'],
+                'kosong'     => $r['belum_ada_data'],
+                'persen'     => $r['persen_capaian'],
+                'status'     => $service->tentukanStatus($r['persen_capaian']),
+                // Daftar per indikator untuk baris kecil di card (nama, status, persen capaian)
+                'daftar'     => collect($data['baris'])->map(fn ($b) => [
+                    'nama'        => $b['nama'],
+                    'status'      => $b['status'],
+                    'capaian_fmt' => $b['capaian_fmt'],
+                ])->all(),
+            ];
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard: ringkasan IKU gagal', ['error' => $e->getMessage()]);
+
+            return [
+                'tahun'     => null,
+                'triwulan'  => null,
+                'total'     => 0,
+                'tercapai'  => 0,
+                'perhatian' => 0,
+                'belum'     => 0,
+                'kosong'    => 0,
+                'persen'    => null,
+                'status'    => 'kosong',
+                'daftar'    => [],
+            ];
         }
     }
 

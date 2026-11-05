@@ -89,21 +89,22 @@ background: radial-gradient(circle, color-mix(in srgb, var(--champagne) 22%, tra
 
 
 /* ══════════════════════════════════════
-   APP GRID — 5 kartu dashboard
+   APP GRID — 6 kartu dashboard
 ══════════════════════════════════════ */
 .app-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.15rem;
 }
-.bpjs-card { grid-column: span 2; }
+/* Card BPJS dulu melebar 2 kolom; sekarang 1 kolom (berdampingan dengan card IKU).
+   container-type dipakai supaya ukuran font angka nominal ikut lebar card (lihat aturan .bpjs-card di bawah) */
+.bpjs-card { container-type: inline-size; }
 
 @media (max-width: 1100px) {
     .app-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 640px) {
     .app-grid { grid-template-columns: 1fr; gap: .85rem; }
-    .bpjs-card { grid-column: span 1; }
 }
 
 
@@ -130,6 +131,7 @@ background: radial-gradient(circle, color-mix(in srgb, var(--champagne) 22%, tra
 .app-card:nth-child(3) { animation-delay: .30s; }
 .app-card:nth-child(4) { animation-delay: .36s; }
 .app-card:nth-child(5) { animation-delay: .42s; }
+.app-card:nth-child(6) { animation-delay: .48s; }
 @keyframes cardIn { from { opacity: 0; transform: translateY(30px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
 .app-card:hover {
@@ -325,6 +327,55 @@ background: radial-gradient(circle, color-mix(in srgb, var(--champagne) 22%, tra
 .klaim-pct-row { display: flex; gap: .85rem; margin-top: .34rem; position: relative; z-index: 2; }
 .pct-label { font-size: .55rem; font-family: var(--mono); }
 
+/* ── Klaim BPJS di lebar 1 kolom ──
+   Angka nominal ("Rp 123.45 jt") diperkecil mengikuti lebar card (cqw = 1% lebar card),
+   supaya tidak melebar keluar kotak. Baris pertama = cadangan untuk browser lama tanpa container query. */
+.bpjs-card .klaim-val { font-size: .8rem;  font-size: clamp(.7rem,  3.9cqw, 1.15rem); }
+.bpjs-card .ks-val    { font-size: .72rem; font-size: clamp(.62rem, 3.4cqw, 1.1rem); }
+.bpjs-card .klaim-box { gap: .4rem; }
+
+/* ── IKU: cincin capaian + daftar indikator (prefix ikc- = card IKU di dashboard) ── */
+.ikc-gauge { display: flex; align-items: center; gap: 1.1rem; position: relative; z-index: 2; }
+
+.ikc-ring { position: relative; width: 96px; height: 96px; flex: none; }
+.ikc-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); } /* garis mulai dari jam 12 */
+.ikc-ring-track { fill: none; stroke: var(--wash-2); stroke-width: 9; }
+.ikc-ring-fill  {
+    fill: none; stroke-width: 9; stroke-linecap: round;
+    animation: ikcRing 1.2s cubic-bezier(.16,1,.3,1) .5s both;
+}
+/* Garis terisi bergerak dari kosong ke nilai akhirnya (nilai akhir ada di atribut style tiap cincin) */
+@keyframes ikcRing { from { stroke-dashoffset: var(--ring-c); } }
+.ikc-ring-fill.ikc-tercapai  { stroke: var(--success); }
+.ikc-ring-fill.ikc-perhatian { stroke: var(--warning); }
+.ikc-ring-fill.ikc-belum     { stroke: var(--danger); }
+.ikc-ring-center {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 1.3rem; font-weight: 700; color: var(--text-hi);
+}
+.ikc-ring-center small { font-size: .62rem; font-weight: 600; margin-left: 1px; opacity: .75; }
+
+.ikc-legend { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .5rem; }
+.ikc-legend li { display: flex; align-items: center; gap: .5rem; font-size: .68rem; color: var(--text-mid); }
+.ikc-legend-label { flex: 1; min-width: 0; }
+.ikc-legend-val   { font-family: var(--mono); font-weight: 700; color: var(--text-hi); }
+
+.ikc-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--text-low); opacity: .55; }
+.ikc-dot--tercapai  { background: var(--success); opacity: 1; }
+.ikc-dot--perhatian { background: var(--warning); opacity: 1; }
+.ikc-dot--belum     { background: var(--danger);  opacity: 1; }
+
+.ikc-section-label { font-size: .6rem; color: var(--text-low); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .4rem; position: relative; z-index: 2; }
+.ikc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .15rem; position: relative; z-index: 2; }
+.ikc-item {
+    display: flex; align-items: center; gap: .55rem; padding: .32rem .55rem;
+    background: var(--wash-1); border: 1px solid var(--border); border-radius: 9px;
+    font-size: .66rem; color: var(--text-mid);
+}
+.ikc-item-nama { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ikc-item-val  { font-family: var(--mono); font-weight: 700; color: var(--text-hi); flex: none; }
+.ikc-more { font-size: .6rem; color: var(--text-low); margin-top: .3rem; padding-left: .2rem; position: relative; z-index: 2; }
+
 /* ══════════════════════════════════════
    UTILITAS WARNA STATUS
 ══════════════════════════════════════ */
@@ -344,18 +395,21 @@ background: radial-gradient(circle, color-mix(in srgb, var(--champagne) 22%, tra
 .theme-purple { --card-accent: var(--violet); }
 .theme-rose   { --card-accent: var(--rose); }
 .theme-amber  { --card-accent: var(--gold); }
+.theme-green  { --card-accent: var(--success); }
 
 .icon-teal   { background: var(--teal-dim);   color: var(--teal); }
 .icon-blue   { background: var(--sky-dim);    color: var(--sky); }
 .icon-purple { background: var(--violet-dim); color: var(--violet); }
 .icon-rose   { background: var(--rose-dim);   color: var(--rose); }
 .icon-amber  { background: var(--gold-dim);   color: var(--gold); }
+.icon-green  { background: var(--success-dim); color: var(--success); }
 
 .month-teal   { color: var(--teal);   border-color: color-mix(in srgb, var(--teal) 30%, transparent);   background: var(--teal-dim); }
 .month-blue   { color: var(--sky);    border-color: color-mix(in srgb, var(--sky) 30%, transparent);    background: var(--sky-dim); }
 .month-purple { color: var(--violet); border-color: color-mix(in srgb, var(--violet) 30%, transparent); background: var(--violet-dim); }
 .month-rose   { color: var(--rose);   border-color: color-mix(in srgb, var(--rose) 30%, transparent);   background: var(--rose-dim); }
 .month-amber  { color: var(--gold);   border-color: color-mix(in srgb, var(--gold) 30%, transparent);   background: var(--gold-dim); }
+.month-green  { color: var(--success); border-color: color-mix(in srgb, var(--success) 30%, transparent); background: var(--success-dim); }
 
 /* ══════════════════════════════════════
    RESPONSIVE
@@ -392,5 +446,5 @@ background: radial-gradient(circle, color-mix(in srgb, var(--champagne) 22%, tra
     }
     .app-card:hover { transform: none; }
     .app-card .card-shine { display: none; }
-    .progress-bar-fill::after, .kb-seg::after, .card-status-dot { animation: none !important; }
+    .progress-bar-fill::after, .kb-seg::after, .card-status-dot, .ikc-ring-fill { animation: none !important; }
 }
