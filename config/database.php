@@ -156,6 +156,23 @@ return [
             'strict'    => false,
         ],
 
+        // Db SPM Track (hanya BACA): sumber data Dashboard IKU.
+        // Input IKU dilakukan di web SPM Track, DASH-i hanya menampilkan.
+        'spm' => [
+            'driver'    => 'mysql',
+            'host'      => env('DB_SPM_HOST', '192.168.10.8'),
+            'port'      => env('DB_SPM_PORT', '3306'),
+            'database'  => env('DB_SPM_DATABASE', 'spm'),
+            'username'  => env('DB_SPM_USERNAME'),
+            'password'  => env('DB_SPM_PASSWORD'),
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_general_ci', // sama dengan collation database SPM Track
+            'prefix'    => '',
+            'strict'    => false,
+            // Batas waktu konek 5 detik supaya halaman tidak menggantung kalau server SPM tidak terjangkau
+            'options'   => [PDO::ATTR_TIMEOUT => 5],
+        ],
+
         
 
         'mariadb' => [
