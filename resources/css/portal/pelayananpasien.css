@@ -1,64 +1,26 @@
-/* ── Variables ─────────────────────────────────────────────── */
+/* ============================================================
+   Portal Pelayanan Pasien - rombakan dashi v2
+   Kartu (.pc-kpi), panel (.pc-panel), tile angka (.pc-stat), bar (.pc-bar),
+   badge (.pc-badge) dan seluruh animasinya ada di resources/css/layout/cards.css.
+   ============================================================ */
+
 :root {
-  --pp-bg:       #f4f6f9;
-  --pp-surface:  #ffffff;
-  --pp-surface2: #f0f2f5;
-  --pp-border:   rgba(0, 0, 0, 0.1);
-  --pp-text:     #0f172a;
-  --pp-muted:    #64748b;
-  --pp-accent:   #2563eb;
-  --pp-glow:     rgba(37, 99, 235, 0.08);
-  --pp-green:    #16a34a;
-  --pp-yellow:   #d97706;
-  --pp-red:      #dc2626;
-  --pp-cyan:     #0891b2;
-  --pp-purple:   #7c3aed;
-  --pp-font:     'DM Sans', system-ui, sans-serif;
-  --pp-mono:     'JetBrains Mono', monospace;
+  --pp-bg:       var(--bg-0);
+  --pp-surface:  var(--bg-1);       /* solid: dipakai modal, dropdown, tab */
+  --pp-surface2: var(--wash-2);
+  --pp-border:   var(--border);
+  --pp-text:     var(--text-hi);
+  --pp-muted:    var(--text-mid);
+  --pp-accent:   var(--sky);
+  --pp-glow:     var(--sky-dim);
+  --pp-green:    var(--success);
+  --pp-yellow:   var(--warning);
+  --pp-red:      var(--danger);
+  --pp-cyan:     var(--teal);
+  --pp-purple:   var(--violet);
+  --pp-font:     var(--font);
+  --pp-mono:     var(--mono);
 }
- 
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --pp-bg:       #0d1117;
-    --pp-surface:  #161b22;
-    --pp-surface2: #1c2330;
-    --pp-border:   rgba(48, 54, 61, 0.8);
-    --pp-text:     #e6edf3;
-    --pp-muted:    #7d8590;
-    --pp-glow:     rgba(37, 99, 235, 0.15);
-    --pp-green:    #22c55e;
-    --pp-yellow:   #f59e0b;
-    --pp-red:      #ef4444;
-    --pp-cyan:     #06b6d4;
-    --pp-purple:   #a78bfa;
-  }
-}
-
-.dark,
-[data-theme="dark"] {
-  --pp-bg:       #0d1117;
-  --pp-surface:  #161b22;
-  --pp-surface2: #1c2330;
-  --pp-border:   rgba(48, 54, 61, 0.8);
-  --pp-text:     #e6edf3;
-  --pp-muted:    #7d8590;
-  --pp-glow:     rgba(37, 99, 235, 0.15);
-  --pp-green:    #22c55e;
-  --pp-yellow:   #f59e0b;
-  --pp-red:      #ef4444;
-  --pp-cyan:     #06b6d4;
-  --pp-purple:   #a78bfa;
-}
- 
- 
-* { box-sizing: border-box; }
- 
-.pp-wrap {
-  font-family: var(--pp-font);
-  color: var(--pp-text);
-}
-
 
 * { box-sizing: border-box; }
 
@@ -67,524 +29,226 @@
   color: var(--pp-text);
 }
 
-/* ── Filter bar ──────── */
-.pp-filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  background: var(--pp-surface);
-  border: 1px solid var(--pp-border);
-  border-radius: 8px;
-  padding: 7px 12px;
-  margin-bottom: 14px;
-}
+/* Jarak antar blok vertikal: panel yang jadi anak langsung halaman */
+.pp-wrap > .pc-panel { margin-bottom: var(--pc-space); }
 
-.pp-filter-bar label { font-size: 11px; color: var(--pp-muted); font-weight: 500; }
-
-.pp-filter-bar input[type="date"],
-.pp-filter-bar select {
-  background: var(--pp-surface2);
-  border: 1px solid var(--pp-border);
-  border-radius: 6px;
-  color: var(--pp-text);
-  font-size: 12px;
-  padding: 4px 9px;
-  outline: none;
-  font-family: var(--pp-font);
-}
-
-.pp-filter-bar input[type="date"]:focus,
-.pp-filter-bar select:focus {
-  border-color: var(--pp-accent);
-  box-shadow: 0 0 0 3px var(--pp-glow);
-}
-
-/* ── Buttons ─────────────────────────────────────────────────── */
-.pp-btn {
-  background: var(--pp-accent);
-  border: none;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 5px 10px;
-  cursor: pointer;
-  font-family: var(--pp-font);
-  transition: opacity 0.15s;
-}
-
-.pp-btn:hover { opacity: 0.85; }
-
+/* ── Tombol ── */
 .pp-btn-ghost {
-  background: transparent;
-  border: 1px solid var(--pp-border);
-  color: var(--pp-muted);
-  border-radius: 7px;
-  font-size: 13px;
-  padding: 7px 14px;
-  cursor: pointer;
-  font-family: var(--pp-font);
-  transition: all 0.15s;
-  text-decoration: none;
   display: inline-flex;
   align-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-mid);
+  border-radius: 9px;
+  font-size: .78rem;
+  font-weight: 600;
+  padding: 6px 13px;
+  cursor: pointer;
+  font-family: var(--pp-font);
+  text-decoration: none;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
 }
+.pp-btn-ghost:hover { background: var(--wash-2); color: var(--text-hi); border-color: var(--border-hi); }
 
-.pp-btn-ghost:hover {
-  background: var(--pp-surface2);
-  color: var(--pp-text);
+/* Tombol teks kecil di dalam kartu KPI (mis. "Detail →") */
+.pp-link-btn {
+  font-family: var(--pp-font);
+  font-size: .66rem;
+  font-weight: 700;
+  color: var(--k, var(--accent));
+  background: var(--k-dim, var(--accent-dim));
+  border: 0;
+  border-radius: 99px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: transform .25s var(--ease-sb), filter .2s ease;
 }
+.pp-link-btn:hover { transform: translateX(2px); filter: brightness(1.1); }
 
-/* ── Top KPI cards ───────────────────────────────────────────── */
-.pp-top-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 14px;
-}
+/* Baris bawah kartu KPI: badge status (+ tombol) */
+.pp-tc-foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.pc-kpi .pc-bar--kartu { margin-top: 12px; }
 
-@media (max-width: 1100px) { .pp-top-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px)  { .pp-top-grid { grid-template-columns: 1fr; } }
+/* ── Badge status lama (juga dipakai card homepage & badge persen IGD) ── */
+.tc-badge   { display: inline-flex; align-items: center; gap: 4px; font-size: .68rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; }
+.badge-ideal, .badge-aman { background: var(--success-dim); color: var(--success); }
+.badge-warn  { background: var(--warning-dim); color: var(--warning); }
+.badge-over  { background: var(--danger-dim);  color: var(--danger); }
 
-.pp-top-card {
-  background: var(--pp-surface);
-  border: 1px solid var(--pp-border);
-  border-radius: 12px;
-  padding: 14px 16px 12px;
-  position: relative;
-  overflow: visible;
-  transition: border-color 0.2s, transform 0.2s;
-}
-
-.pp-top-card:hover {
-  border-color: rgba(37, 99, 235, 0.4);
-  transform: translateY(-1px);
-}
-
-.tc-header  { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
-.tc-label   { font-size: 11px; font-weight: 600; color: var(--pp-muted); letter-spacing: 0.3px; }
-.tc-icon    { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.tc-value   { font-size: 30px; font-weight: 700; letter-spacing: -1.5px; line-height: 1; font-family: var(--pp-mono); margin-bottom: 2px; }
-.tc-unit    { font-size: 13px; font-weight: 500; margin-left: 3px; opacity: 0.7; }
-.tc-standar { font-size: 10px; color: var(--pp-muted); margin-bottom: 8px; }
-.tc-progress { height: 3px; background: rgba(255,255,255,0.07); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
-.tc-progress-fill { height: 100%; border-radius: 4px; transition: width 1.2s ease; }
-.tc-badge   { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
-
-.badge-ideal { background: rgba(34, 197, 94, 0.12);  color: #22c55e; }
-.badge-warn  { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
-.badge-over  { background: rgba(239, 68, 68, 0.12);  color: #ef4444; }
-
-/* ── Source badges ───────────────────────────────────────────── */
+/* ── Badge sumber data ── */
 .src-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  padding: 2px 7px;
-  border-radius: 20px;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  padding: 3px 9px;
+  border-radius: 99px;
   text-transform: uppercase;
 }
+.src-api  { background: var(--success-dim); color: var(--success); }
+.src-live { background: var(--teal-dim);    color: var(--teal); }
 
-.src-api  { background: rgba(34, 197, 94, 0.12);  color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
-.src-live { background: rgba(6, 182, 212, 0.12);  color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.2); }
-.src-empty{ background: rgba(125, 133, 144, 0.12);color: #7d8590; border: 1px solid rgba(125, 133, 144, 0.2); }
-
-/* ── Chart layout ────────────────────────────────────────────── */
+/* ── Layout baris grafik ── */
 .pp-chart-row {
   display: grid;
   grid-template-columns: 3fr 2fr;
-  gap: 14px;
-  margin-bottom: 20px;
+  gap: var(--pc-gap);
+  margin-bottom: var(--pc-space);
   width: 100%;
   min-width: 0;
 }
+.pp-chart-row > * { min-width: 0; overflow: hidden; }
+@media (max-width: 1024px) { .pp-chart-row { grid-template-columns: 1fr; } }
+@media (max-width: 768px)  { .pp-chart-row { gap: 10px; } .pp-chart-row .chart-wrap { height: 200px; } }
+@media (max-width: 480px)  { .pp-chart-row .chart-wrap { height: 180px; } }
 
-.pp-chart-row > * {
-  min-width: 0;
-  overflow: hidden;
-}
-
-.pp-chart-row3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-bottom: 20px;
-  min-width: 0;
-}
-
-.pp-chart-row3 > * { min-width: 0; }
-
-
-@media (max-width: 1100px) { .pp-chart-row3 { grid-template-columns: repeat(2, 1fr); } }@media (max-width: 1100px) { .pp-chart-row3 { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 1024px) { .pp-chart-row  { grid-template-columns: 1fr; } }
-@media (max-width: 700px)  { .pp-chart-row3 { grid-template-columns: 1fr; } }
-@media (max-width: 768px)  { .pp-chart-row  { gap: 10px; } }
-
-/* ── Card ────────────────────────────────────────────────────── */
-.pp-card {
-  background: var(--pp-surface);
-  border: 1px solid var(--pp-border);
-  border-radius: 14px;
-  padding: 18px 20px;
-}
-
-.pp-card-header   { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
-.pp-card-title    { font-size: 14px; font-weight: 600; color: var(--pp-text); }
-.pp-card-subtitle { font-size: 11px; color: var(--pp-muted); margin-top: 2px; }
-
-.chart-wrap    { position: relative; height: 240px; width: 100%; }
-.chart-wrap-sm { position: relative; height: 210px; width: 100%; }
+.chart-wrap { position: relative; height: 240px; width: 100%; }
 canvas { max-height: 100% !important; }
+#chartBOR { width: 100% !important; }
 
-/* ── Table ───────────────────────────────────────────────────── */
-.pp-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+/* ── Tabel ── */
+.pp-tbl { width: 100%; border-collapse: collapse; font-size: .78rem; }
 .pp-tbl th {
-  font-size: 10px;
+  font-size: .62rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--pp-muted);
-  padding: 6px 10px;
+  letter-spacing: .07em;
+  color: var(--text-low);
+  padding: 8px 10px;
   text-align: left;
-  border-bottom: 1px solid var(--pp-border);
+  border-bottom: 1px solid var(--border);
 }
 .pp-tbl td {
-  padding: 8px 10px;
-  border-bottom: 1px solid rgba(48, 54, 61, 0.4);
-  color: var(--pp-text);
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-hi);
   vertical-align: middle;
 }
 .pp-tbl tr:last-child td { border-bottom: none; }
-.pp-tbl tr:hover td { background: var(--pp-surface2); }
+.pp-tbl tbody tr { transition: background .2s ease; }
+.pp-tbl tbody tr:hover td { background: var(--wash-1); }
+.pp-tbl .pp-num  { text-align: right; font-family: var(--pp-mono); font-weight: 600; font-size: .85rem; }
+.pp-tbl .pp-note { text-align: right; font-size: .68rem; color: var(--text-mid); }
 
-.pp-bar-wrap { display: flex; align-items: center; gap: 6px; }
-.pp-bar      { flex: 1; height: 5px; background: rgba(255, 255, 255, 0.07); border-radius: 4px; overflow: hidden; max-width: 80px; }
-.pp-bar-fill { height: 100%; background: var(--pp-accent); border-radius: 4px; transition: width 1s ease; }
+/* Bar kecil di dalam sel tabel (isinya di-update JS lewat .pp-bar-fill) */
+.pp-bar      { flex: 1; height: 5px; background: var(--wash-2); border-radius: 99px; overflow: hidden; max-width: 80px; }
+.pp-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 1s var(--ease-sb); }
 
-/* ── Empty state ─────────────────────────────────────────────── */
-.pp-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: 8px;
-  color: var(--pp-muted);
-  font-size: 12px;
-}
+/* Judul kecil + pemisah di dalam panel IGD */
+.pp-sect-head  { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.pp-sect-title { font-size: .78rem; font-weight: 600; color: var(--text-hi); }
+.pp-sect-sub   { margin-top: 2px; font-size: .68rem; color: var(--text-mid); }
+.pp-block      { margin-bottom: 16px; }
+.pp-divider    { height: 1px; background: var(--border); margin-bottom: 16px; }
 
-.pp-empty svg { opacity: 0.3; }
-
-/* ── Barber-Johnson filter & KPI ─────────────────────────────── */
-.bj-filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-
-.bj-filter label { font-size: 12px; color: var(--pp-muted); font-weight: 500; }
-
+/* ── Barber-Johnson ── */
+.bj-filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.bj-filter label { font-size: .75rem; color: var(--text-mid); font-weight: 500; }
 .bj-filter select {
-  background: var(--pp-surface2);
-  border: 1px solid var(--pp-border);
-  border-radius: 7px;
-  color: var(--pp-text);
-  font-size: 13px;
-  padding: 5px 10px;
+  background: var(--wash-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text-hi);
+  font-size: .8rem;
+  padding: 6px 11px;
   outline: none;
   font-family: var(--pp-font);
   cursor: pointer;
+  transition: border-color .2s ease, box-shadow .2s ease;
 }
+.bj-filter select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.bj-filter .pp-btn-ghost { margin-left: auto; gap: 6px; }
 
-.bj-filter select:focus {
-  border-color: var(--pp-accent);
-  box-shadow: 0 0 0 3px var(--pp-glow);
+.bj-kpi-unit { font-size: .7rem; color: var(--text-mid); font-weight: 400; }   /* ditulis JS ke dalam nilai KPI */
+.bj-status-ok, .bj-status-warn {                                               /* dibuat JS di bjStatusBadge */
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .68rem; font-weight: 700;
+  padding: 4px 11px; border-radius: 99px;
 }
+.bj-status-ok   { background: var(--success-dim); color: var(--success); }
+.bj-status-warn { background: var(--danger-dim);  color: var(--danger); }
 
-.bj-kpi-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.bj-kpi-card {
-  background: var(--pp-surface2);
-  border: 1px solid var(--pp-border);
+.pp-bj-canvas { position: relative; height: 460px; width: 100%; }
+.bj-legend {                                                                   /* isinya ditulis JS */
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin-top: 12px; padding: 9px 14px;
+  font-size: .7rem; color: var(--text-mid);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
   border-radius: 10px;
-  padding: 10px 14px;
 }
-
-.bj-kpi-label { font-size: 10px; color: var(--pp-muted); font-weight: 600; letter-spacing: 0.3px; margin-bottom: 4px; }
-.bj-kpi-val   { font-size: 20px; font-weight: 700; font-family: var(--pp-mono); color: var(--pp-text); line-height: 1; }
-.bj-kpi-unit  { font-size: 11px; color: var(--pp-muted); font-weight: 400; }
-.bj-kpi-coord { font-size: 10px; color: var(--pp-muted); margin-top: 4px; }
-
-.bj-status-ok   { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: rgba(34, 197, 94, 0.12);  color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
-.bj-status-warn { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: rgba(239, 68, 68, 0.12);  color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-
-.bj-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; font-size: 11px; color: var(--pp-muted); }
 .bj-legend span { display: flex; align-items: center; gap: 5px; }
 
-/* ── IGD Monitoring ──────────────────────────────────────── */
-.pp-igd-status-badge {
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 12px;
-  border-radius: 20px;
+/* ── IGD: banner antri, tile, bar kapasitas, triage ── */
+.pp-igd-status-badge { display: inline-flex; align-items: center; font-size: .68rem; font-weight: 700; padding: 4px 12px; border-radius: 99px; }
+.igd-status-aman  { background: var(--success-dim); color: var(--success); }
+.igd-status-siaga { background: var(--warning-dim); color: var(--warning); }
+.igd-status-penuh { background: var(--danger-dim);  color: var(--danger); }
+
+.pp-antri {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 20px; margin-bottom: 14px;
+  background: var(--warning-dim);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+  border-radius: 14px;
 }
+.pp-antri-info  { display: flex; align-items: center; gap: 10px; }
+.pp-antri-icon  { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: color-mix(in srgb, var(--warning) 22%, transparent); color: var(--warning); }
+.pp-antri-title { font-size: .8rem; font-weight: 700; color: var(--warning); }
+.pp-antri-sub   { margin-top: 2px; font-size: .68rem; color: var(--text-mid); }
+.pp-antri-val   { font-size: 2.6rem; font-weight: 700; line-height: 1; letter-spacing: -.04em; font-variant-numeric: tabular-nums; color: var(--warning); }
 
-.igd-status-aman  { background: rgba(34,197,94,0.12);  color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
-.igd-status-siaga { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
-.igd-status-penuh { background: rgba(239,68,68,0.12);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+.pp-igd-stats { margin-bottom: 16px; }
+.pp-igd-stats .pc-stat-value { font-size: 1.75rem; }
 
-.pp-igd-kpi-card {
-  background: var(--pp-surface);
-  border: 1px solid var(--pp-border);
-  border-radius: 10px;
-  padding: 12px 14px;
-}
+.pp-igd-bar-track  { height: 12px; background: var(--wash-2); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+.pp-igd-bar-fill   { height: 100%; border-radius: 99px; transition: width 1.2s var(--ease-sb), background .4s ease; }
+.pp-igd-bar-labels { display: flex; justify-content: space-between; font-size: .62rem; color: var(--text-low); }
 
-.igd-kpi-lbl { font-size: 10px; color: var(--pp-muted); font-weight: 600; margin-bottom: 4px; letter-spacing: 0.3px; }
-.igd-kpi-val { font-size: 28px; font-weight: 700; font-family: var(--pp-mono); line-height: 1; letter-spacing: -1px; }
-.igd-kpi-sub { font-size: 10px; color: var(--pp-muted); margin-top: 3px; }
-
-.pp-igd-bar-track {
-  height: 14px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 5px;
-}
-
-.pp-igd-bar-fill {
-  height: 100%;
-  border-radius: 6px;
-  transition: width 1.2s ease;
-}
-
-.pp-igd-bar-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--pp-muted);
-}
-
+.pp-triage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .pp-igd-triage-card {
-  border-radius: 8px;
-  padding: 10px 12px;
+  --k: var(--text-mid);
+  padding: 12px;
   text-align: center;
+  background: color-mix(in srgb, var(--k) 11%, transparent);
+  border: 1px solid color-mix(in srgb, var(--k) 18%, transparent);
+  border-radius: 12px;
+  transition: transform .35s var(--ease-sb);
 }
+.pp-igd-triage-card:hover { transform: translateY(-2px); }
+.igd-t-p1 { --k: var(--danger); }
+.igd-t-p2 { --k: var(--warning); }
+.igd-t-p3 { --k: var(--success); }
+.igd-t-lbl  { font-size: .65rem; font-weight: 700; margin-bottom: 3px; color: var(--k); }
+.igd-t-code { font-size: .62rem; color: var(--text-mid); margin-bottom: 4px; }
+.igd-t-val  { font-size: 1.5rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--k); }
+.igd-t-dot  { width: 6px; height: 6px; border-radius: 50%; margin: 7px auto 0; background: var(--k); }
 
-.igd-t-lbl { font-size: 10px; font-weight: 600; margin-bottom: 3px; }
-.igd-t-val { font-size: 24px; font-weight: 700; font-family: var(--pp-mono); line-height: 1; }
+.igd-pill { display: inline-block; font-size: .64rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+.igd-pill-p1 { background: var(--danger-dim);  color: var(--danger); }
+.igd-pill-p2 { background: var(--warning-dim); color: var(--warning); }
+.igd-pill-p3 { background: var(--success-dim); color: var(--success); }
 
-.igd-t-p1 { background: rgba(239,68,68,0.12); }
-.igd-t-p1 .igd-t-lbl, .igd-t-p1 .igd-t-val { color: #ef4444; }
-.igd-t-p2 { background: rgba(245,158,11,0.12); }
-.igd-t-p2 .igd-t-lbl, .igd-t-p2 .igd-t-val { color: #f59e0b; }
-.igd-t-p3 { background: rgba(34,197,94,0.12); }
-.igd-t-p3 .igd-t-lbl, .igd-t-p3 .igd-t-val { color: #22c55e; }
-.igd-t-p4 { background: rgba(37,99,235,0.12); }
-.igd-t-p4 .igd-t-lbl, .igd-t-p4 .igd-t-val { color: #2563eb; }
-.igd-t-p5 { background: rgba(125,133,144,0.12); }
-.igd-t-p5 .igd-t-lbl, .igd-t-p5 .igd-t-val { color: var(--pp-muted); }
-
-.igd-pill {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
-  white-space: nowrap;
-}
-
-.igd-pill-p1    { background: rgba(239,68,68,0.15);   color: #ef4444; }
-.igd-pill-p2    { background: rgba(245,158,11,0.15);  color: #f59e0b; }
-.igd-pill-p3    { background: rgba(34,197,94,0.15);   color: #22c55e; }
-.igd-pill-p4    { background: rgba(37,99,235,0.15);   color: #2563eb; }
-.igd-pill-p5    { background: rgba(125,133,144,0.15); color: var(--pp-muted); }
-.igd-pill-antri { background: rgba(245,158,11,0.15);  color: #f59e0b; }
-
-.igd-pill-out-ranap  { background: rgba(167,139,250,0.15); color: #a78bfa; }
-.igd-pill-out-pulang { background: rgba(34,197,94,0.15);   color: #22c55e; }
-.igd-pill-out-rujuk  { background: rgba(245,158,11,0.15);  color: #f59e0b; }
-.igd-pill-out-mati   { background: rgba(125,133,144,0.15); color: var(--pp-muted); }
-.igd-pill-out-proses { background: rgba(6,182,212,0.15);   color: var(--pp-cyan); }
-
-/* ══════════════════════════════════════════
-   TREN KUNJUNGAN — Summary cards + chart
-══════════════════════════════════════════ */
-
-/* Grid 4 summary card di atas chart */
-.trend-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-@media (max-width: 900px) { .trend-summary-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px) { .trend-summary-grid { grid-template-columns: repeat(2, 1fr); } }
-
-.trend-summary-card {
-  background: var(--pp-surface2);
-  border: 1px solid var(--pp-border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.trend-sum-lbl {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--pp-muted);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-
-.trend-sum-val {
-  font-size: 20px;
-  font-weight: 700;
-  font-family: var(--pp-mono);
-  line-height: 1.1;
-  letter-spacing: -0.5px;
-}
-
-.trend-sum-sub {
-  font-size: 10px;
-  color: var(--pp-muted);
-  margin-top: 1px;
-}
-
-/* Warna aksen per card */
-.trend-sum-kunjungan { color: var(--pp-accent); }
-.trend-sum-rata      { color: var(--pp-purple); }
-.trend-sum-presentase{ color: var(--pp-cyan); }
-.trend-sum-hari      { color: var(--pp-green); }
-
-/* Legend bar di bawah chart */
+/* ── Tren kunjungan: legend di bawah grafik ── */
 .trend-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 10px;
-  padding: 8px 12px;
-  background: var(--pp-surface2);
-  border: 1px solid var(--pp-border);
-  border-radius: 8px;
-  font-size: 11px;
-  color: var(--pp-muted);
+  display: flex; flex-wrap: wrap; gap: 14px;
+  margin-top: 10px; padding: 8px 12px;
+  background: var(--wash-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: .68rem; color: var(--text-mid);
 }
+.trend-legend-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.trend-legend-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.trend-legend-bar  { width: 14px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.trend-legend-dash { width: 20px; height: 0; border-top: 2px dashed; flex-shrink: 0; }
 
-.trend-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.trend-legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.trend-legend-bar {
-  width: 14px;
-  height: 10px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-
-.trend-legend-dash {
-  width: 20px;
-  height: 0;
-  border-top: 2px dashed;
-  flex-shrink: 0;
-}
-/* Responsive navbar juga udah pindah ke portal-navbar.css */
-
-/* ── IGD redesign  ───────────────────────────────── */
-.pp-igd-kpi-bar {
-  height: 3px;
-  background: rgba(125,133,144,0.15);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 10px;
-}
-
-.pp-igd-kpi-bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 1.2s ease;
-}
-
-.igd-t-code {
-  font-size: 10px;
-  color: var(--pp-muted);
-  margin-bottom: 4px;
-}
-
-.igd-t-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin: 6px auto 0;
-}
-
-.igd-dot-p1 { background: var(--pp-red); }
-.igd-dot-p2 { background: var(--pp-yellow); }
-.igd-dot-p3 { background: var(--pp-green); }
-
-
-/* ── BOR Chart responsive ─────────────────────────────────── */  
-#chartBOR {
-  width: 100% !important;
-}
-
-@media (max-width: 768px) {
-  .pp-chart-row {
-    grid-template-columns: 1fr;
-  }
-
-  .pp-chart-row .chart-wrap {
-    height: 200px;
-  }
-
-  #borGridEl {
-    grid-template-columns: repeat(4, 1fr) !important;
-  }
-}
-
+/* ── Responsif khusus modal BOR ── */
+@media (max-width: 768px) { #borGridEl { grid-template-columns: repeat(4, 1fr) !important; } }
 @media (max-width: 480px) {
-  .pp-chart-row .chart-wrap {
-    height: 180px;
-  }
-
-  #borGridEl {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-
-  #borLegendEl {
-    gap: 6px !important;
-    font-size: 9px !important;
-  }
+  #borGridEl   { grid-template-columns: repeat(3, 1fr) !important; }
+  #borLegendEl { gap: 6px !important; font-size: 9px !important; }
 }
-
-/* glow flicker monitoring igd info tt */
-@keyframe glowFlicker {
-  0%, 100% { box-shadow: 0 0 6px 1px rgba(37, 99, 235, 0.5);}
-            { box-shadow: 0 0 14px 4px rgba(37, 99, 235, 0.85);}
-}
+@media (max-width: 600px) { .pp-triage-grid { gap: 6px; } .pp-antri-val { font-size: 2rem; } }

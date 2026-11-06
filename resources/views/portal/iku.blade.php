@@ -54,18 +54,18 @@
 
     {{-- STATE ERROR: database SPM Track tidak terjangkau / tabel IKU belum ada --}}
     @if ($error)
-        <div class="iku-state iku-state--error" role="alert">
+        <div class="pc-state pc-state--error" role="alert">
             <x-icon name="alert-triangle" width="26" height="26" />
-            <div class="iku-state-title">Data tidak dapat ditampilkan</div>
-            <div class="iku-state-text">{{ $error }}</div>
+            <div class="pc-state-title">Data tidak dapat ditampilkan</div>
+            <div class="pc-state-text">{{ $error }}</div>
         </div>
 
     {{-- STATE KOSONG: Indikator akan tampil di sini setelah ditambahkan di SPM TRACK --}}
     @elseif (empty($data['baris']))
-        <div class="iku-state">
+        <div class="pc-state">
             <x-icon name="clipboard" width="26" height="26" />
-            <div class="iku-state-title">Belum ada indikator IKU</div>
-            <div class="iku-state-text">Indikator akan tampil di sini setelah ditambahkan oleh admin.</div>
+            <div class="pc-state-title">Belum ada indikator IKU</div>
+            <div class="pc-state-text">Indikator akan tampil di sini setelah ditambahkan oleh admin.</div>
         </div>
 
     @else
@@ -79,26 +79,14 @@
                 ['label' => 'Persentase Capaian IKU', 'nilai' => $r['persen_capaian_fmt'], 'sub' => 'rata-rata capaian indikator berdata',                                    'ikon' => 'gauge',        'warna' => 'teal'],
             ];
         @endphp
-        <section class="iku-kpi-grid" aria-label="Ringkasan capaian IKU">
+        <section class="pc-kpi-grid" aria-label="Ringkasan capaian IKU">
             @foreach ($kartu as $k)
-                <article class="iku-kpi iku-kpi--{{ $k['warna'] }}" style="--i: {{ $loop->index }}">
-                    <div class="iku-kpi-icon"><x-icon name="{{ $k['ikon'] }}" width="18" height="18" /></div>
-                    <div class="iku-kpi-body">
-                        <div class="iku-kpi-label">{{ $k['label'] }}</div>
-                        <div class="iku-kpi-value">{{ $k['nilai'] }}</div>
-                        <div class="iku-kpi-sub">{{ $k['sub'] }}</div>
-                    </div>
-                </article>
+                <x-portal.kpi-card :label="$k['label']" :value="$k['nilai']" :sub="$k['sub']" :icon="$k['ikon']" :color="$k['warna']" :i="$loop->index" />
             @endforeach
         </section>
 
         {{-- TABEL INDIKATOR (baris netral; status hanya lewat badge) --}}
-        <section class="iku-panel" style="--i: 4">
-            <div class="iku-panel-head">
-                <h2 class="iku-panel-title">Daftar Indikator Kinerja Utama</h2>
-                <span class="iku-panel-meta">{{ $data['periode_singkat'] }}</span>
-            </div>
-
+        <x-portal.panel title="Daftar Indikator Kinerja Utama" :meta="$data['periode_singkat']" :i="4">
             <div class="iku-table-wrap">
                 <table class="iku-table">
                     <thead>
@@ -131,11 +119,11 @@
                                 <td class="iku-num iku-num--strong">{{ $b['realisasi_fmt'] }}</td>
                                 <td class="iku-col-capaian">
                                     <div class="iku-capaian">
-                                        <div class="iku-bar iku-bar--{{ $b['status'] }}" style="--w: {{ $b['bar'] }}%"><span></span></div>
+                                        <div class="pc-bar pc-bar--{{ $b['status'] }}" style="--w: {{ $b['bar'] }}%"><span></span></div>
                                         <span class="iku-capaian-val">{{ $b['capaian_fmt'] }}</span>
                                     </div>
                                 </td>
-                                <td><span class="iku-badge iku-badge--{{ $b['status'] }}">{{ $b['status_label'] }}</span></td>
+                                <td><span class="pc-badge pc-badge--{{ $b['status'] }}">{{ $b['status_label'] }}</span></td>
                                 <td class="iku-col-periode">{{ $b['periode'] }}</td>
                                 <td class="iku-col-aksi">
                                     <a href="{{ $urlDetail }}" class="iku-aksi" aria-label="Lihat detail {{ $b['nama'] }}" title="Lihat detail">
@@ -147,51 +135,39 @@
                     </tbody>
                 </table>
             </div>
-        </section>
+        </x-portal.panel>
 
         {{-- GRAFIK --}}
         @if ($data['grafik']['ada_data'])
-            <section class="iku-grid-2">
-                <div class="iku-panel" style="--i: 5">
-                    <div class="iku-panel-head">
-                        <h2 class="iku-panel-title">Capaian terhadap Target</h2>
-                        <span class="iku-panel-meta">{{ $data['periode_singkat'] }}</span>
-                    </div>
-                    <div class="iku-chart-body">
+            <section class="pc-grid-2">
+                <x-portal.panel title="Capaian terhadap Target" :meta="$data['periode_singkat']" :i="5">
+                    <div class="pc-panel-body">
                         <div class="iku-chart iku-chart--bar" style="--n: {{ count($data['grafik']['capaian']['nilai']) }}">
                             <canvas id="ikuChartCapaian" role="img" aria-label="Grafik capaian tiap indikator terhadap target"></canvas>
                         </div>
                         <p class="iku-chart-note">Garis putus-putus = target (100%). Nilai mentah target dan realisasi ada di tooltip.</p>
                     </div>
-                </div>
+                </x-portal.panel>
 
-                <div class="iku-panel" style="--i: 6">
-                    <div class="iku-panel-head">
-                        <h2 class="iku-panel-title">Tren Capaian per Triwulan</h2>
-                        <span class="iku-panel-meta">{{ $data['tahun'] }}</span>
-                    </div>
-                    <div class="iku-chart-body">
+                <x-portal.panel title="Tren Capaian per Triwulan" :meta="$data['tahun']" :i="6">
+                    <div class="pc-panel-body">
                         <div class="iku-chart iku-chart--bar" style="--n: {{ count($data['grafik']['capaian']['nilai']) }}">
                             <canvas id="ikuChartTren" role="img" aria-label="Grafik tren capaian indikator per triwulan"></canvas>
                         </div>
                         <p class="iku-chart-note">Triwulan yang belum berdata dibiarkan kosong, bukan dihitung 0.</p>
                     </div>
-                </div>
+                </x-portal.panel>
             </section>
         @else
-            <div class="iku-state iku-state--inline" style="--i: 5">
+            <div class="pc-state pc-state--inline" style="--i: 5">
                 <x-icon name="activity" width="22" height="22" />
-                <div class="iku-state-title">Belum ada realisasi pada periode ini</div>
-                <div class="iku-state-text">Grafik muncul setelah ada indikator yang punya realisasi dan target pada {{ $data['periode_label'] }}.</div>
+                <div class="pc-state-title">Belum ada realisasi pada periode ini</div>
+                <div class="pc-state-text">Grafik muncul setelah ada indikator yang punya realisasi dan target pada {{ $data['periode_label'] }}.</div>
             </div>
         @endif
 
         {{-- REKAP PER SASARAN STRATEGIS --}}
-        <section class="iku-panel" style="--i: 7">
-            <div class="iku-panel-head">
-                <h2 class="iku-panel-title">Rekap per Sasaran Strategis</h2>
-                <span class="iku-panel-meta">{{ $data['periode_singkat'] }}</span>
-            </div>
+        <x-portal.panel title="Rekap per Sasaran Strategis" :meta="$data['periode_singkat']" :i="7">
             <ul class="iku-sasaran">
                 @foreach ($data['sasaran'] as $s)
                     <li class="iku-sasaran-item">
@@ -199,7 +175,7 @@
                             <span class="iku-sasaran-nama">{{ $s['nama'] }}</span>
                             <span class="iku-sasaran-val">{{ $s['persen_fmt'] }}</span>
                         </div>
-                        <div class="iku-bar iku-bar--{{ $s['status'] }}" style="--w: {{ $s['bar'] }}%"><span></span></div>
+                        <div class="pc-bar pc-bar--{{ $s['status'] }}" style="--w: {{ $s['bar'] }}%"><span></span></div>
                         <div class="iku-sasaran-sub">
                             {{ $s['tercapai'] }} dari {{ $s['berdata'] }} indikator berdata tercapai
                             @if ($s['berdata'] < $s['total'])
@@ -209,7 +185,7 @@
                     </li>
                 @endforeach
             </ul>
-        </section>
+        </x-portal.panel>
     @endif
 
 </div>

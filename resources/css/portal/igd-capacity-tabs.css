@@ -2,12 +2,9 @@
    IGD CAPACITY TABS 
    ════════════════════════════════════════════════════════════════ */
 
-.igd-tabcard {
-  background: var(--pp-surface);
-  border: 1px solid var(--pp-border);
-  border-radius: 16px;
-  overflow: hidden;
-}
+/* Kartu luar (background, border, radius, bayangan) sekarang dari .pc-panel (cards.css).
+   Kelas ini tinggal jadi penanda untuk JS & gaya isi tab di bawah. */
+.igd-tabcard { overflow: hidden; }
 
 /* ── Tab header ──────────────────────────────────────────────── */
 .igd-tabhead {

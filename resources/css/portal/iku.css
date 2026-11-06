@@ -1,5 +1,5 @@
 /* ============================================================
-   Dashboard IKU. 
+   Dashboard IKU 
    ============================================================ */
 
 .iku-wrap {
@@ -13,17 +13,12 @@
 .iku-wrap .pp-navbar { margin-bottom: 4px; }
 .iku-wrap .pp-navbar-inner { padding: 4px 0; }
 
-/* Animasi masuk: naik halus, bergantian lewat --i. Dimatikan kalau pengguna minta gerak dikurangi */
-@keyframes iku-naik {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: none; }
-}
-.iku-head, .iku-kpi, .iku-panel, .iku-state {
-    animation: iku-naik .55s var(--ease-sb) both;
-    animation-delay: calc(var(--i, 0) * 70ms);
+/* Judul halaman ikut animasi masuk yang sama dengan kartu (keyframe dari cards.css) */
+.iku-head {
+    animation: pc-naik .55s var(--ease-sb) both;
 }
 @media (prefers-reduced-motion: reduce) {
-    .iku-head, .iku-kpi, .iku-panel, .iku-state { animation: none; }
+    .iku-head { animation: none; }
 }
 
 /* ── Judul halaman ── */
@@ -61,93 +56,12 @@
 }
 .iku-periode em { font-style: normal; font-weight: 500; color: var(--text-mid); }
 
-/* ── Kartu ringkasan ── */
-.iku-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 18px;
-}
-.iku-kpi {
-    --k: var(--sky);
-    --k-dim: var(--sky-dim);
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 18px 18px 16px;
-    background: var(--glass);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: var(--shadow-rest);
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-    transition: transform .35s var(--ease-sb), box-shadow .35s var(--ease-sb);
-}
-.iku-kpi::before {            /* aksen tipis di tepi atas, satu-satunya "gradient" di kartu */
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--k), transparent 70%);
-    opacity: .85;
-}
-.iku-kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-.iku-kpi--sky     { --k: var(--sky);     --k-dim: var(--sky-dim); }
-.iku-kpi--success { --k: var(--success); --k-dim: var(--success-dim); }
-.iku-kpi--danger  { --k: var(--danger);  --k-dim: var(--danger-dim); }
-.iku-kpi--teal    { --k: var(--teal);    --k-dim: var(--teal-dim); }
+/* ── Jarak panel di dalam halaman IKU ── */
+.iku-wrap > .pc-panel { margin-top: var(--pc-space); }
+.iku-wrap > .pc-kpi-grid + .pc-panel,                       /* panel tepat di bawah kartu ringkasan: jaraknya sudah ada dari grid */
+.iku-wrap > .iku-catatan--blok + .pc-panel { margin-top: 0; }
 
-.iku-kpi-icon {
-    flex: 0 0 38px;
-    width: 38px; height: 38px;
-    display: grid; place-items: center;
-    border-radius: 11px;
-    background: var(--k-dim);
-    color: var(--k);
-}
-.iku-kpi-label {
-    font-size: .68rem;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--text-low);
-}
-.iku-kpi-value {
-    margin: 3px 0 2px;
-    font-size: 1.9rem;
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -.03em;
-    font-variant-numeric: tabular-nums;
-    color: var(--text-hi);
-}
-.iku-kpi-sub { font-size: .72rem; color: var(--text-mid); }
-
-/* ── Panel tabel ── */
-.iku-panel {
-    background: var(--glass);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: var(--shadow-rest);
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-}
-.iku-panel-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-}
-.iku-panel-title { margin: 0; font-size: .95rem; font-weight: 700; color: var(--text-hi); }
-.iku-panel-meta {
-    font-size: .7rem; font-weight: 700; letter-spacing: .04em;
-    padding: 4px 10px; border-radius: 99px;
-    background: var(--accent-dim); color: var(--accent);
-}
-
+/* ── Tabel indikator ── */
 .iku-table-wrap { overflow-x: auto; }   /* di layar sempit tabel digeser, halaman tidak ikut melebar */
 .iku-table {
     width: 100%;
@@ -176,6 +90,7 @@
 .iku-table tbody tr:last-child td { border-bottom: 0; }
 .iku-table tbody tr { transition: background .2s ease; }          /* semua baris satu warna dasar; hanya hover */
 .iku-table tbody tr:hover { background: var(--wash-1); }
+.iku-table--ringkas { min-width: 0; }
 
 .iku-num { text-align: right !important; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .iku-num--strong { font-weight: 700; color: var(--text-hi); }
@@ -187,31 +102,10 @@
 .iku-nama--link { display: inline-block; text-decoration: none; transition: color .2s ease; }
 .iku-nama--link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .iku-catatan { margin-top: 3px; font-size: .68rem; color: var(--warning); }
+.iku-catatan--blok { margin: -6px 0 14px; font-size: .74rem; }
 
-/* ── Progress capaian ── */
+/* Baris capaian: bar (.pc-bar) + angka persen */
 .iku-capaian { display: flex; align-items: center; gap: 10px; }
-.iku-bar {
-    --bar: var(--text-low);
-    flex: 1;
-    height: 7px;
-    border-radius: 99px;
-    background: var(--wash-2);
-    overflow: hidden;
-}
-.iku-bar > span {
-    display: block;
-    height: 100%;
-    width: var(--w, 0%);
-    border-radius: inherit;
-    background: var(--bar);
-    transform-origin: left;
-    animation: iku-isi .9s var(--ease-sb) both;
-}
-@keyframes iku-isi { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@media (prefers-reduced-motion: reduce) { .iku-bar > span { animation: none; } }
-.iku-bar--tercapai  { --bar: var(--success); }
-.iku-bar--perhatian { --bar: var(--warning); }
-.iku-bar--belum     { --bar: var(--danger); }
 .iku-capaian-val {
     min-width: 52px;
     text-align: right;
@@ -219,38 +113,6 @@
     font-variant-numeric: tabular-nums;
     color: var(--text-hi);
 }
-
-/* ── Badge status ── */
-.iku-badge {
-    display: inline-block;
-    padding: 4px 11px;
-    border-radius: 99px;
-    font-size: .68rem;
-    font-weight: 700;
-    letter-spacing: .02em;
-    white-space: nowrap;
-}
-.iku-badge--tercapai  { background: var(--success-dim); color: var(--success); }
-.iku-badge--perhatian { background: var(--warning-dim); color: var(--warning); }
-.iku-badge--belum     { background: var(--danger-dim);  color: var(--danger); }
-.iku-badge--kosong    { background: var(--wash-2);      color: var(--text-low); }
-
-/* ── State kosong & error ── */
-.iku-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: 44px 20px;
-    text-align: center;
-    color: var(--text-low);
-    background: var(--glass);
-    border: 1px dashed var(--border-hi);
-    border-radius: 16px;
-}
-.iku-state--error { color: var(--danger); border-color: var(--danger-dim); }
-.iku-state-title { margin-top: 4px; font-size: .95rem; font-weight: 700; color: var(--text-hi); }
-.iku-state-text { max-width: 420px; font-size: .78rem; line-height: 1.5; color: var(--text-mid); }
 
 /* ── Kolom aksi (panah ke detail) ── */
 .iku-col-aksi { width: 44px; text-align: right; }
@@ -264,19 +126,7 @@
 }
 .iku-aksi:hover { background: var(--wash-2); color: var(--accent); transform: translateX(2px); }
 
-/* ── Dua panel berdampingan (grafik) ── */
-.iku-grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    margin-top: 18px;
-}
-.iku-grid-2 > .iku-panel { display: flex; flex-direction: column; }
-.iku-wrap > .iku-panel { margin-top: 18px; }
-.iku-wrap > .iku-kpi-grid + .iku-panel,                     /* panel tepat di bawah kartu ringkasan: jaraknya sudah ada dari kartu */
-.iku-wrap > .iku-catatan--blok + .iku-panel { margin-top: 0; }
-
-.iku-chart-body { padding: 16px 20px 14px; flex: 1; }
+/* ── Grafik ── */
 .iku-chart { position: relative; height: 300px; }
 .iku-chart--bar { height: clamp(260px, calc(var(--n, 4) * 58px + 60px), 640px); }   /* tinggi mengikuti jumlah indikator */
 .iku-chart-note { margin: 10px 0 0; font-size: .7rem; color: var(--text-low); }
@@ -303,14 +153,6 @@
 .iku-back + .iku-head { margin-top: 8px; }
 
 .iku-head-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.iku-badge--lg { padding: 6px 15px; font-size: .75rem; }
-
-.iku-kpi-grid--3 { grid-template-columns: repeat(3, 1fr); }
-.iku-kpi--warning { --k: var(--warning); --k-dim: var(--warning-dim); }
-.iku-kpi--muted   { --k: var(--text-low); --k-dim: var(--wash-2); }
-.iku-kpi-body { flex: 1; min-width: 0; }
-.iku-bar--kartu { margin-top: 10px; }
-.iku-catatan--blok { margin: -6px 0 14px; font-size: .74rem; }
 
 .iku-info {
     display: grid;
@@ -331,7 +173,6 @@
 .iku-teks { white-space: pre-line; }          /* baris baru di catatan/definisi ikut tampil */
 .iku-kosong { font-style: italic; color: var(--text-low); }
 
-.iku-table--ringkas { min-width: 0; }
 .iku-tag {
     margin-left: 6px; padding: 2px 7px;
     border-radius: 99px;
@@ -339,22 +180,9 @@
     background: var(--accent-dim); color: var(--accent);
 }
 
-/* State kosong yang ditaruh di dalam panel / di antara panel */
-.iku-state--inline { padding: 28px 20px; margin-top: 18px; }
-.iku-chart-body .iku-state--inline { margin-top: 0; border: 0; background: none; }
-
 /* ── Responsif ── */
-@media (max-width: 1100px) {
-    .iku-kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    .iku-kpi-grid--3 { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 980px) {
-    .iku-grid-2 { grid-template-columns: 1fr; }
-}
 @media (max-width: 640px) {
     .iku-wrap { padding: 0 .9rem 1.25rem; }
-    .iku-kpi-grid, .iku-kpi-grid--3 { grid-template-columns: 1fr; gap: 10px; }
     .iku-info { grid-template-columns: 1fr; }
     .iku-title { font-size: 1.2rem; }
-    .iku-kpi-value { font-size: 1.6rem; }
 }

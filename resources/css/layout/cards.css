@@ -1,0 +1,314 @@
+/* ============================================================
+   Rombakan dashi v2 - KARTU BERSAMA — "pc" = Portal Card
+   Satu-satunya sumber gaya kartu untuk SEMUA halaman portal.
+   Acuan desain: Dashboard IKU. Warna 100% dari token tema
+   (app-shell.css), jadi otomatis ikut mode terang/gelap.
+
+   Isi file ini:
+   1. Token ukuran & animasi masuk
+   2. Kartu ringkasan  (.pc-kpi)    -> <x-portal.kpi-card>
+   3. Panel            (.pc-panel)  -> <x-portal.panel>
+   4. Progress bar     (.pc-bar)
+   5. Badge status     (.pc-badge)
+   6. State kosong/error (.pc-state)
+   7. Grid bantu       (.pc-kpi-grid, .pc-grid-2)
+   8. Tile statistik kecil (.pc-stat)
+   9. Lapisan animasi  (spotlight, reveal, kilau bar) — dipicu
+      oleh resources/js/layout/cards-fx.js
+   ============================================================ */
+
+/* ── 1. Token & animasi masuk ── */
+:root {
+    --pc-radius: 16px;   /* radius semua kartu & panel */
+    --pc-gap:    14px;   /* jarak antar kartu dalam satu grid */
+    --pc-space:  18px;   /* jarak vertikal antar blok */
+}
+
+/* Naik halus + sedikit membesar, bergantian lewat --i (diisi komponen Blade).
+   Stagger dibatasi 8 langkah supaya kartu paling bawah tidak terlalu telat muncul. */
+@keyframes pc-naik {
+    from { opacity: 0; transform: translateY(14px) scale(.985); }
+    to   { opacity: 1; transform: none; }
+}
+.pc-kpi, .pc-panel, .pc-state {
+    animation: pc-naik .7s var(--ease-sb) both;
+    animation-delay: calc(min(var(--i, 0), 8) * 65ms);
+}
+@media (prefers-reduced-motion: reduce) {
+    .pc-kpi, .pc-panel, .pc-state { animation: none; }
+}
+
+/* ── 2. Kartu ringkasan ── */
+.pc-kpi {
+    --k: var(--sky);
+    --k-dim: var(--sky-dim);
+    --pc-glow: var(--k-dim);   /* warna spotlight mengikuti warna kartu */
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 18px 16px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: var(--pc-radius);
+    box-shadow: var(--shadow-rest);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: transform .35s var(--ease-sb), box-shadow .35s var(--ease-sb);
+}
+.pc-kpi::before {            /* aksen tipis di tepi atas, satu-satunya "gradient" di kartu */
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--k), transparent 70%);
+    opacity: .85;
+}
+.pc-kpi:hover  { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.pc-kpi:active { transform: translateY(-1px) scale(.995); }
+.pc-kpi--klik  { cursor: pointer; }   /* kartu yang bisa diklik (mis. buka detail) */
+
+/* Varian warna: cukup ganti --k dan --k-dim */
+.pc-kpi--sky     { --k: var(--sky);     --k-dim: var(--sky-dim); }
+.pc-kpi--success { --k: var(--success); --k-dim: var(--success-dim); }
+.pc-kpi--danger  { --k: var(--danger);  --k-dim: var(--danger-dim); }
+.pc-kpi--teal    { --k: var(--teal);    --k-dim: var(--teal-dim); }
+.pc-kpi--warning { --k: var(--warning); --k-dim: var(--warning-dim); }
+.pc-kpi--violet  { --k: var(--violet);  --k-dim: var(--violet-dim); }
+.pc-kpi--rose    { --k: var(--rose);    --k-dim: var(--rose-dim); }
+.pc-kpi--muted   { --k: var(--text-low); --k-dim: var(--wash-2); }
+
+.pc-kpi-icon {
+    flex: 0 0 38px;
+    width: 38px; height: 38px;
+    display: grid; place-items: center;
+    border-radius: 11px;
+    background: var(--k-dim);
+    color: var(--k);
+    transition: transform .45s var(--ease-sb);
+}
+.pc-kpi:hover .pc-kpi-icon { transform: scale(1.1) rotate(-5deg); }
+.pc-kpi-body  { flex: 1; min-width: 0; }
+.pc-kpi-label {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-low);
+}
+.pc-kpi-value {
+    margin: 3px 0 2px;
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-hi);
+}
+.pc-kpi-unit  { margin-left: 4px; font-size: .8rem; font-weight: 500; letter-spacing: 0; color: var(--text-mid); }
+.pc-kpi-sub   { font-size: .72rem; color: var(--text-mid); }
+
+/* ── 3. Panel ── */
+.pc-panel {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: var(--pc-radius);
+    box-shadow: var(--shadow-rest);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+.pc-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+}
+.pc-panel-head-text { min-width: 0; }
+.pc-panel-title { margin: 0; font-size: .95rem; font-weight: 700; color: var(--text-hi); }
+.pc-panel-sub   { margin: 3px 0 0; font-size: .72rem; color: var(--text-mid); }
+.pc-panel-meta {
+    font-size: .7rem; font-weight: 700; letter-spacing: .04em;
+    padding: 4px 10px; border-radius: 99px;
+    background: var(--accent-dim); color: var(--accent);
+}
+.pc-panel-body { padding: 16px 20px 14px; flex: 1; }   /* isi panel yang butuh padding (grafik, teks) */
+
+/* ── 4. Progress bar ── */
+.pc-bar {
+    --bar: var(--text-low);
+    flex: 1;
+    height: 7px;
+    border-radius: 99px;
+    background: var(--wash-2);
+    overflow: hidden;
+}
+.pc-bar > span {
+    position: relative;
+    overflow: hidden;
+    display: block;
+    height: 100%;
+    width: var(--w, 0%);
+    border-radius: inherit;
+    background: var(--bar);
+    transform-origin: left;
+    animation: pc-isi .9s var(--ease-sb) both;
+}
+@keyframes pc-isi { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .pc-bar > span { animation: none; } }
+.pc-bar--tercapai  { --bar: var(--success); }
+.pc-bar--perhatian { --bar: var(--warning); }
+.pc-bar--belum     { --bar: var(--danger); }
+.pc-bar--kartu     { margin-top: 10px; }   /* bar di dalam kartu ringkasan */
+
+/* ── 5. Badge status ── */
+.pc-badge {
+    display: inline-block;
+    padding: 4px 11px;
+    border-radius: 99px;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    white-space: nowrap;
+}
+.pc-badge--tercapai  { background: var(--success-dim); color: var(--success); }
+.pc-badge--perhatian { background: var(--warning-dim); color: var(--warning); }
+.pc-badge--belum     { background: var(--danger-dim);  color: var(--danger); }
+.pc-badge--kosong    { background: var(--wash-2);      color: var(--text-low); }
+.pc-badge--lg        { padding: 6px 15px; font-size: .75rem; }
+
+/* ── 6. State kosong & error ── */
+.pc-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 44px 20px;
+    text-align: center;
+    color: var(--text-low);
+    background: var(--glass);
+    border: 1px dashed var(--border-hi);
+    border-radius: var(--pc-radius);
+}
+.pc-state--error { color: var(--danger); border-color: var(--danger-dim); }
+.pc-state-title  { margin-top: 4px; font-size: .95rem; font-weight: 700; color: var(--text-hi); }
+.pc-state-text   { max-width: 420px; font-size: .78rem; line-height: 1.5; color: var(--text-mid); }
+.pc-state--inline { padding: 28px 20px; margin-top: var(--pc-space); }   /* di antara panel */
+.pc-panel-body .pc-state--inline { margin-top: 0; border: 0; background: none; }   /* di dalam panel */
+
+/* ── 7. Grid bantu ── */
+.pc-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--pc-gap);
+    margin-bottom: var(--pc-space);
+}
+.pc-kpi-grid--3 { grid-template-columns: repeat(3, 1fr); }
+
+.pc-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--pc-gap);
+    margin-top: var(--pc-space);
+}
+.pc-grid-2 > .pc-panel { display: flex; flex-direction: column; }
+
+@media (max-width: 1100px) {
+    .pc-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .pc-kpi-grid--3 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 980px) {
+    .pc-grid-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+    .pc-kpi-grid, .pc-kpi-grid--3 { grid-template-columns: 1fr; gap: 10px; }
+    .pc-kpi-value { font-size: 1.6rem; }
+}
+
+
+/* ── 8. Tile statistik kecil ──
+   Untuk angka ringkas di DALAM panel (mis. KPI Barber-Johnson, kartu IGD,
+   ringkasan tren). Beda dengan .pc-kpi yang besar dan berdiri sendiri. */
+.pc-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.pc-stat {
+    --k: var(--text-hi);   /* warna angka; ganti per tile lewat style="--k: var(--sky)" */
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    background: var(--wash-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: background .25s ease, border-color .25s ease, transform .35s var(--ease-sb);
+}
+.pc-stat:hover { background: var(--wash-2); border-color: var(--border-hi); transform: translateY(-1px); }
+.pc-stat-head  { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.pc-stat-label {
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text-low);
+}
+.pc-stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--k);
+}
+.pc-stat-sub  { font-size: .66rem; color: var(--text-mid); }
+.pc-stat-icon {
+    display: grid; place-items: center;
+    width: 26px; height: 26px;
+    border-radius: 8px;
+    color: var(--k);
+    background: color-mix(in srgb, var(--k) 14%, transparent);
+}
+@media (max-width: 900px) { .pc-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ── 9. Lapisan animasi ── */
+
+/* Spotlight: cahaya lembut mengikuti kursor (posisi --mx/--my diisi cards-fx.js) */
+.pc-kpi, .pc-panel { position: relative; }
+.pc-panel { --pc-glow: color-mix(in srgb, var(--accent) 9%, transparent); }
+.pc-kpi::after, .pc-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 0%), var(--pc-glow), transparent 65%);
+    opacity: 0;
+    transition: opacity .45s var(--ease-sb);
+}
+.pc-kpi:hover::after, .pc-panel:hover::after { opacity: 1; }
+@media (hover: none) { .pc-kpi::after, .pc-panel::after { display: none; } }
+
+/* Kartu di bawah layar menunggu dulu; dilepas cards-fx.js saat masuk layar */
+.pc-wait { animation: none !important; opacity: 0; transform: translateY(14px) scale(.985); }
+
+/* Kilau satu kali yang menyapu isi progress bar setelah terisi */
+.pc-bar > span::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.38) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: pc-kilau 1.3s .95s var(--ease-sb) 1 both;
+}
+@keyframes pc-kilau { to { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .pc-bar > span::after { animation: none; display: none; }
+    .pc-kpi:hover, .pc-kpi:active, .pc-stat:hover { transform: none; }
+    .pc-kpi:hover .pc-kpi-icon { transform: none; }
+    .pc-kpi::after, .pc-panel::after { display: none; }
+}

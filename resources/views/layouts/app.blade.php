@@ -19,7 +19,7 @@
         })();
     </script>
 
-    @vite(['resources/css/layout/app-shell.css'])
+       @vite(['resources/css/layout/app-shell.css', 'resources/css/layout/cards.css', 'resources/js/layout/cards-fx.js'])
     @stack('styles')
 </head>
 <body>

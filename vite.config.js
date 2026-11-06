@@ -9,6 +9,8 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/css/layout/app-shell.css',
+                'resources/css/layout/cards.css',
+                'resources/js/layout/cards-fx.js',
                 'resources/css/portal/dashboard.css',
                 'resources/js/portal/dashboard.js',
                 'resources/css/portal/pelayananpasien.css',
